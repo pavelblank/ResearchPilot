@@ -1,6 +1,7 @@
 # MRBLANK_RA-Research-Assistant
 
-> **Multi-AI Research Assistant** — Universal file ingestion, 12-point paper extraction, knowledge graph, and academic writing engine.
+> **AI-native research infrastructure for PhDs and academics.**  
+> Ingest papers, extract insights via AI, search across 5 academic databases, visualise knowledge graphs, and write with RAG-powered chat — all self-hosted, all local-first.
 
 ---
 
@@ -14,6 +15,21 @@ MRBLANK_RA is a self-hosted research assistant that connects to multiple AI back
 - **Visualize** research with a multi-dimension knowledge graph
 - **Chat** with AI using your research library as RAG context
 - **Track** keywords, predatory journals, and version changelog
+
+---
+
+![MRBLANK_RA interface](screenshot.png)
+
+---
+
+##  Prerequisites
+
+| Requirement | Minimum |
+|-------------|---------|
+| **Python** | 3.10+ (tested on 3.11) |
+| **OS** | Windows 10+ / Linux / macOS |
+| **Ollama** (optional) | Install from [ollama.com](https://ollama.com) and pull a model (`ollama pull llama3`) |
+| **Disk space** | ~500 MB for dependencies + your papers |
 
 ---
 
