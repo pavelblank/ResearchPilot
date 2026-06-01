@@ -208,7 +208,7 @@ using AI as the development engine.
 ##  Author
 
 **Md Yeahia Bhuiyan**
-*PhD Researcher · University Lecturer · AI Systems Designer*
+*AI Enthusiast · AI Systems Designer*
 
 I am a researcher and educator specialising in cybersecurity behaviour, organisational culture, and privacy mental models in Higher Education Institutions. My work bridges qualitative academic research and applied AI systems design.
 
