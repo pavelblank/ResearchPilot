@@ -18,6 +18,11 @@ Thumbs.db
 .DS_Store
 Desktop.ini
 
+# Research content (papers, extractions, projects)
+01-PROJECTS/
+99-SYSTEM-BACKEND/MASTER_LIBRARY_BACKUP.csv
+00-SYSTEM-CORE/MASTER-KNOWLEDGE-BASE.md
+
 # Obsidian
 .obsidian/
 .claude/
