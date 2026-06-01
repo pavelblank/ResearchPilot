@@ -19,11 +19,11 @@ ResearchPilot is a self-hosted research assistant that connects to multiple AI b
 ---
 
 <p align="center">
-  <img src="screenshot-1.png" alt="Screenshot 1" width="800">
+  <img src="1.png" alt="Screenshot 1" width="800">
   <br><br>
-  <img src="screenshot-2.png" alt="Screenshot 2" width="800">
+  <img src="2.png" alt="Screenshot 2" width="800">
   <br><br>
-  <img src="screenshot-3.png" alt="Screenshot 3" width="800">
+  <img src="3.png" alt="Screenshot 3" width="800">
 </p>
 
 ---
