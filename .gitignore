@@ -3,6 +3,7 @@
 web-app/.env
 99-SYSTEM-BACKEND/settings.json
 99-SYSTEM-BACKEND/plugins/*.json
+00-SYSTEM-CORE/author.json
 
 # Python
 __pycache__/
@@ -27,6 +28,11 @@ Desktop.ini
 *.log
 99-SYSTEM-BACKEND/chats/*.md
 graphify-out/
+web-app/stdout.txt
+web-app/stderr.txt
+
+# Obsidian canvas
+*.canvas
 
 # VS Code
 .vscode/
