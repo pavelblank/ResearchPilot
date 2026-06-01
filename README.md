@@ -192,6 +192,19 @@ Accessible from the UI: **Settings →**
 
 ---
 
+## 🤖 Built With AI
+
+ResearchPilot was developed entirely using **[OpenCode](https://opencode.ai)** —
+a free, local AI coding agent — with no manual coding involved. Every component,
+from the FastAPI backend to the single-page frontend, was built through
+AI-assisted development.
+
+This project demonstrates that researchers and academics can build
+production-grade tools without a traditional software development background,
+using AI as the development engine.
+
+---
+
 ##  Author
 
 **Md Yeahia Bhuiyan**
