@@ -1,6 +1,6 @@
-# Skill: MRBLANK_RA System Overview
+# Skill: ResearchPilot System Overview
 
-The AI Research Assistant (MRBLANK_RA) V5.2 is structured as follows:
+The ResearchPilot V5.2 is structured as follows:
 
 ## Folder Structure
 - **00-SYSTEM-CORE/**: System brain — protocols, knowledge base, researcher profile

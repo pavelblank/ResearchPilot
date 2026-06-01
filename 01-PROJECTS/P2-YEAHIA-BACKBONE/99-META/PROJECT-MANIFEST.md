@@ -17,4 +17,4 @@
 - **Manuscripts**: `03-MANUSCRIPTS/`
 
 ## 📝 Notes & Logs
-- Ensure all technical specs align with MRBLANK_RA V5.2.
+- Ensure all technical specs align with ResearchPilot V5.2.

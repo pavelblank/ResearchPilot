@@ -1,4 +1,4 @@
-# AI Research Assistant (MRBLANK_RA): System Protocols V5.2
+# ResearchPilot: System Protocols V5.2
 
 ## Protocol 1: The 12-Point Elite Extraction
 All analysis must be stored in: `01-PROJECTS/[Project]/02-EXTRACTIONS/`

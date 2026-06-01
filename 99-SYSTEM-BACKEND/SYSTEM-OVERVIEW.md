@@ -1,4 +1,4 @@
-# AI Research Assistant (MRBLANK_RA) System Overview V5.2
+# ResearchPilot System Overview V5.2
 
 ## What Was Built
 
@@ -27,7 +27,7 @@
 ```
 C:\F- Drive\MYWORK-Research1\
 ├── 00-SYSTEM-CORE/           # System brain
-│   ├── MRBLANK_RA-SYSTEM-SPECIFICATION.md
+│   ├── ResearchPilot-SYSTEM-SPECIFICATION.md
 │   ├── START-HERE.md
 │   ├── SYSTEM-PROTOCOLS.md
 │   ├── MASTER-KNOWLEDGE-BASE.md
@@ -72,17 +72,17 @@ Then open http://localhost:8000
 
 ### Start a Research Session
 1. Run `start-research.bat`
-2. Type "MRBLANK_RA, start research" or "RA"
+2. Type "ResearchPilot, start research" or "RA"
 3. Drop PDFs into INCOMING/ to process
 
 ### Process New Papers
 1. Place PDF in INCOMING/
-2. Tell MRBLANK_RA to "Process INCOMING for Project P1"
-3. MRBLANK_RA performs 12-point extraction and updates Knowledge Base
+2. Tell ResearchPilot to "Process INCOMING for Project P1"
+3. ResearchPilot performs 12-point extraction and updates Knowledge Base
 
 ---
 
 ## Metadata
-**System**: AI Research Assistant (MRBLANK_RA) V5.2
+**System**: ResearchPilot V5.2
 **Copyright**: 2026 Mr. Blank Research. All rights reserved.
-**Owner**: MRBLANK
+**Owner**: ResearchPilot

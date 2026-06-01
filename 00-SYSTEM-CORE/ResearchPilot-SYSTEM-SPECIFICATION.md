@@ -1,13 +1,13 @@
-# AI Research Assistant (MRBLANK_RA): System Specification V5.2
+# ResearchPilot: System Specification V5.2
 
 ## Purpose & Vision
-The MRBLANK_RA is a structured, semi-autonomous research operating system designed to synthesize academic literature into Q1-indexed publications. It minimizes clutter and maximizes the "Signal-to-Noise" ratio for the Head Researcher.
+The ResearchPilot is a structured, semi-autonomous research operating system designed to synthesize academic literature into Q1-indexed publications. It minimizes clutter and maximizes the "Signal-to-Noise" ratio for the Head Researcher.
 
 ## Core Architecture Specification
 
 ### [00-SYSTEM-CORE/](file:///c:/F-%20Drive/MYWORK-Research1/00-SYSTEM-CORE)
 **Reason**: Centralized intelligence and system governance.
-- `MRBLANK_RA-SYSTEM-SPECIFICATION.md`: This document. The definitive system manual.
+- `ResearchPilot-SYSTEM-SPECIFICATION.md`: This document. The definitive system manual.
 - `RESEARCHER-PROFILE.md`: Assistant memory and self-learning preferences.
 - `SYSTEM-PROTOCOLS.md`: Rigorous standards for search and extraction.
 - `MASTER-KNOWLEDGE-BASE.md`: High-level synthesis of all research.
@@ -42,8 +42,8 @@ Any external AI or future software reading this system should treat `00-SYSTEM-C
 ---
 
 ## Metadata
-**System**: AI Research Assistant (MRBLANK_RA) V5.2
+**System**: ResearchPilot V5.2
 **Copyright**: 2026 Mr. Blank Research. All rights reserved.
-**Owner**: MRBLANK
+**Owner**: ResearchPilot
 **Created**: May 2026
 **Last Updated**: June 2026

@@ -1,8 +1,8 @@
 @echo off
-title ERA Research Assistant
+title ResearchPilot
 echo.
 echo  ============================================================
-echo   ERA Research Assistant - Starting Server...
+echo   ResearchPilot - Starting Server...
 echo  ============================================================
 echo.
 

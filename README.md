@@ -1,4 +1,4 @@
-# MRBLANK_RA-Research-Assistant
+# ResearchPilot
 
 > **AI-native research infrastructure for PhDs and academics.**  
 > Ingest papers, extract insights via AI, search across 5 academic databases, visualise knowledge graphs, and write with RAG-powered chat — all self-hosted, all local-first.
@@ -7,7 +7,7 @@
 
 ##  Overview
 
-MRBLANK_RA is a self-hosted research assistant that connects to multiple AI backends (Ollama, Gemini, Claude, OpenRouter, etc.) and provides a complete workflow for academic research:
+ResearchPilot is a self-hosted research assistant that connects to multiple AI backends (Ollama, Gemini, Claude, OpenRouter, etc.) and provides a complete workflow for academic research:
 
 - **Ingest** any file (PDF, DOCX, PPTX, HTML, TXT, MD) — auto-converts to Markdown
 - **Extract** papers using the 12-point Elite Extraction Protocol via AI
@@ -45,7 +45,7 @@ MRBLANK_RA is a self-hosted research assistant that connects to multiple AI back
 
 ```bash
 # Clone or download
-cd MRBLANK_RA-Research-Assistant/web-app
+cd ResearchPilot/web-app
 
 # Install dependencies
 pip install -r requirements.txt
@@ -138,7 +138,7 @@ Chat with any enabled AI engine. Automatically injects relevant context from you
 ##  Project Structure
 
 ```
-MRBLANK_RA-Research-Assistant/
+ResearchPilot/
 ├── web-app/                          # FastAPI web application
 │   ├── main.py                       # Server + all API endpoints (~3100 lines)
 │   ├── requirements.txt              # Python dependencies
@@ -191,7 +191,7 @@ Accessible from the UI: **Settings →**
 
 I am a researcher and educator specialising in cybersecurity behaviour, organisational culture, and privacy mental models in Higher Education Institutions. My work bridges qualitative academic research and applied AI systems design.
 
-MRBLANK_RA was built as part of a broader effort to construct portable, AI-assisted research infrastructure — systems that reduce cognitive overhead, preserve research continuity, and support publication-quality output across long-term academic projects.
+ResearchPilot was built as part of a broader effort to construct portable, AI-assisted research infrastructure — systems that reduce cognitive overhead, preserve research continuity, and support publication-quality output across long-term academic projects.
 
 **Research Interests**
 Cybersecurity behaviour · Privacy mental models · Organisational culture · Protection Motivation Theory · AI-assisted academic workflows

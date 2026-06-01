@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>AI Research Assistant (MRBLANK_RA)</title>
+<title>ResearchPilot</title>
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <style>
 :root{
@@ -197,7 +197,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 
 <header>
   <button class="btn btn-s btn-g" onclick="toggleSidebar()" id="sb-toggle" title="Show/hide sidebar" style="padding:4px 8px;font-size:14px">☰</button>
-  <div class="logo"><div class="logo-i">📚</div>MRBLANK_RA Research Assistant <span class="badge" id="version-badge" style="margin-left:6px;font-size:9px;background:rgba(108,99,255,.15);color:var(--accent)">v0.0.0</span></div>
+  <div class="logo"><div class="logo-i">📚</div>ResearchPilot <span class="badge" id="version-badge" style="margin-left:6px;font-size:9px;background:rgba(108,99,255,.15);color:var(--accent)">v0.0.0</span></div>
   <div id="ai-status">
     <div class="engine-dot" id="ai-dot"></div>
     <span id="ai-name">Checking…</span>
@@ -281,13 +281,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="msgs" id="msgs">
         <div style="text-align:center;padding:48px 20px;color:var(--muted)">
           <div style="font-size:28px;margin-bottom:10px">🤖</div>
-          <div style="font-size:13px;font-weight:600;margin-bottom:6px">MRBLANK_RA is ready</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">ResearchPilot is ready</div>
           <div class="text-sm">Ask me to analyze papers, write reviews, extract 12-point data, or compare research findings.</div>
           <div class="text-sm mt12">Select a project to use your research library as context.</div>
         </div>
       </div>
       <div class="cin">
-        <textarea id="ci" placeholder="Ask MRBLANK_RA about your research…" rows="1"
+        <textarea id="ci" placeholder="Ask ResearchPilot about your research…" rows="1"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"
           oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
         <button class="btn btn-p" onclick="send()">↑</button>
@@ -464,7 +464,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
   <div class="ph"><h2>🔌 AI Plugin Engine</h2></div>
   <div class="pb" style="max-width:640px">
     <div class="section-title">Available Engine Types</div>
-    <div class="text-sm text-m mb12">MRBLANK_RA supports these AI engine types. Add new ones by installing Python plugins into <code>00-SYSTEM-CORE/plugins/</code>.</div>
+    <div class="text-sm text-m mb12">ResearchPilot supports these AI engine types. Add new ones by installing Python plugins into <code>00-SYSTEM-CORE/plugins/</code>.</div>
     <div id="plugins-list"></div>
     <hr class="separator">
     <div class="section-title">➡️ How to Add Claude</div>
@@ -474,7 +474,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     </div>
     <div class="card">
       <div class="card-t">🔐 Option 2: Claude Login (Plugin)</div>
-      <div class="card-s">If you have a paid Claude account, install the CLI: <code>pip install claude-cli</code> then run <code>claude login</code>. MRBLANK_RA will auto-detect it.</div>
+      <div class="card-s">If you have a paid Claude account, install the CLI: <code>pip install claude-cli</code> then run <code>claude login</code>. ResearchPilot will auto-detect it.</div>
     </div>
     <div class="card">
       <div class="card-t">📦 Option 3: Custom OpenAI-Compatible</div>
@@ -516,7 +516,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <span class="badge" id="obs-proj-count">Projects: —</span>
           <span class="badge" id="obs-chat-count">Chats: —</span>
         </div>
-        <div class="card-s mt12">Every file is a node. Every link between files creates an edge in the graph. Tags like <code>#MRBLANK_RA</code> <code>#research</code> <code>#chat</code> cluster related nodes.</div>
+        <div class="card-s mt12">Every file is a node. Every link between files creates an edge in the graph. Tags like <code>#ResearchPilot</code> <code>#research</code> <code>#chat</code> cluster related nodes.</div>
       </div>
     </div>
     <div class="card">
@@ -675,20 +675,20 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <!-- AI Engines -->
       <div id="ss-ai">
         <div class="section-title">🤖 AI Engines — Configure &amp; Enable</div>
-        <div class="text-sm text-m mb12">MRBLANK_RA tries engines top-to-bottom (by priority). First working one wins. You can have multiple enabled — it never stops.</div>
+        <div class="text-sm text-m mb12">ResearchPilot tries engines top-to-bottom (by priority). First working one wins. You can have multiple enabled — it never stops.</div>
         <div id="engines-list"></div>
         <button class="btn btn-p" onclick="saveEngines()">💾 Save AI Settings</button>
       </div>
 
       <!-- Skills -->
       <div id="ss-skills" style="display:none">
-        <div class="section-title">🎓 Skills — Teach MRBLANK_RA how to work</div>
-        <div class="text-sm text-m mb12">Skills are markdown files loaded into MRBLANK_RA's memory for every chat. Add your working style, citation rules, research preferences.</div>
+        <div class="section-title">🎓 Skills — Teach ResearchPilot how to work</div>
+        <div class="text-sm text-m mb12">Skills are markdown files loaded into ResearchPilot's memory for every chat. Add your working style, citation rules, research preferences.</div>
         <div id="skills-list"></div>
         <hr class="separator">
         <div class="section-title">+ Add New Skill</div>
         <div class="form-row"><label>Skill Name</label><input type="text" id="sk-name" class="w100" placeholder="e.g. APA-Citation-Style"></div>
-        <div class="form-row"><label>Skill Content (markdown)</label><textarea id="sk-content" class="w100" rows="6" placeholder="Write instructions MRBLANK_RA should always follow…"></textarea></div>
+        <div class="form-row"><label>Skill Content (markdown)</label><textarea id="sk-content" class="w100" rows="6" placeholder="Write instructions ResearchPilot should always follow…"></textarea></div>
         <button class="btn btn-p" onclick="saveSkill()">💾 Save Skill</button>
       </div>
 
@@ -772,7 +772,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <div class="form-row"><label>Auto-start on Windows login</label>
           <div class="flex gap8 items-c mt12">
             <div class="toggle" id="tog-autostart" onclick="this.classList.toggle('on')"></div>
-            <span class="text-sm text-m">Start MRBLANK_RA automatically when you log in (creates Windows scheduled task)</span>
+            <span class="text-sm text-m">Start ResearchPilot automatically when you log in (creates Windows scheduled task)</span>
           </div>
         </div>
         <hr class="separator">
@@ -855,7 +855,7 @@ async function boot(){
   setInterval(pollStatus,30000);
   populateYearSelects();
   loadVersion();
-  if(localStorage.getItem('mrblank-sb')==='1')document.getElementById('sidebar').classList.add('hidden');
+  if(localStorage.getItem('researchpilot-sb')==='1')document.getElementById('sidebar').classList.add('hidden');
 }
 
 function toggleSidebar(){
@@ -863,7 +863,7 @@ function toggleSidebar(){
   const b=document.getElementById('sb-collapse');
   sb.classList.toggle('hidden');
   b.textContent=sb.classList.contains('hidden')?'▶':'◀';
-  localStorage.setItem('mrblank-sb',sb.classList.contains('hidden')?'1':'0');
+  localStorage.setItem('researchpilot-sb',sb.classList.contains('hidden')?'1':'0');
 }
 
 function clock(){
@@ -1301,7 +1301,7 @@ async function openSession(id){
 
 function clearMsgs(){
   document.getElementById('msgs').innerHTML=
-    '<div style="text-align:center;padding:48px 20px;color:var(--muted)"><div style="font-size:28px;margin-bottom:10px">🤖</div><div class="text-sm">New chat started — ask MRBLANK_RA anything.</div></div>';
+    '<div style="text-align:center;padding:48px 20px;color:var(--muted)"><div style="font-size:28px;margin-bottom:10px">🤖</div><div class="text-sm">New chat started — ask ResearchPilot anything.</div></div>';
 }
 
 function appendMsg(role,content,engine,toolsUsed){

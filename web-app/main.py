@@ -1,5 +1,5 @@
 """
-MRBLANK_RA Research Assistant — v2.0
+ResearchPilot — v2.0
 Multi-AI backbone (never stops), universal file ingestion, settings from web UI,
 project management, skills system. All chats saved as .md for Obsidian.
 """
@@ -93,7 +93,7 @@ DEFAULT_SETTINGS = {
     ],
     "auto_extract_on_upload": True,
     "max_context_chars": 40000,
-    "system_name": "AI Research Assistant (MRBLANK_RA)",
+    "system_name": "ResearchPilot",
     "chats_folder": "99-SYSTEM-BACKEND/chats",
     "skills_folder": "00-SYSTEM-CORE/skills",
     "auto_start": False
@@ -112,14 +112,14 @@ def save_settings(data: dict):
     SETTINGS_F.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
 # ─── Tool Definitions (for local AI file access) ──────────────────────────────
-# These let the AI read/search/list any file in the MRBLANK_RA system on demand.
+# These let the AI read/search/list any file in the ResearchPilot system on demand.
 
-MRBLANK_RA_TOOLS = [
+ResearchPilot_TOOLS = [
     {
         "type": "function",
         "function": {
             "name": "read_file",
-            "description": "Read the full content of any file in the MRBLANK_RA research system. Path is relative to the MRBLANK_RA root.",
+            "description": "Read the full content of any file in the ResearchPilot research system. Path is relative to the ResearchPilot root.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -133,7 +133,7 @@ MRBLANK_RA_TOOLS = [
         "type": "function",
         "function": {
             "name": "search_files",
-            "description": "Search across all files in the MRBLANK_RA system for matching text (case-insensitive). Returns matching files and snippets.",
+            "description": "Search across all files in the ResearchPilot system for matching text (case-insensitive). Returns matching files and snippets.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -148,11 +148,11 @@ MRBLANK_RA_TOOLS = [
         "type": "function",
         "function": {
             "name": "list_directory",
-            "description": "List files and subdirectories in any MRBLANK_RA directory.",
+            "description": "List files and subdirectories in any ResearchPilot directory.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "path": {"type": "string", "description": "Relative path from MRBLANK_RA root, e.g. '01-PROJECTS/P1-HEI-CULTURE' or '00-SYSTEM-CORE'"}
+                    "path": {"type": "string", "description": "Relative path from ResearchPilot root, e.g. '01-PROJECTS/P1-HEI-CULTURE' or '00-SYSTEM-CORE'"}
                 },
                 "required": ["path"]
             }
@@ -219,7 +219,7 @@ MRBLANK_RA_TOOLS = [
         "type": "function",
         "function": {
             "name": "get_system_structure",
-            "description": "Get the full MRBLANK_RA folder structure overview."
+            "description": "Get the full ResearchPilot folder structure overview."
         }
     },
     {
@@ -230,7 +230,7 @@ MRBLANK_RA_TOOLS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "filename": {"type": "string", "description": "Filename like 'SYSTEM-PROTOCOLS.md', 'MRBLANK_RA-SYSTEM-SPECIFICATION.md', 'GLOBAL-CONNECTIONS.md', 'PUBLISHING-ROADMAP.md'"}
+                    "filename": {"type": "string", "description": "Filename like 'SYSTEM-PROTOCOLS.md', 'ResearchPilot-SYSTEM-SPECIFICATION.md', 'GLOBAL-CONNECTIONS.md', 'PUBLISHING-ROADMAP.md'"}
                 },
                 "required": ["filename"]
             }
@@ -239,10 +239,10 @@ MRBLANK_RA_TOOLS = [
 ]
 
 def resolve_era_path(relative_path: str) -> Path:
-    """Resolve a relative path safely within the MRBLANK_RA BASE directory."""
+    """Resolve a relative path safely within the ResearchPilot BASE directory."""
     full = (BASE / relative_path).resolve()
     if not str(full).startswith(str(BASE.resolve())):
-        raise PermissionError(f"Access denied: path escapes MRBLANK_RA root: {relative_path}")
+        raise PermissionError(f"Access denied: path escapes ResearchPilot root: {relative_path}")
     return full
 
 def safe_project_path(project: str, subfolder: str, filename: str) -> Path:
@@ -402,7 +402,7 @@ async def execute_tool(name: str, args: dict) -> dict:
 # then injects it into the prompt so any AI engine can use it.
 
 def retrieve_relevant_context(query: str, project: str = None, max_chars: int = 25000) -> str:
-    """Search all MRBLANK_RA files for content relevant to the query. Returns formatted context block."""
+    """Search all ResearchPilot files for content relevant to the query. Returns formatted context block."""
     query_lower = query.lower()
     query_words = [w for w in query_lower.split() if len(w) > 3]
     if not query_words:
@@ -523,11 +523,11 @@ def retrieve_relevant_context(query: str, project: str = None, max_chars: int = 
     return "\n\n---\n## RELEVANT RESEARCH CONTENT (from project files)\n\n" + "\n\n".join(context_sections) + "\n\n---\n"
 
 # ─── System prompt ────────────────────────────────────────────────────────────
-MRBLANK_RA_SYSTEM = """You are MRBLANK_RA — AI Research Assistant v2.0.
+ResearchPilot_SYSTEM = """You are ResearchPilot — v2.0.
 You have FULL ACCESS to the user's research files via built-in tools.
 
 AVAILABLE TOOLS (call them whenever you need file data):
-- read_file(path): Read ANY file in the research system. Path is relative to MRBLANK_RA root.
+- read_file(path): Read ANY file in the research system. Path is relative to ResearchPilot root.
 - search_files(query): Search all files for matching text.
 - list_directory(path): List files in any directory.
 - get_project_list(): List all research projects with stats.
@@ -535,7 +535,7 @@ AVAILABLE TOOLS (call them whenever you need file data):
 - read_extractions_list(project): List extraction files for a project.
 - read_extraction(project, filename): Read a specific 12-point extraction.
 - read_project_manifest(project): Read a project's manifest (goals, status).
-- get_system_structure(): Get the full MRBLANK_RA folder structure.
+- get_system_structure(): Get the full ResearchPilot folder structure.
 - read_system_core(filename): Read any system file (protocols, specs, etc.).
 
 IMPORTANT: Use these tools proactively to answer questions. Do NOT guess — read the actual files.
@@ -550,7 +550,7 @@ STRUCTURE: 00-SYSTEM-CORE/ | 01-PROJECTS/ | 99-SYSTEM-BACKEND/chats/"""
 def build_rag_prompt(query: str, project: str = None, skills: list = None) -> str:
     """Build a RAG-enhanced system prompt with relevant file content for the query."""
     # Base instructions
-    prompt = MRBLANK_RA_SYSTEM
+    prompt = ResearchPilot_SYSTEM
     if skills:
         for sk in skills:
             sf = SKILLS_DIR / sk
@@ -561,7 +561,7 @@ def build_rag_prompt(query: str, project: str = None, skills: list = None) -> st
     if context:
         prompt += context
     # Add project structure info
-    prompt += "\n\n## MRBLANK_RA FOLDER STRUCTURE\n- 00-SYSTEM-CORE/: System files, protocols, master knowledge base\n- 01-PROJECTS/[PROJECT]/01-LIBRARY/: Paper PDFs and converted markdown\n- 01-PROJECTS/[PROJECT]/02-EXTRACTIONS/: 12-point paper extractions\n- 01-PROJECTS/[PROJECT]/99-META/: Project manifests, connections, notes"
+    prompt += "\n\n## ResearchPilot FOLDER STRUCTURE\n- 00-SYSTEM-CORE/: System files, protocols, master knowledge base\n- 01-PROJECTS/[PROJECT]/01-LIBRARY/: Paper PDFs and converted markdown\n- 01-PROJECTS/[PROJECT]/02-EXTRACTIONS/: 12-point paper extractions\n- 01-PROJECTS/[PROJECT]/99-META/: Project manifests, connections, notes"
     return prompt
 
 # ─── Multi-AI Router ──────────────────────────────────────────────────────────
@@ -602,7 +602,7 @@ async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
 
             # Send tool definitions on first request
             if iteration == 0:
-                payload["tools"] = MRBLANK_RA_TOOLS
+                payload["tools"] = ResearchPilot_TOOLS
 
             r = await c.post(f"{engine['url']}/api/chat", json=payload, timeout=180.0)
             data = r.json()
@@ -639,8 +639,8 @@ async def _try_openai_compat(engine: dict, messages: list) -> tuple[str, list]:
         headers["Authorization"] = f"Bearer {engine['api_key']}"
     # Add OpenRouter identity headers if using OpenRouter
     if "openrouter" in engine.get("url", "").lower():
-        headers["HTTP-Referer"] = "https://github.com/MRBLANK-RA"
-        headers["X-Title"] = "MRBLANK_RA Research Assistant"
+        headers["HTTP-Referer"] = "https://github.com/ResearchPilot"
+        headers["X-Title"] = "ResearchPilot"
 
     tool_uses = []
     async with httpx.AsyncClient(timeout=300.0) as c:
@@ -651,7 +651,7 @@ async def _try_openai_compat(engine: dict, messages: list) -> tuple[str, list]:
                 "max_tokens": 8192,
             }
             if iteration == 0:
-                payload["tools"] = MRBLANK_RA_TOOLS
+                payload["tools"] = ResearchPilot_TOOLS
 
             r = await c.post(
                 f"{engine['url']}/chat/completions",
@@ -718,7 +718,7 @@ async def _try_anthropic(engine: dict, messages: list) -> tuple[str, list]:
     key = engine.get("api_key", "") or os.getenv("ANTHROPIC_API_KEY", "")
     if not key:
         raise Exception("No Anthropic API key")
-    system_text = next((m["content"] for m in messages if m["role"] == "system"), MRBLANK_RA_SYSTEM)
+    system_text = next((m["content"] for m in messages if m["role"] == "system"), ResearchPilot_SYSTEM)
     chat_msgs = [m for m in messages if m["role"] != "system"]
     headers = {"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
     payload = {"model": engine["model"], "max_tokens": 8192, "system": system_text, "messages": chat_msgs}
@@ -733,7 +733,7 @@ async def _try_claude_plugin(engine: dict, messages: list) -> tuple[str, list]:
     # Try Claude Code CLI first (requires `claude` installed and logged in)
     try:
         import subprocess
-        system_text = next((m["content"] for m in messages if m["role"] == "system"), MRBLANK_RA_SYSTEM)
+        system_text = next((m["content"] for m in messages if m["role"] == "system"), ResearchPilot_SYSTEM)
         chat_msgs = [m for m in messages if m["role"] != "system"]
         user_msg = next((m["content"] for m in reversed(chat_msgs) if m["role"] == "user"), "")
         prompt = f"{system_text}\n\nUser: {user_msg}"
@@ -753,7 +753,7 @@ async def _try_claude_plugin(engine: dict, messages: list) -> tuple[str, list]:
             if not key:
                 raise Exception("No Anthropic API key")
             client = _anthropic.Anthropic(api_key=key)
-            system_text = next((m["content"] for m in messages if m["role"] == "system"), MRBLANK_RA_SYSTEM)
+            system_text = next((m["content"] for m in messages if m["role"] == "system"), ResearchPilot_SYSTEM)
             chat_msgs = [m for m in messages if m["role"] != "system"]
             api_msgs = []
             for m in chat_msgs:
@@ -812,7 +812,7 @@ async def ai_respond(messages: list, project: str = None, skills: list = None) -
 
     if errors:
         return (
-            f"⚠️ MRBLANK_RA could not reach any AI engine. Tried:\n" +
+            f"⚠️ ResearchPilot could not reach any AI engine. Tried:\n" +
             "\n".join(f"  • {e}" for e in errors) +
             "\n\n**To fix:** Go to ⚙️ Settings → AI Engines and enable/configure at least one engine.",
             "none",
@@ -913,7 +913,7 @@ def load_chat_messages(session_id: str) -> list:
             if cur_role:
                 messages.append({"role": cur_role, "content": "\n".join(cur_lines).strip()})
             cur_role, cur_lines = "user", []
-        elif line.startswith("### 🤖 ERA") or line.startswith("### 🤖 AI Research Assistant"):
+        elif line.startswith("### 🤖 ERA") or line.startswith("### 🤖 AI Research Assistant") or line.startswith("### 🤖 ResearchPilot"):
             if cur_role:
                 messages.append({"role": cur_role, "content": "\n".join(cur_lines).strip()})
             cur_role, cur_lines = "assistant", []
@@ -927,19 +927,19 @@ def append_to_chat(session_id: str, role: str, content: str, engine: str = "", p
     p = chat_path(session_id)
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if not p.exists():
-        tags = "#MRBLANK_RA #research #chat"
+        tags = "#ResearchPilot #research #chat"
         proj_line = ""
         if project:
             tags += f" #{project}"
             proj_line = f"*Project: {project}*\n"
         p.write_text(
-            f"# MRBLANK_RA Chat: {session_id}\n"
+            f"# ResearchPilot Chat: {session_id}\n"
             f"*Started: {ts}*\n"
             f"{proj_line}"
             f"Tags: {tags}\n\n---\n\n",
             encoding="utf-8"
         )
-    icon = "👤 You" if role == "user" else f"🤖 MRBLANK_RA ({engine})"
+    icon = "👤 You" if role == "user" else f"🤖 ResearchPilot ({engine})"
     with open(p, "a", encoding="utf-8") as f:
         f.write(f"\n### {icon}\n*{ts}*\n\n{content}\n\n---\n")
 
@@ -949,7 +949,7 @@ def extract_pdf_text(path: Path, max_chars: int = 40000) -> str:
     return text[:max_chars]
 
 # ─── FastAPI App ──────────────────────────────────────────────────────────────
-app = FastAPI(title="AI Research Assistant (MRBLANK_RA)", version="2.0")
+app = FastAPI(title="ResearchPilot", version="2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
@@ -1079,14 +1079,14 @@ async def toggle_auto_start(request: Request):
         if enabled:
             bat_path = str(BASE / "start-research.bat")
             r = subprocess.run(
-                ["schtasks", "/create", "/tn", "MRBLANK_RA-ResearchAssistant",
+                ["schtasks", "/create", "/tn", "ResearchPilot-ResearchAssistant",
                  "/tr", bat_path, "/sc", "ONLOGON", "/ru", os.environ.get("USERNAME", ""), "/f"],
                 capture_output=True, text=True, timeout=10
             )
             ok = r.returncode == 0
         else:
             r = subprocess.run(
-                ["schtasks", "/delete", "/tn", "MRBLANK_RA-ResearchAssistant", "/f"],
+                ["schtasks", "/delete", "/tn", "ResearchPilot-ResearchAssistant", "/f"],
                 capture_output=True, text=True, timeout=10
             )
             ok = r.returncode == 0
@@ -1103,14 +1103,14 @@ async def get_auto_start():
     import subprocess
     try:
         r = subprocess.run(
-            ["schtasks", "/query", "/tn", "MRBLANK_RA-ResearchAssistant", "/fo", "LIST"],
+            ["schtasks", "/query", "/tn", "ResearchPilot-ResearchAssistant", "/fo", "LIST"],
             capture_output=True, text=True, timeout=5
         )
         exists = r.returncode == 0
     except Exception:
         exists = False
     # Also check Startup folder shortcut
-    startup_shortcut = Path(os.environ.get("APPDATA", "")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup" / "MRBLANK_RA-ResearchAssistant.lnk"
+    startup_shortcut = Path(os.environ.get("APPDATA", "")) / "Microsoft" / "Windows" / "Start Menu" / "Programs" / "Startup" / "ResearchPilot-ResearchAssistant.lnk"
     shortcut_exists = startup_shortcut.exists()
     cfg = load_settings()
     enabled = cfg.get("auto_start", False)
@@ -1730,7 +1730,7 @@ async def clear_chat(session_id: str):
     archive_path.write_text(
         f"# Archived Chat: {session_id}\n"
         f"*Archived: {ts}*\n"
-        f"Tags: #MRBLANK_RA #research #chat #archived\n\n---\n\n"
+        f"Tags: #ResearchPilot #research #chat #archived\n\n---\n\n"
         f"{content}\n",
         encoding="utf-8"
     )
@@ -1780,7 +1780,7 @@ async def api_list_tools():
     """List all available tools with descriptions."""
     return {"tools": [
         {"name": t["function"]["name"], "description": t["function"]["description"]}
-        for t in MRBLANK_RA_TOOLS
+        for t in ResearchPilot_TOOLS
     ]}
 
 # ── Knowledge Base ──
@@ -2147,7 +2147,7 @@ async def get_graph_data(filter: str = "all"):
 async def get_graph_file(rel_path: str = ""):
     if not rel_path: raise HTTPException(400, "Missing rel_path param")
     fp = BASE / rel_path
-    if not fp.exists() or not str(fp.resolve()).startswith(str(BASE.resolve())): raise HTTPException(404, "File not found or outside MRBLANK_RA root")
+    if not fp.exists() or not str(fp.resolve()).startswith(str(BASE.resolve())): raise HTTPException(404, "File not found or outside ResearchPilot root")
     return {"content": fp.read_text(encoding="utf-8", errors="replace"), "path": rel_path, "ext": fp.suffix}
 
 @app.post("/api/graph/refresh")
@@ -2249,7 +2249,7 @@ async def scan_keywords():
     word_counter = Counter()
     file_words = {}
     stopwords = {"the","this","that","with","from","for","and","not","are","was","were","has","have","had","but","its","all","can","each","which","their","they","will","would","could","should","about","also","more","than","into","over","such","only","other","than","then","these","those","what","when","where","there","been","being","some","them","very","just","after","before","because","between","both","under","above","while","file","files","data","research","study","paper","analysis","based","using","used","also","well"}
-    special_terms = {"q1","q2","q3","q4","scopus","wos","mrblank_ra","heis","p1","p2","ai","nlp","rag","llm","lstm","cnn","rnn","bert","gpt","tfidf","svm","kmeans","pca","hei","culture","publication","extraction","methodology","qualitative","quantitative","mixed","theoretical","framework","limitations","contribution"}
+    special_terms = {"q1","q2","q3","q4","scopus","wos","researchpilot","heis","p1","p2","ai","nlp","rag","llm","lstm","cnn","rnn","bert","gpt","tfidf","svm","kmeans","pca","hei","culture","publication","extraction","methodology","qualitative","quantitative","mixed","theoretical","framework","limitations","contribution"}
     for f in BASE.rglob("*.md"):
         try:
             txt = f.read_text(encoding="utf-8", errors="ignore").lower()
@@ -2411,7 +2411,7 @@ async def _search_openalex(q: str, year_from: str, year_to: str, max_results: in
             filters.append(f"to_publication_date:{year_to}-12-31")
         if filters:
             params["filter"] = ",".join(filters)
-        headers = {"User-Agent": "MRBLANK_RA-ResearchAssistant/2.0 (mailto:research@mrblank.local)"}
+        headers = {"User-Agent": "ResearchPilot-ResearchAssistant/2.0 (mailto:research@researchpilot.local)"}
         async with httpx.AsyncClient(timeout=15.0) as c:
             r = await c.get("https://api.openalex.org/works", params=params, headers=headers)
             if r.status_code != 200:
@@ -2536,7 +2536,7 @@ async def _search_arxiv(q: str, year_from: str, year_to: str, max_results: int) 
             query_parts.append(f"submittedDate:[19000101 TO {year_to}1231]")
         query_str = "+AND+".join(query_parts)
         url = f"https://export.arxiv.org/api/query?search_query={query_str}&start=0&max_results={max_results}&sortBy=submittedDate&sortOrder=descending"
-        headers = {"User-Agent": "MRBLANK_RA-ResearchAssistant/2.0"}
+        headers = {"User-Agent": "ResearchPilot-ResearchAssistant/2.0"}
         async with httpx.AsyncClient(timeout=20.0) as c:
             r = await c.get(url, headers=headers)
             if r.status_code != 200:
@@ -2603,7 +2603,7 @@ async def _search_pubmed(q: str, year_from: str, year_to: str, max_results: int)
             query_parts.append(f'("1900"[Date - Publication] : "{year_to}"[Date - Publication])')
         query_str = "+AND+".join(query_parts).replace(' ', '+')
         search_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term={query_str}&retmax={max_results}&retmode=json"
-        headers = {"User-Agent": "MRBLANK_RA-ResearchAssistant/2.0"}
+        headers = {"User-Agent": "ResearchPilot-ResearchAssistant/2.0"}
         async with httpx.AsyncClient(timeout=15.0) as c:
             r = await c.get(search_url, headers=headers)
             if r.status_code != 200:
@@ -2791,7 +2791,7 @@ async def research_web_import(request: Request):
         ]:
             try:
                 async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as c:
-                    r = await c.get(try_url, headers={"User-Agent": "MRBLANK_RA/2.0"})
+                    r = await c.get(try_url, headers={"User-Agent": "ResearchPilot/2.0"})
                     if r.status_code == 200:
                         ct = r.headers.get("content-type", "").lower()
                         if "application/pdf" in ct or "application/octet-stream" in ct:
@@ -3058,7 +3058,7 @@ async def research_download_pdf(request: Request):
     if oa_url:
         try:
             async with httpx.AsyncClient(timeout=45.0, follow_redirects=True) as c:
-                r = await c.get(oa_url, headers={"User-Agent": "MRBLANK_RA-ResearchAssistant/2.0"})
+                r = await c.get(oa_url, headers={"User-Agent": "ResearchPilot-ResearchAssistant/2.0"})
                 if r.status_code == 200:
                     ct = r.headers.get("content-type", "").lower()
                     if "application/pdf" in ct or "application/octet-stream" in ct or not ct:

@@ -1,4 +1,4 @@
-"""Test ERA tools - direct test of tool execution and Ollama tool calling.
+"""Test ResearchPilot tools - direct test of tool execution and Ollama tool calling.
 Fails fast after 2-3 attempts max."""
 import os, json, sys
 os.environ["PORT"] = "8001"
@@ -10,7 +10,7 @@ import main
 import httpx
 import asyncio
 
-ERA_TOOLS = main.ERA_TOOLS
+ResearchPilot_TOOLS = main.ResearchPilot_TOOLS
 execute_tool = main.execute_tool
 
 async def test_direct_tool():
@@ -31,7 +31,7 @@ async def test_direct_tool():
     print()
 
     print("=== Test: read_file ===")
-    result = await execute_tool("read_file", {"path": "00-SYSTEM-CORE/MRBLANK_RA-SYSTEM-SPECIFICATION.md"})
+    result = await execute_tool("read_file", {"path": "00-SYSTEM-CORE/ResearchPilot-SYSTEM-SPECIFICATION.md"})
     print(f"Content length: {len(result.get('content',''))} chars")
     print()
 
@@ -47,14 +47,14 @@ async def test_ollama_tool_call():
 
         model = "qwen2.5:3b"
         messages = [
-            {"role": "system", "content": main.ERA_SYSTEM},
+            {"role": "system", "content": main.ResearchPilot_SYSTEM},
             {"role": "user", "content": "What projects do I have? Use the get_project_list tool."}
         ]
 
         payload = {
             "model": model,
             "messages": messages,
-            "tools": ERA_TOOLS,
+            "tools": ResearchPilot_TOOLS,
             "stream": False,
             "options": {"num_ctx": 32768}
         }
@@ -95,7 +95,7 @@ async def test_full_cycle():
     async with httpx.AsyncClient(timeout=120.0) as c:
         model = "qwen2.5:3b"
         messages = [
-            {"role": "system", "content": main.ERA_SYSTEM},
+            {"role": "system", "content": main.ResearchPilot_SYSTEM},
             {"role": "user", "content": "What projects do I have? Use get_project_list."}
         ]
 
@@ -110,7 +110,7 @@ async def test_full_cycle():
                 "options": {"num_ctx": 32768}
             }
             if iteration == 0:
-                payload["tools"] = ERA_TOOLS
+                payload["tools"] = ResearchPilot_TOOLS
 
             r = await c.post("http://localhost:11434/api/chat", json=payload, timeout=180.0)
             data = r.json()

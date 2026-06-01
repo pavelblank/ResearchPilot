@@ -1,4 +1,4 @@
-# AI Research Assistant (MRBLANK_RA) — Web System
+# ResearchPilot — Web System
 
 ## Access
 Open any browser on your network:
