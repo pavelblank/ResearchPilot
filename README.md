@@ -107,8 +107,8 @@ Search across 5 sources simultaneously:
 - **OpenAlex** — 250M+ works
 - **Crossref** — scholarly publishing metadata
 - **Semantic Scholar** — AI-powered paper discovery
-- **ArXiv** — pre-prints
 - **PubMed** — biomedical literature
+- **Google Scholar** — broad academic search (via scholarly)
 
 With automatic predatory journal filtering, PDF download, and 12-point AI analysis.
 
