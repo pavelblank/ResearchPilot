@@ -1,0 +1,9 @@
+{
+  "versions": [
+    {
+      "date": "2026-06-01",
+      "version": "v5.2.1",
+      "description": "Initial build - Author section, changelog, multi-layer graph filters"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+# Environment / secrets
+.env
+web-app/.env
+99-SYSTEM-BACKEND/settings.json
+99-SYSTEM-BACKEND/plugins/*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+
+# OS
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# Obsidian
+.obsidian/
+.claude/
+.tmp.driveupload/
+
+# Temp / logs
+*.tmp
+*.log
+99-SYSTEM-BACKEND/chats/*.md
+graphify-out/
+
+# VS Code
+.vscode/

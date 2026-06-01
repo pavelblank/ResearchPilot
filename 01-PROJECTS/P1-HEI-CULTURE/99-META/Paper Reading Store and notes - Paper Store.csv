@@ -1,0 +1,486 @@
+,,1,2,3,4,5,6,7,8,9,10,
+,Title, Building trust in workplace information systems: a four-company study,"Decision-Making in Complex Systems Using AI-Based Decision Support: The Role of Trust, Transparency, and Data Quality",The effect of organizational cyber resilience on cyber incident outcomes,"Artificial intelligence in the workplace – challenges, opportunities and HRM framework: a critical review and research agenda for change ",From Fear to Act: Enhancing Older Adults’ Cybersecurity Practices by Elderly-Oriented Fear Appeal Messages Design,"Bridging Policy and Practice: Integrated Model for Investigating Behavioral Influences on Information Security Policy Compliance
+","Title: The Role of Institutional and Self in the Formation of Trust in Artificial Intelligence Technologies
+",Title: Relationship Between Trust in the AI Creator and Trust in AI Systems: The Crucial Role of AI Alignment and Steerability,"The critical success factors for Security Education, Training and Awareness (SETA) program effectiveness: a lifecycle model",A Comprehensive Diagnostic Framework for Evaluating Business Intelligence and Analytics Effectiveness
+Paper Identity,"Journal (check quality, Q1–Q3 if possible)",Behaviour & Information Technology,Electronics ; MDPI; ," Journal of Cybersecurity",Journal of Managerial Psychology ,Information Technology & People ,Systems,Emerald Publishing,"Journal of Management Information Systems
+",Information Technology & People,Australasian Journal of Information Systems
+,Year,2026,2026,2026,2025,2025,2025,2024,2024,2023,2015,
+,"Domain focus: (e.g., cybersecurity behaviour, organisational culture, AI, etc.)","Information systems (IS) adoption, employee trust, and human-technology interaction in organizational settings","Artificial Intelligence-based Decision Support Systems (AI-DSS), organizational decision-making, and technology adoption",Organizational cyber resilience and its impact on the occurrence and outcomes of cyber incidents,"Artificial Intelligence (AI) adoption in organizations, Human Resource Management (HRM), managerial psychology, and socio-technical change processes","Cybersecurity behaviour of older adults, fear appeal design, and human–computer interaction",Domain focus: Behavioural cybersecurity and Information Security Policy (ISP) compliance,Trust in Artificial Intelligence (AI-tech) within the travel and tourism industry.,"DOI: 10.1080/07421222.2024.2376382
+Journal quality: Not verified
+Domain focus: AI trust, trust transference theory, and AI alignment","DOI: 10.1108/ITP-07-2022-0515
+
+Domain Focus: Cybersecurity; SETA program effectiveness; Employee behavioral change.",Business Intelligence and Analytics (BIA), diagnostic framework, maturity models, organizational capability assessment
+Core Purpose of the Paper,"State in 2–3 sentences only:
+
+What is this paper actually about?
+What phenomenon is being studied?
+At what level? (individual, organisational, or both)","The study examines the antecedents and outcomes of employee trust during the introduction of new information systems in four different companies
+. It specifically investigates how personal factors, system properties, and organisational support structures influence the development of trust over time.
+
+What phenomenon is studied? The paper studies trust trajectories (the dynamic change of trust levels over time) and the relationships between trust and work-related outcomes like performance, cognitive resources, and strain. ; Both individual (employee perceptions and well-being) and organisational (implementation strategies and company-wide system success)","What is the paper about? The study develops and validates an integrated conceptual model exploring how trust in AI-DSS, data transparency, data quality, perceived usefulness, and ease of use influence the intention to adopt these systems and subsequent decision-making efficiency
+.
+What phenomenon is studied? The adoption of AI-DSS in complex organizational environments and the psychological/technological mechanisms that enable effective human-AI interaction.
+
+Level: Both individual (user perceptions and behavioral intentions) and organizational (decision-making efficiency)
+","What is the paper about? The study investigates the relationship between organizational cyber resilience and the outcomes of cyber incidents, seeking empirical evidence to support the intuitive belief that resilience mitigates such events.
+What phenomenon is studied? The phenomenon studied is the inverse relationship between cyber resilience maturity and cyber incident occurrence/severity, specifically looking at dimensions like prevention, education, and strategy
+Level: Organisational
+","The paper is a systematic literature review that critically examines the deployment of AI systems in workplaces to address underperformance. It highlights both opportunities (e.g., enhanced performance and collaborative intelligence) and challenges (e.g., surveillance, job insecurity, and reduced well-being), while developing an HRM framework to guide effective human-AI collaboration.
+
+The study explores the paradoxical (homogenous vs. non-homogenous) impacts of AI on individuals, teams, and organizations, emphasizing how managerial capabilities influence outcomes in changing work environments.","The study examined how elderly-oriented fear appeal messages influence cybersecurity behaviours among older adults. It evaluated the effectiveness of tailored message cues in promoting security policy compliance and knowledge sharing.
+
+The phenomenon studied was the processing of fear appeals, focusing on Family Risk Involvement (FRI) and self-stigma perception.
+
+Level: Individual","The paper developed and validated an integrated conceptual model to identify cognitive, motivational, and behavioural factors influencing employees’ ISP compliance. It examined how theoretical drivers shape both intention formation and actual security behaviour.
+
+The phenomenon studied was employee compliance behaviour, including intention development and its translation into secure practices.
+
+Level: Both individual and organisational","The study proposed and tested a framework explaining how individual and institutional factors shape trust in mandated AI technologies. It examined how trust develops when technology use is compulsory.
+
+The phenomenon studied was trust formation under mandated AI adoption, particularly in surveillance and crisis-driven contexts.
+
+Level: Both individual and organisational","The study examined how trust in an AI creator transfers to trust in the AI system and how alignment-related attributes influence this relationship. It focused on understanding whose goals an AI system follows.
+
+The phenomenon studied was trust transference from AI creator to AI agent and how this relationship changes under varying levels of autonomy and steerability.
+
+Level: Individual","What is the paper about? The study explores the Critical Success Factors (CSFs) required for SETA programs to be effective. It maps these factors against a four-phase lifecycle: Design, Development, Implementation, and Evaluation.
+
+Phenomenon Studied: The process of developing and sustaining a SETA program that successfully shifts employee security beliefs and behaviors.
+
+Level of Analysis: Organizational.",
+Problem Statement,"What problem do the authors claim exists?
+Why is it important?","What problem do authors identify? The authors identify that simply introducing an information system does not guarantee its intended use; many introductions fail because employees resort to workarounds or resist the system
+.
+Why is it important? Failed adoption leads to significant financial losses, reputational damage, reduced productivity, and negative impacts on employee commitment and job satisfaction
+. Trust is essential for users to accept the risks and vulnerabilities inherent in surrendering control to technology","What problem do authors identify? Organisations operating as complex systems face strategic decision challenges due to uncertainty, data heterogeneity, and bounded rationality
+. Furthermore, the ""black box"" nature of AI algorithms limits user understanding and trust, leading to reluctance in adoption
+.
+Why is it important? Decisions are critical managerial functions; failed integration of AI support can lead to risks, inefficiencies, and an inability to navigate volatile economic environments","What problem do authors identify? Despite the rapid shift to digitalisation and increased cyber risk, approaches to protect organisations are lagging, and there is a lack of empirical evidence showing that resilience maturity actually manages cyber incidents.
+Why is it important? Cyber incidents can severely damage an organisation's ability to operate, lead to regulatory fines, cause long-term reputational damage, and ultimately threaten the long-term viability of the firm
+","The authors identify that despite advanced AI tools, organizations and managers still struggle to resolve chronic underperformance and deeply ingrained cultural issues. Scholarship remains polarized, with dominant positive narratives overlooking negative effects.  
+
+This is important because misaligned AI implementation can cause unintended consequences such as decreased job satisfaction, feelings of constant surveillance, employee disengagement, and a sense of organizational meaninglessness, ultimately undermining transformation efforts and long-term performance.","The authors identified that older adults face increasing cybersecurity risks but often lack the knowledge and confidence to adopt protective behaviours. Existing training resources fail to address their cognitive and social needs.
+
+This is important because this demographic is disproportionately targeted by cybercrime, leading to financial and personal harm.","The authors identified that cybersecurity threats increasingly originate from human actions, with insider threats remaining a major vulnerability. Formal policies are insufficient, as a single careless action can cause substantial organisational harm.
+
+This is important because human-involved breaches account for approximately 74% of incidents, leading to financial loss, reputational damage, and reduced productivity.","The authors identified that widespread AI adoption raises concerns about transparency, privacy, and technical reliability. Mandatory usage may reduce user autonomy and create distrust.
+
+This is important because trust is essential for technology adoption. A lack of trust leads to resistance and failure of institutional initiatives.","The authors identified that organisations increasingly deploy AI systems despite low public trust in technology creators. The opaque nature of AI creates alignment concerns regarding human values and goals.
+
+This is important because trust directly determines user reliance, system adoption, and organisational performance outcomes.","The Problem: Despite high investment, most SETA programs fail to change behavior. Human error remains the cause of ~70% of security incidents, leading to massive financial and reputational damage.
+
+",
+Research Gap,"What is missing in existing literature?
+What do prior studies fail to explain?","What is missing in prior research? Prior research lacked a deep understanding of the temporal dynamics of trust in real-world scenarios and how trust develops over extended periods after a system launch
+.
+What is not explained? The relative importance of different trust antecedents (person factors vs. system factors vs. context factors) at different stages of the system adoption phase was not well explained","What is missing in prior research? Most studies analyse AI-DSS from a strictly technological perspective (algorithm performance), giving only marginal attention to the psychological and organisational dimensions of human-system interaction
+.
+What is not explained? Emerging concepts like transparency and data quality are often discussed piecemeal rather than integrated into a coherent theoretical framework that explains their role in the adoption process, particularly within the Romanian context
+.","What is missing in prior research? There is a significant gap in empirical research regarding how cyber resilience actually relates to and benefits organisations during cyber incidents.
+What is not explained? It is not explained why resilience investment remains low despite high risks, nor has it been conclusively demonstrated how various dimensions of resilience interact with post-incident outcomes.","Prior research lacks an integrated theoretical HRM framework that guides practitioners and scholars on the managerial and strategic capabilities required for successful human-AI collaboration, particularly when addressing underperformance.  
+
+The divergent, non-homogenous impacts of AI on employee well-being, job security, and organizational culture have been under-theorized compared to optimistic, management-centric views.","Prior research had not implemented fear appeal interventions specifically designed for older adults.
+
+It remained unclear which message characteristics effectively influence their behaviour, particularly the roles of family involvement and perceived stigma.","Prior research lacked detailed examination of psychological and behavioural drivers of non-compliance, especially unintentional behaviour.
+
+Existing studies rarely explain automatic responses or measure actual behaviour, focusing mainly on intention or technological controls.","Prior research on trust in AI is limited, particularly regarding stakeholder vulnerabilities and policy implications.
+
+Existing studies do not sufficiently explain trust formation in mandatory adoption contexts or its effects in the tourism sector.","Prior research adopted a limited dyadic perspective, neglecting the triadic relationship between user, creator, and AI system.
+
+Existing studies did not address how alignment conflicts or AI attributes affect trust transfer mechanisms.","The Gap: Prior research is fragmented, usually focusing on only one phase (e.g., just delivery). There is a lack of a comprehensive, practice-grounded model covering the entire lifecycle from design to evaluation.",
+Theoretical Foundation,"Identify:
+
+Which theories are used? (e.g., PMT, TPB, Schein)
+How are they used? (testing, extension, or framing only)
+
+Also assess:
+
+Is the theory deeply integrated or superficial?","Which theories are used? The paper draws on theoretical frameworks of trust as a dynamic construct (e.g., Rousseau et al., 1998; Söllner & Pavlou, 2016), the Job Demands-Resources Model (for strain), and established models of human-technology trust (e.g., McKnight et al., 2011)
+.
+How used: framing, testing, extension? The authors use these theories for framing the concept of trust and testing whether trust relationships in the field follow predicted phases of building, stability, or dissolution
+.
+Depth: Strong integration; the study directly links longitudinal data to specific theoretical trust phases
+.","Which theories are used? The Technology Acceptance Model (TAM)
+.
+How used: framing, testing, extension? Extension: the authors extend TAM by adding AI-specific dimensions: trust (TRUST), data transparency and quality (DATAQ), and decision-making efficiency (DME)
+.
+Depth: Strong integration; the proposed conceptual framework is built entirely upon an extended TAM architecture.","Which theories are used? The authors synthesise several major frameworks: MITRE’s Cyber Resiliency Engineering Framework, Linkov et al.’s four domains, CPMI–IOSCO guidelines, NIST’s cyber resilience engineering, and the World Economic Forum’s Cyber Resilience Index
+How used: framing, testing, extension? The authors use these frameworks for framing and extension to conceptualise seven specific dimensions of cyber resilience: prevention, detection, response, recovery, education, accountability, and strategy and planning
+Depth: Strong integration; the study's entire measurement model and hypotheses are built upon this synthesised conceptualisation","The paper draws on managerial psychology, change management theories, HRM performance configurations, Zuboff’s concept of “informating,” and Floridi’s “reontologization.”  
+
+These are used for framing and extension. The authors introduce two novel concepts — “technological servitization” (employees becoming subservient to AI-driven standardization and monitoring) and “re-ontological in-securitization” (AI-induced transformation of work identity leading to insecurity) — and integrate them into a comprehensive HRM framework. Integration depth is strong, as the framework synthesizes the theories to directly address the AI-underperformance paradox.","The study used Protection Motivation Theory (PMT) and the Elaboration Likelihood Model (ELM).
+
+These theories framed dual processing pathways, central and peripheral, and were extended by introducing FRI and self-stigma as context-specific cues.
+
+Depth: Strong integration","The study employed Operant Conditioning Theory (OCT), Protection Motivation Theory (PMT), and the Theory of Planned Behavior (TPB).
+
+These were integrated within a unified framework. TPB explained intention formation, PMT addressed threat appraisal, and OCT captured behavioural consequences such as rewards and punishment.
+
+Depth: Strong integration","The study used Affordance Theory and Psychological Reactance Theory.
+
+These theories framed how users interact with technology and how forced adoption triggers resistance. The study extended them to explain trust in mandatory AI usage.
+
+Depth: Strong integration","The study used the agentic information systems framework and trust transference theory.
+
+These theories framed a triadic interaction model and were extended by incorporating steerability and autonomy as moderating conditions.
+
+Depth: Strong integration","Theoretical Foundation: Utilizes the Gioia Methodology for inductive concept development and draws on Lifecycle Modeling concepts. It references the Knowledge-Attitude-Behavior (KAB) model.
+
+Epistemology: Interpretive qualitative research.
+
+Design: Exploratory design using a systematic inductive approach.
+
+Method: Semi-structured interviews with 20 key informants (practitioners/experts) across the UK, USA, Ireland, and Middle East.
+
+Analysis: Inductive open, axial, and selective coding (Gioia approach).
+
+*",
+Epistemology and Research Design,"Epistemological stance (if stated): positivist, interpretivist, mixed
+Research design: survey, experiment, case study, qualitative interviews, etc","Epistemology (if stated): Not stated. Research design: A longitudinal field study combining quantitative surveys at four time points (over nine months) with qualitative follow-up interviews
+
+- Quantitative + Qualitative ","Epistemology: Not stated.
+Research design: Quantitative, explanatory design using a structured questionnaire survey","Epistemology: Not stated. 
+Research design: A mixed-methods approach using a quantitative survey followed by qualitative post hoc interviews for clarification","Epistemology: Not explicitly stated.  
+
+Research design: Conceptual paper based on a systematic literature review.","Epistemology: Not stated
+Research design: Large-scale offline training intervention followed by a structured survey","Epistemology: Not stated
+Research design: Quantitative explanatory design using an online survey","Epistemology: Not stated
+Research design: Quantitative survey-based empirical study","Epistemology: Not stated
+Research design: Randomised experimental design using factorial experiments",,
+Method / Process / Steps,"Analysis method (e.g., regression, SEM, thematic analysis, template analysis)
+Key steps in their process
+Any framework development process","Analysis method: Multigroup latent growth curve modelling (to analyze trust change), regression analyses (for outcomes and antecedents), and qualitative interview analysis
+.
+Key steps followed:
+- Quantitative data collection at T0 (pre-launch), T1 (1 month post-launch), T2 (4 months), and T3 (8 months)
+-Testing for measurement invariance of trust across time points
+- Regression of outcomes on trust
+- Multigroup growth modelling to identify trajectories
+- Follow-up interviews with project managers
+- Framework/model development: Not stated.
+
+
+Mplus is a specialised statistical software package used for advanced quantitative data analysis, particularly in social sciences, psychology, and behavioural research.
+Full Information Maximum Likelihood (FIML) is a statistical estimation method used to analyse data when some values are missing.
+
+Measurement invariance (often abbreviated as MI; sometimes written as MEI in a paper) refers to testing whether a measurement model works consistently across different groups or time points.","Analysis method: Partial Least Squares Structural Equation Modelling (PLS-SEM)
+.
+Key steps followed:
+- Development of a conceptual model extending TAM
+- Structured questionnaire design using items from validated sources
+- Data collection from 324 respondents via online distribution
+- Two-stage analysis: evaluation of the measurement model (validity/reliability) and testing of the structural model (hypotheses)
+- Framework/model development: Integrated conceptual model linking technological (DATAQ), cognitive (TRUST, PU, PEOU), and organisational outcomes (INT-AI, DME)","Analysis method: Logistic regression, Kruskal–Wallis tests, and Mann–Whitney U tests.
+Key steps followed:
+- Synthesis of resilience frameworks to define dimensions
+- Expert review via focus groups for content validity
+- Online survey of 110 practitioners
+- Statistical analysis (logistic regression for occurrence; non-parametric tests for severity)
+- Follow-up interviews with 7 experts to explain findings
+- Framework/model development: Develped a seven-dimensional model of cyber resilience
+
+
+The terms Kruskal–Wallis and Mann–Whitney (Compares two independent groups.) refer to non-parametric statistical tests. They are used when data do not meet the assumptions required for standard parametric tests (such as normal distribution).","Systematic literature review following PRISMA guidelines, combined with thematic analysis using Paul and Criado’s (2020) framework.  
+
+Key steps:  
+
+\- Keyword search in Web of Science yielding 434 articles, with 47 included after screening.  
+
+\- Categorization into homogenous (positive opportunities) and non-homogenous (challenges) themes.  
+
+\- Development of three core thematic areas: job performance, organizational productivity, and collaborative intelligence.  
+
+\- Synthesis into a new HRM framework with five dimensions: human intelligence, AI, employees’ well-being, jobs, and organizational performance.  
+
+Software/tools: Web of Science for article retrieval; thematic analysis tools (NVivo referenced in related contexts but primarily manual/synthesis-based here).","Partial Least Squares Structural Equation Modeling (PLS-SEM).  
+
+**PLS-SEM is strong for prediction and exploratory modelling.
+
+Structural Equation Modelling (SEM)
+A method used to analyse complex relationships between multiple variables at once, including both direct and indirect effects.
+Partial Least Squares (PLS)
+A specific type of SEM that focuses on prediction and maximising explained variance, rather than strict model fit.
+
+Key steps:
+
+-Development of a PMT and ELM integrated framework
+-Design of elderly-oriented training materials using FRI and stigma cues
+-Implementation across 400+ communities in 14 Chinese provinces
+-Post-training survey data collection
+-Statistical validation using PLS-SEM
+
+Framework: FRI as a central cue, self-stigma as a peripheral cue, and cognitive age as a moderator","Analysis method: Partial Least Squares Structural Equation Modeling (PLS-SEM)
+
+Key steps:
+
+Integration of three behavioural theories into a conceptual model
+Development of a 46-item validated survey instrument
+Purposive sampling of employees under formal ISPs
+Two-stage SEM analysis, measurement validation followed by structural testing
+
+Framework: Seven predictors examined, including severity, vulnerability, rewards, punishment, attitude, subjective norms, and perceived behavioural control","Analysis method: Partial Least Squares Structural Equation Modelling (PLS-SEM)
+
+Key steps:
+
+Literature review on AI trust and theoretical grounding
+Development of a conceptual model linking individual and institutional factors
+Survey validation by academic experts
+Questionnaire distribution to a targeted sample
+Statistical testing using SmartPLS
+
+Framework: Five predictors tested, including self-threat, privacy empowerment, trust propensity, regulatory protection, and corporate privacy responsibility","Analysis method: Hierarchical logistic regression and hierarchical linear regression
+
+Key steps:
+
+Development of a triadic conceptual model (creator, user, AI agent)
+Selection of recruitment task context
+Creation of an interactive AI agent (Amanda)
+Experimental manipulation of creator trust and AI attributes
+Measurement of behavioural and attitudinal trust outcomes
+
+Framework: Trust transference model moderated by alignment attributes (steerability and autonomy)",,
+Data Collection,"Sample (who, how many, context)
+Method (survey, interview, logs, etc.)
+Sector (HEI, corporate, general population)","Sample: N = 157 employees across four German companies (A: wood/paper trade, B: seed trade, C: global goods, D: IT services)
+. Method: Online surveys and semi-structured video interviews
+. Sector: Retail/Trade and IT services","Sample: 324 valid questionnaires from employees and managers in Romanian organisations (56% managers, 44% executive staff).
+Method: Structured online questionnaire (Google Forms) distributed through professional networks like LinkedIn and ResearchGate.
+Sector: IT/Software (17%), Finance (15%), Public Sector (14%), Manufacturing (12%), Retail (11%), Education (10%), Healthcare (9%), and others.","Sample: 110 cyber security practitioners (87 non-attacked; 23 attacked organizations)
+. Method: Structured online survey distributed through Qualtrics to reputable associations like the Cloud Security Alliance
+. Sector: Various; includes IT, Finance, Public Sector, and Manufacturing professionals globally","Sample: 47 peer-reviewed articles published between 2020 and 2024.  
+
+Method: Structured keyword-based search and PRISMA selection process.  
+
+Sector: Multidisciplinary — Management, Business, Ethics, Computer Science, and Information Systems.","Sample: 4,944 older adults aged 50 and above
+Method: Structured questionnaire after training sessions
+Sector: Community-based education","Sample: 302 employees in Saudi Arabia (53% male, 47% female)
+Method: Structured online questionnaire via Google Forms
+Sector: Public (52%) and private (48%)","Sample: 209 Malaysian respondents with experience using AI technologies in travel
+Method: Questionnaire using purposive and system probability sampling
+Sector: Travel and tourism","Sample: 1,140 participants across multiple experiments
+Method: Online incentivised experiments with task-based interaction
+Sector: Recruitment and human resources",,
+Tools Used,"Software (e.g., SPSS, NVivo, AMOS)
+Analytical tools (e.g., machine learning models, coding frameworks)","Software or analytical tools: MPlus for quantitative modelling and f4x for automated interview transcription",Software or analytical tools: SmartPLS 4 (specifically version 4.1.1.5),"Software or analytical tools: Qualtrics (survey/fraud detection), R (statistical analysis), and NVivo (interview transcription analysis)",,SmartPLS 3 for PLS-SEM analysis.,SmartPLS (version 4.1.1.2),"Software: SmartPLS (version 3.2.9), G*Power (version 3.1.9.2)","Software: G*Power, JavaScript, Qualtrics XM, Google BERT model, Stata 16.1",,
+Key Findings,"What did they actually find?
+Which relationships or patterns were confirmed?","Trust was positively associated with employee performance and cognitive resources, and negatively associated with strain consistently across time
+.
+Three distinct trust trajectories were identified: positive (linear increase), stable, and negative (linear decrease)
+.
+System properties (reliability, credibility, usability) were the most critical correlates of trust; context factors and personal disposition were less influential once users had actual experience with the system"," Data transparency and quality (DATAQ) have a strong positive effect on trust in AI-DSS (β = 0.784, p < 0.001)
+- Trust significantly influences perceived usefulness (β = 0.229, p < 0.01) and perceived ease of use (β = 0.482, p < 0.001)
+- Intention to adopt (INT-AI) is positively predicted by perceived usefulness (β = 0.352), trust (β = 0.311), and ease of use (β = 0.135)
+- Adoption intention is strongly associated with decision-making efficiency (DME) (β = 0.544 or 0.844 in structural testing)","- Total cyber resilience significantly reduces the odds of an incident occurring (by 5% for every one-unit increase)
+- Non-attacked organisations have significantly higher levels of prevention, education, strategy and planning, and accountability
+- Higher resilience did not generally lead to lower severity in post-attack outcomes, with one exception: education was associated with lower operational downtime
+- Organisations often treat cyber resilience as a static ""to-do list"" rather than a dynamic process, which hinders effective response","\- AI creates a paradox: it can optimize job and organizational performance but often leads to “technological servitization,” where employees feel like “serfs” to AI systems through excessive standardization and monitoring.  
+
+\- Over-reliance on surveillance and metrics fosters “re-ontological in-securitization,” promoting long working hours, job insecurity, and reduced well-being.  
+
+\- Sustainable success requires “collaborative intelligence” (combining human reasoning/empathy with machine processing) and managerial self-restraint and empathy.","Family Risk Involvement significantly improved security policy compliance and knowledge sharing.
+
+Self-stigma perception significantly reduced both outcomes.
+
+Security policy compliance strongly increased knowledge sharing (β = 0.851, p < 0.01).
+
+Cognitive age moderated relationships, strengthening both positive and negative effects.","Perceived severity, punishment, attitude, and perceived behavioural control significantly increased compliance intention.
+
+Perceived vulnerability, rewards, and subjective norms were not significant predictors.
+
+Compliance intention strongly predicted actual behaviour (β = 0.746, p < 0.001).
+
+The model explained 58.3% of intention variance and 55.7% of behavioural variance","Self-threat negatively influenced trust in AI technologies.
+
+Trust propensity and regulatory protection positively influenced trust.
+
+Privacy empowerment and corporate responsibility were not significant predictors in mandatory contexts.
+
+The model explained a substantial proportion of variance in trust.","Trust in the AI creator significantly increased trust in the AI agent.
+
+Creator-based steerability strengthened trust transfer.
+
+User-based steerability weakened trust transfer, separating AI trust from creator reputation.
+
+AI autonomy reduced trust transference, leading users to evaluate AI independently.",,
+11. Contribution Claimed,"Identify:
+
+Theoretical contribution
+Practical contribution
+
+Then evaluate:
+
+Is it strong or weak? Why?","Theoretical, practical, methodological:
+Theoretical: Confirms trust is dynamic and identifies that trust building does not always precede stability or dissolution
+. It provides field evidence for the ""cognitive resource release"" effect of trust
+.
+Practical: Offers strategies for organizations, such as customising systems to fit processes and seeking external consulting to avoid ""bending"" software at the expense of functionality
+.
+Methodological: Demonstrates the value of longitudinal multigroup comparisons in IS research
+.
+Is contribution clearly supported? Yes, the mixed-methods approach provides both statistical evidence and contextual depth","Theoretical: Extends TAM to the AI context and contributes to a socio-technical theory of AI adoption where human-system interaction is an adaptive process based on transparency and control.
+Practical: Provides guidelines for organisations to implement transparent data governance and ethical communication to reinforce user trust and reliability.
+Methodological: Validates an integrated empirical framework in an emerging research context (Romanian organisations)
+.Is the contribution clearly supported? Yes, through PLS-SEM validation of causal relationships and internal consistency tests","Theoretical: Provides empirical evidence for the link between resilience maturity and incident occurrence
+Practical: Identifies education and accountability as key behavioral drivers for preventing incidents and reducing downtime
+Methodological: Validates a multi-dimensional measurement instrument for organizational cyber resilience
+
+Is the contribution clearly supported? Yes, through combined statistical evidence and expert interview validation.","\*\*Theoretical:\*\* Introduces “technological servitization” and “re-ontological in-securitization” as new lenses to explain paradoxical AI outcomes in managerial psychology and HRM.  
+
+\*\*Practical:\*\* Proposes an innovative HRM framework and five specific recommendations, including training HR professionals to detect stress-inducing AI practices and implementing well-being programs to support readiness-for-change.
+
+\*\*Methodological:\*\* Provides a structured synthesis of recent literature using PRISMA and thematic analysis.  
+
+The contributions are clearly supported by the systematic review of 47 high-quality articles.","Theoretical: Introduced FRI and self-stigma as key behavioural constructs in older adult cybersecurity research.
+
+Practical: Proposed design principles focused on family framing, reducing stigma, and tailoring messages to cognitive age.
+
+Methodological: Demonstrated feasibility of large-scale behavioural intervention studies.
+
+Contribution support: Strong, supported by large sample size and statistical validati","Theoretical: Integrated three behavioural theories and challenged assumptions regarding rewards and social norms.
+
+Practical: Emphasised training, perceived severity, and disciplinary frameworks over incentives or peer pressure.
+
+Methodological: Validated a multi-theory model using PLS-SEM in a specific cultural context.
+
+Contribution support: Clearly supported through strong statistical validity and explanatory power","Theoretical: Extended affordance and reactance theories to explain trust in mandated digital environments.
+
+Practical: Emphasised regulatory protection and security communication over corporate messaging.
+
+Methodological: Validated a trust model within a specific cultural and technological context.
+
+Contribution support: Clearly supported through statistical validation","Theoretical: Introduced a triadic trust framework and identified boundary conditions for trust transference.
+
+Practical: Recommended increasing user-level control to maintain trust even when organisational reputation is weak.
+
+Methodological: Not explicitly stated.
+
+Contribution support: Strong, supported by multiple experiments and robustness checks",,
+12. Limitations and Future Research,"What limitations did they acknowledge?
+What future directions were suggested?","Stated limitations: Sample size limitations for complex moderator analyses, reliance on self-report data, and missing data due to voluntary participation
+. Future research directions: Using objective measures (task time, heart rate), exploring ""overtrust"" or misuse of systems, and conducting comparative studies on identical systems in different organizational contexts","Stated limitations: Cross-sectional design (cannot support strong causal inferences over time); context-specific insights limited to Romania; reliance on self-reported data
+.
+Future research directions: Longitudinal studies; incorporating objective performance indicators (accuracy, response time); exploring the role of Explainable AI (XAI) and hybrid decision models combining AI and human collective intelligence","Stated limitations: Small sample size for attacked organisations (N=23); reliance on self-reported data; cross-sectional design; potential participant bias in rating their own maturity
+Future research directions: Longitudinal designs; case studies on dynamic resilience; controlled trials to develop evidence-based guidance","Limitations: The study remains conceptual without primary empirical data; it synthesizes existing literature but lacks direct field testing of the proposed framework.  
+
+Future research: Longitudinal and cross-industry empirical studies; investigations into the evolution of human-AI relationships over time; and deeper exploration of managerial self-restraint in re-ontologized organizations.","Limitations included cultural specificity to China, variation in training delivery, reliance on self-reported data, and modest effect sizes.
+
+Future research suggested cross-cultural replication, additional moderators, and incorporation of objective behavioural measures.","Limitations included cross-sectional design, self-reported data bias, and limited generalisability beyond collectivist contexts.
+
+Future research suggested longitudinal or experimental designs, inclusion of objective behavioural data, and examination of individual differences.","Limitations included cross-sectional design, limited variable scope, geographic focus, and contextual bias.
+
+Future research suggested longitudinal studies, cross-country comparisons, expanded variables, and exploration of privacy rights.","Limitations included focus on short-term interactions, exclusion of brand loyalty, and limited stakeholder scope.
+
+Future research suggested longitudinal studies, broader stakeholder analysis, and investigation of emotional responses to AI.",,
+Relevance to YOUR Study,,"Which parts are useful: Problem statement, theoretical framing of trust as a dynamic state, results regarding cognitive resources, and discussion on trust governance
+. Why useful? Cybersecurity readiness involves employees trusting security protocols. If trust follows a negative trajectory, readiness will decline. Understanding that system reliability and usability are the primary drivers of this trust can help diagnose why certain security behaviours fail
+. What is NOT useful? Specific business process details for ERP/CRM systems (e.g., wood product warehousing)
+. Does it support behaviour, culture, cognition, or readiness? It supports behaviour (system use), cognition (memory/resources), and readiness (trust as a precursor to adoption)
+.
+Final Verdict:
+
+The paper provides a robust longitudinal framework for understanding how trust in technology, a prerequisite for cybersecurity readiness, evolves over time in a workplace
+. It highlights that system-level properties are more influential than general employee dispositions once usage begins, suggesting that diagnostic characteristics should focus on the quality of the technology-user interface
+. Furthermore, the link between trust and the release of cognitive resources is highly relevant for understanding how employees handle complex security tasks under pressure
+.","Which parts are useful: Problem statement regarding the ""black box"" nature of systems, the role of trust as a ""psychological catalyst"" for technology adoption, and the methodology (PLS-SEM)
+.
+Why useful? Cybersecurity readiness requires users to adopt and trust complex, often opaque, security tools. This paper’s link between data quality/transparency and trust is directly applicable to diagnosing why employees might resist or bypass security protocols
+.
+What is NOT useful? The specific sectoral distribution of the Romanian sample
+.
+Does it support behaviour, culture, cognition, or readiness? It supports behaviour (adoption intent), cognition (perceptual evaluations), and readiness (organizational readiness for AI/digital transformation)
+.
+Final Verdict:
+The paper provides a validated, integrated framework that highlights trust as the central mediator between system quality and actual adoption behavior. This is highly relevant for cybersecurity readiness, as it demonstrates that technical accuracy alone is insufficient for system success without transparency and user trust. The study’s findings on ""psychological enablers"" offer a roadmap for developing behavioral diagnostic characteristics that focus on how transparency reduces the perceived risk of using complex digital systems.","Which parts are useful: The 7 resilience dimensions (theory), the link between education/accountability and non-attacked firms (results), and the discussion on static vs. dynamic implementation (discussion)
+. Why useful? The dimensions of education and accountability are direct behavioural characteristics. The finding that education specifically mitigates operational downtime provides a clear diagnostic metric for behavioural readiness
+. What is NOT useful? Specific indicators related to share price fluctuations or supply chain vendor coordination
+. Does it support behaviour, culture, cognition, or readiness? It supports behaviour (training/controls), culture (accountability/strategy), and readiness (dynamic resilience)
+.
+Final Verdict
+Overall usefulness: High. Justify in 3–4 sentences. The paper provides a robust empirical bridge between behavioural factors (like education and accountability) and organisational cybersecurity readiness outcomes. It identifies specific resilience dimensions that differentiate firms that avoid attacks from those that suffer major impacts, offering clear metrics for behavioural diagnostics. Crucially, its insights into why organisations fail to be ""dynamic"" in their security approach provide a critical lens for evaluating the effectiveness of behavioural characteristics in practice.","Useful parts: The HRM framework (five dimensions), the concepts of technological servitization and re-ontological in-securitization, the emphasis on readiness-for-change through well-being programs, and the discussion of surveillance leading to mistrust.  
+
+Why useful: In cybersecurity, security tools and monitoring can easily be perceived as intrusive surveillance, triggering resistance similar to the “servitization” and “in-securitization” effects described. The focus on managerial empathy, self-regulation, and collaborative intelligence offers strong diagnostics for cultural and behavioural readiness. The well-being and readiness-for-change elements align directly with assessing employee responses to security protocols and tools.  
+
+Not useful: Sector-specific examples unrelated to technology adoption risks (e.g., certain discussions on digital advertising in education).  
+
+This paper supports behaviour (performance outcomes), culture (ethical and empathetic resource use), cognition (human vs. machine reasoning), and readiness (multi-dimensional readiness-for-change).
+
+The paper provides a vital socio-technical perspective on technology adoption that is directly applicable to diagnosing behavioural readiness for cybersecurity. It introduces the concept of “re-ontological in-securitization,” which helps explain how intrusive technology (like security monitoring or AI-driven controls) can erode employee trust and mental well-being, leading to resistance or workaround behaviours. Most importantly, it frames “readiness-for-change” as a multi-dimensional construct involving human intelligence (empathy and trust), well-being, and technical integration, offering a useful roadmap for developing and applying behavioural diagnostic characteristics in cybersecurity contexts. Overall usefulness: High.","Useful components include behavioural cues, measurement constructs, and findings on self-stigma as a barrier.
+
+The study provides a framework for using message characteristics as diagnostic indicators of cybersecurity readiness.
+
+The role of cognitive age offers a more precise behavioural diagnostic than chronological age.
+
+Non-useful elements include regional distribution details.
+
+It supports behaviour, culture, cognition, and readiness.","Useful components include the integrated theoretical framework, behavioural drivers, and empirical distinction between significant and non-significant factors.
+
+The study provides validated behavioural characteristics, including attitude, perceived behavioural control, severity, and punishment, which align with readiness diagnostics.
+
+Findings on the insignificance of rewards and subjective norms offer critical insight for contextualising diagnostic measures.
+
+Non-useful components include demographic frequency distributions.
+
+It supports behaviour, culture, cognition, and readiness.","Useful components include mandated adoption dynamics, psychological reactance, and key constructs such as self-threat and trust propensity.
+
+These findings support understanding resistance to cybersecurity policies and the importance of perceived institutional safeguards.
+
+Non-useful components include context-specific references to Malaysian tracing applications.
+
+The study supports behaviour, culture, cognition, and readiness.","Useful components include trust transference theory, mandated technology context, and findings on steerability and autonomy.
+
+The study provides insight into how user control and perceived autonomy influence trust in systems, which aligns with readiness diagnostics.
+
+Non-useful elements include the recruitment task scenario.
+
+It supports behaviour, culture, cognition, and readiness.",,
+IDEA TO USE,,,,,Final Verdict,"Overall usefulness: High
+
+The study provides strong empirical evidence linking behavioural cues to cybersecurity actions within a vulnerable population. It introduces novel constructs directly applicable to diagnostic frameworks. The large-scale intervention strengthens its methodological credibility. The moderation effect of cognitive age adds depth to behavioural readiness analysis.","Overall usefulness: High
+
+The study provides a robust empirical linkage between psychological drivers and actual cybersecurity behaviour. It offers validated constructs directly applicable to behavioural diagnostics for readiness. The rejection of commonly assumed predictors strengthens its analytical value. The validated intention–behaviour relationship enhances its relevance for measuring organisational cybersecurity readiness.","Overall usefulness: High
+
+The study provides a strong theoretical explanation of trust formation under mandatory technology use. It identifies key behavioural and institutional drivers relevant to cybersecurity readiness. The findings on self-threat and regulatory protection offer direct diagnostic value. Its focus on mandated environments aligns closely with organisational cybersecurity contexts.","Overall usefulness: High
+
+The study provides a strong theoretical foundation for understanding trust dynamics in technology adoption. It introduces critical constructs such as steerability and autonomy that directly inform behavioural readiness. The triadic perspective enhances analytical depth in understanding user–system–institution relationships. Its findings are directly transferable to cybersecurity contexts involving third-party tools and mandated systems.",,
+Other Notes,,,,,,,"Operant Conditioning Theory (OCT)
+Meaning: Behaviour is shaped by consequences.
+What it does: Explains how rewards and punishments influence whether a person repeats or avoids an action.
+
+Protection Motivation Theory (PMT)
+Meaning: People act to protect themselves based on perceived threat and coping ability.
+What it does: Explains how factors such as severity, vulnerability, and self-efficacy drive protective behaviour.
+
+Theory of Planned Behavior (TPB)
+Meaning: Behaviour is driven by intention.
+What it does: Explains how attitude, social norms, and perceived control determine intention and, consequently, behaviour.
+
+Simple link together
+
+OCT: “What happens after behaviour”
+PMT: “How risk is evaluated”
+TPB: “How intention is formed”","Affordance Theory
+Meaning: It explains what actions a technology allows or enables for a user.
+
+What it does: It examines how users perceive and use features of a system. For example, an AI system may afford monitoring, automation, or decision support. These affordances shape how users interact with the technology and what behaviours emerge.
+
+Psychological Reactance Theory
+Meaning: It explains how people respond when they feel their freedom is restricted.
+
+What it does: It predicts resistance or negative reactions when users are forced to adopt a system. For example, mandatory AI use may trigger distrust or avoidance because users feel controlled.
+
+Simple link together
+
+Affordance Theory: “What the technology allows users to do”
+Psychological Reactance Theory: “How users react when they feel forced”
+
+Privacy empowerment refers to an individual’s perceived ability to understand, control, and manage their personal data when using a system.
+
+Propensity to trust refers to an individual’s general tendency to trust others or systems, independent of a specific situation. It is a stable personal trait.",,"**Gioia approach (qualitative method)
+Because it comes from Dennis A. Gioia and colleagues.
+
+They formalised a specific way of doing inductive qualitative analysis. The key idea is transparency between:
+
+participant terms (1st order)
+researcher interpretation (2nd order)
+theoretical dimensions",
+,,,,,,,,**Good / anchor paper for - AI Paper,,,

@@ -1,0 +1,2402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Research Assistant (MRBLANK_RA)</title>
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+<style>
+:root{
+  --bg:#0d0f14;--surface:#151820;--panel:#1c2030;--card:#202438;
+  --border:#2a2f45;--accent:#6c63ff;--a2:#00d4aa;--gold:#f5c518;
+  --red:#ff4d6d;--text:#e8eaf0;--muted:#8892a4;--font:'Inter',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--bg);color:var(--text)}
+/* scrollbar */
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+/* layout */
+.app{display:flex;flex-direction:column;height:100vh}
+header{height:50px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
+.logo{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
+.logo-i{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--a2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px}
+#ai-status{margin-left:auto;font-size:11px;display:flex;align-items:center;gap:6px}
+.engine-dot{width:7px;height:7px;border-radius:50%;background:var(--red)}
+.engine-dot.ok{background:var(--a2)}.engine-dot.warn{background:var(--gold)}
+#ai-name{color:var(--muted);font-size:11px}
+nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 12px;overflow-x:auto;flex-shrink:0}
+.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s}
+.tab:hover{color:var(--text)}.tab.on{color:var(--accent);border-color:var(--accent)}
+.body{flex:1;display:flex;overflow:hidden}
+/* sidebar */
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:width .2s}
+.sb-head{padding:12px 14px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.sb-list{flex:1;overflow-y:auto;padding:4px}
+.sb-item{padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:7px;margin-bottom:2px;transition:.15s}
+.sb-item:hover{background:var(--panel)}.sb-item.on{background:rgba(108,99,255,.15);color:var(--accent)}
+.sb-item .ct{margin-left:auto;font-size:10px;color:var(--muted)}
+/* main */
+.main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.page{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.page.on{display:flex}
+.ph{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ph h2{font-size:15px;font-weight:600}.ph-actions{margin-left:auto;display:flex;gap:8px}
+.pb{padding:18px;flex:1}
+/* cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;transition:.2s}
+.card:hover{border-color:rgba(108,99,255,.4)}
+.card-t{font-size:13px;font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.card-s{font-size:12px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.stat-c{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.stat-c .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-c .val{font-size:26px;font-weight:700}
+.stat-c.a .val{color:var(--accent)}.stat-c.g .val{color:var(--a2)}.stat-c.d .val{color:var(--gold)}
+/* buttons */
+.btn{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:500;font-family:var(--font);transition:.15s}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:#7c75ff}
+.btn-g{background:var(--panel);border:1px solid var(--border);color:var(--text)}.btn-g:hover{border-color:var(--accent);color:var(--accent)}
+.btn-d{background:transparent;border:1px solid var(--red);color:var(--red)}.btn-d:hover{background:rgba(255,77,109,.1)}
+.btn-s{padding:5px 10px;font-size:11px}
+/* forms */
+input,select,textarea{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:7px;font-size:12px;font-family:var(--font)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}
+.w100{width:100%}
+/* upload */
+.drop-zone{border:2px dashed var(--border);border-radius:10px;padding:36px;text-align:center;cursor:pointer;transition:.2s}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:rgba(108,99,255,.05)}
+.drop-zone input{display:none}
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:var(--surface);padding:9px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);position:sticky;top:0}
+.tbl td{padding:9px 12px;border-bottom:1px solid rgba(42,47,69,.4)}
+.tbl tr:hover td{background:rgba(108,99,255,.04)}
+.tag{font-size:10px;padding:2px 7px;border-radius:8px;background:rgba(108,99,255,.15);color:var(--accent);font-weight:500}
+.tag.green{background:rgba(0,212,170,.12);color:var(--a2)}
+.tag.gold{background:rgba(245,197,24,.12);color:var(--gold)}
+.tag.red{background:rgba(255,77,109,.12);color:var(--red)}
+/* chat */
+.chat-wrap{display:flex;height:100%;overflow:hidden}
+.sess-panel{width:190px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.sess-top{padding:10px;border-bottom:1px solid var(--border)}
+.sess-list{flex:1;overflow-y:auto;padding:4px}
+.sess-item{padding:7px 9px;border-radius:7px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:.15s}
+.sess-item:hover{background:var(--panel)}.sess-item.on{background:rgba(108,99,255,.12);border-color:rgba(108,99,255,.3)}
+.sess-item .si{font-size:11px;font-weight:500}.sess-item .sd{font-size:10px;color:var(--muted);margin-top:2px}
+.chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.chat-toolbar{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.chat-toolbar select{padding:5px 9px;font-size:11px}
+.msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;gap:8px;max-width:88%;animation:fu .25s ease}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.bubble{padding:10px 14px;border-radius:10px;font-size:12px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.msg.user .bubble{background:linear-gradient(135deg,var(--accent),#8b84ff);color:#fff;border-bottom-right-radius:3px}
+.msg.assistant .bubble{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:3px}
+.av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
+.msg.user .av{background:var(--accent)}.msg.assistant .av{background:var(--panel);border:1px solid var(--border)}
+.eng{font-size:9px;color:var(--muted);margin-top:3px}
+.tools-used{margin-top:6px;font-size:11px;cursor:pointer;user-select:none}
+.tools-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.25);border-radius:5px;color:var(--accent);font-size:10px;font-weight:500}
+.tools-detail{display:none;margin-top:5px;padding:6px 8px;background:var(--panel);border-radius:5px;border:1px solid var(--border)}
+.tools-used.expanded .tools-detail{display:block}
+.tool-item{padding:2px 0;font-size:11px;line-height:1.5}
+.thinking{display:flex;gap:4px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;width:fit-content}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:b .8s infinite}
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{transform:scale(.8);opacity:.5}40%{transform:scale(1.1);opacity:1}}
+.cin{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
+.cin textarea{flex:1;resize:none;min-height:40px;max-height:120px;line-height:1.5}
+/* Settings */
+.settings-grid{display:grid;grid-template-columns:220px 1fr;gap:0;height:100%}
+.settings-nav{background:var(--surface);border-right:1px solid var(--border);padding:8px}
+.sn-item{padding:8px 12px;border-radius:7px;cursor:pointer;font-size:12px;margin-bottom:2px;transition:.15s}
+.sn-item:hover{background:var(--panel)}.sn-item.on{background:rgba(108,99,255,.12);color:var(--accent)}
+.settings-body{overflow-y:auto;padding:18px}
+.section-title{font-size:13px;font-weight:600;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.engine-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.engine-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.engine-name{font-size:13px;font-weight:600;flex:1}
+.engine-note{font-size:10px;color:var(--muted);margin-top:4px}
+.engine-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toggle{width:38px;height:20px;background:var(--border);border-radius:10px;cursor:pointer;position:relative;transition:.2s;flex-shrink:0}
+.toggle.on{background:var(--accent)}.toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s}
+.toggle.on::after{left:20px}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:12px;width:100%;max-width:700px;max-height:85vh;display:flex;flex-direction:column}
+.modal-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:14px}
+.modal-b{flex:1;overflow-y:auto;padding:18px}
+.md-view{font-size:12px;line-height:1.8;white-space:pre-wrap;word-break:break-word}
+/* toast */
+#toast{position:fixed;bottom:16px;right:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:12px;z-index:300;opacity:0;transition:.25s;transform:translateY(8px);pointer-events:none}
+#toast.show{opacity:1;transform:translateY(0)}
+#toast.ok{border-color:var(--a2);color:var(--a2)}#toast.err{border-color:var(--red);color:var(--red)}
+/* skills */
+.skill-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.skill-body{flex:1}.skill-name{font-size:12px;font-weight:600;margin-bottom:3px}
+.skill-prev{font-size:11px;color:var(--muted)}
+/* misc */
+.flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.items-c{align-items:center}
+.ml-a{margin-left:auto}.mt12{margin-top:12px}.mb12{margin-bottom:12px}
+.text-m{color:var(--muted)}.text-sm{font-size:11px}
+.w100{width:100%}.separator{border:none;border-top:1px solid var(--border);margin:14px 0}
+.badge{display:inline-flex;align-items:center;font-size:10px;padding:2px 6px;border-radius:6px;background:var(--panel);border:1px solid var(--border);color:var(--muted)}
+/* author card */
+.au-card{max-width:480px;margin:1rem auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem 2rem 1.5rem;text-align:center}
+.au-av{width:72px;height:72px;border-radius:50%;background:rgba(108,99,255,.12);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;color:var(--accent);margin:0 auto 1rem;border:1px solid rgba(108,99,255,.3)}
+.au-nm{font-size:18px;font-weight:700;color:var(--text)}
+.au-tt{font-size:13px;color:var(--a2);margin-top:4px;margin-bottom:16px}
+.au-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:2px}
+.au-val{font-size:13px;color:var(--text);display:block;margin-bottom:12px}
+.au-cp{font-size:11px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
+/* author page */
+.author-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:30px;text-align:center}
+.author-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--a2));display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px}
+.author-name{font-size:22px;font-weight:700}
+.author-title{font-size:14px;color:var(--a2);margin-top:4px}
+.author-section{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;text-align:left}
+.author-section-label{font-size:11px;font-weight:600;color:var(--muted);min-width:140px;text-transform:uppercase;letter-spacing:.4px}
+.author-section-value{font-size:13px;color:var(--text);flex:1}
+.author-meta{font-size:11px;color:var(--muted);margin-top:14px;padding-top:10px;border-top:1px solid var(--border)}
+.sidebar.hidden{width:0;padding:0;overflow:hidden;border:0;min-width:0}
+@media(max-width:768px){
+  .sidebar{position:fixed;z-index:100;height:calc(100vh - 50px);width:220px;left:0;top:50px;transition:left .25s;box-shadow:4px 0 20px rgba(0,0,0,.4)}
+  .sidebar.hidden{left:-220px;width:220px;min-width:0;padding:initial;border-right:1px solid var(--border)}
+  nav .tab{padding:8px 10px;font-size:11px}
+  .grid2{grid-template-columns:1fr 1fr}
+  .settings-grid{grid-template-columns:1fr}
+  .chat-wrap{flex-direction:column}
+  .sess-panel{width:100%;max-height:140px;border-right:0;border-bottom:1px solid var(--border)}
+  .engine-fields{grid-template-columns:1fr}
+  .msg{max-width:100%}
+  .ph{padding:10px 12px}
+  .pb{padding:12px}
+  .tbl{font-size:10px}
+  .tbl th,.tbl td{padding:6px 8px}
+  #lib-q{width:120px}
+  #mem-q{width:120px}
+  header{padding:0 8px;gap:6px}
+  .ph-actions{gap:4px}
+}
+@media(max-width:480px){
+  .grid2{grid-template-columns:1fr}
+  .logo{font-size:12px;gap:4px}
+  .logo-i{width:22px;height:22px;font-size:10px}
+  .stat-c .val{font-size:20px}
+  .tbl{font-size:9px}
+  .tbl th,.tbl td{padding:4px 5px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <button class="btn btn-s btn-g" onclick="toggleSidebar()" id="sb-toggle" title="Show/hide sidebar" style="padding:4px 8px;font-size:14px">☰</button>
+  <div class="logo"><div class="logo-i">📚</div>MRBLANK_RA Research Assistant <span class="badge" id="version-badge" style="margin-left:6px;font-size:9px;background:rgba(108,99,255,.15);color:var(--accent)">v0.0.0</span></div>
+  <div id="ai-status">
+    <div class="engine-dot" id="ai-dot"></div>
+    <span id="ai-name">Checking…</span>
+  </div>
+  <span class="text-sm text-m" id="clock" style="margin-left:10px"></span>
+</header>
+
+<nav>
+  <div class="tab on" onclick="go('dashboard')">🏠 Home</div>
+  <div class="tab" onclick="go('chat')">💬 Chat</div>
+  <div class="tab" onclick="go('upload')">📤 Upload</div>
+  <div class="tab" onclick="go('research')">🔍 Web Research</div>
+  <div class="tab" onclick="go('library')">📚 Library</div>
+  <div class="tab" onclick="go('memory')">🧠 Memory</div>
+  <div class="tab" onclick="go('plugins')">🔌 Plugins</div>
+  <div class="tab" onclick="go('graph')">🕸 Graph</div>
+  <div class="tab" onclick="go('obsidian')">🪨 Obsidian</div>
+  <div class="tab" onclick="go('settings')">⚙️ Settings</div>
+</nav>
+
+<div class="body">
+
+<!-- ── Sidebar ──────────────────────────────────────── -->
+<div class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <span style="display:flex;align-items:center;gap:4px">
+      <button class="btn btn-s" onclick="toggleSidebar()" id="sb-collapse" title="Collapse sidebar" style="padding:1px 4px;font-size:10px;background:transparent;border:none;color:var(--muted);cursor:pointer">◀</button>
+      Projects
+    </span>
+    <button class="btn btn-s" style="padding:2px 8px;font-size:10px" onclick="openNewProject()">+ New</button>
+  </div>
+  <div class="sb-list" id="proj-list"></div>
+</div>
+
+<div class="main">
+
+<!-- DASHBOARD -->
+<div class="page on" id="page-dashboard">
+  <div class="ph"><h2>🏠 Dashboard</h2></div>
+  <div class="pb">
+    <div class="grid2" id="dash-stats">
+      <div class="stat-c a"><div class="lbl">Projects</div><div class="val" id="s-p">—</div></div>
+      <div class="stat-c g"><div class="lbl">Files</div><div class="val" id="s-f">—</div></div>
+      <div class="stat-c d"><div class="lbl">Extractions</div><div class="val" id="s-e">—</div></div>
+      <div class="stat-c"><div class="lbl">Chats</div><div class="val" id="s-c">—</div></div>
+    </div>
+    <div id="proj-cards"></div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<div class="page" id="page-chat">
+  <div class="chat-wrap">
+    <div class="sess-panel">
+      <div class="sess-top"><button class="btn btn-p w100" onclick="newSession()">+ New Chat</button></div>
+      <div class="sess-list" id="sess-list"></div>
+    </div>
+    <div class="chat-main">
+      <div class="chat-toolbar">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;width:100%">
+          <div style="display:flex;align-items:center;gap:4px">
+            <span class="text-sm text-m" style="font-weight:600;font-size:10px">📁 Project:</span>
+            <select id="cp-project" onchange="onProjectChange()" style="width:140px;padding:3px 6px;font-size:11px"><option value="">— All projects —</option></select>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <span class="text-sm text-m" style="font-weight:600;font-size:10px">📄 File:</span>
+            <select id="cp-pdf" style="width:160px;padding:3px 6px;font-size:11px"><option value="">— None (general chat) —</option></select>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:140px">
+            <span class="text-sm text-m" style="font-weight:600;font-size:10px">🎓 Skills:</span>
+            <select id="cp-skill" multiple style="height:52px;width:140px;font-size:10px;padding:2px" onchange="updateContextBar()"><option value="">None</option></select>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px">
+            <span class="text-sm text-m" style="font-size:10px">📋 Summary</span>
+            <div class="toggle on" id="tog-exclude-summary" onclick="this.classList.toggle('on');updateContextBar()" style="width:26px;height:14px"></div>
+          </div>
+          <button class="btn btn-g btn-s" onclick="clearAndSaveChat()" title="Clear chat & save as .md" style="font-size:10px;padding:3px 8px">💾 Save</button>
+        </div>
+        <div id="chat-context-bar" style="font-size:9px;color:var(--muted);padding:3px 4px 0 4px;min-height:16px;display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);margin-top:4px"></div>
+      </div>
+      <div class="msgs" id="msgs">
+        <div style="text-align:center;padding:48px 20px;color:var(--muted)">
+          <div style="font-size:28px;margin-bottom:10px">🤖</div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:6px">MRBLANK_RA is ready</div>
+          <div class="text-sm">Ask me to analyze papers, write reviews, extract 12-point data, or compare research findings.</div>
+          <div class="text-sm mt12">Select a project to use your research library as context.</div>
+        </div>
+      </div>
+      <div class="cin">
+        <textarea id="ci" placeholder="Ask MRBLANK_RA about your research…" rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();send()}"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+        <button class="btn btn-p" onclick="send()">↑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD -->
+<div class="page" id="page-upload">
+  <div class="ph"><h2>📤 Upload Files</h2></div>
+  <div class="pb" style="max-width:640px">
+    <div class="drop-zone" id="dz" onclick="document.getElementById('fi').click()"
+      ondragover="event.preventDefault();this.classList.add('drag')"
+      ondragleave="this.classList.remove('drag')"
+      ondrop="onDrop(event)">
+      <input type="file" id="fi" multiple onchange="onFiles(this.files)">
+      <div style="font-size:32px;margin-bottom:10px">📁</div>
+      <div style="font-size:14px;font-weight:600;margin-bottom:5px">Drop any file here or click to browse</div>
+      <div class="text-sm text-m">PDF · DOCX · PPTX · TXT · MD · HTML · CSV — auto-converted to .md</div>
+    </div>
+    <div class="form-row mt12">
+      <label>Destination Project</label>
+      <select id="up-proj" class="w100"><option value="INCOMING">📥 INCOMING (sort later)</option></select>
+    </div>
+    <div id="up-results"></div>
+  </div>
+</div>
+
+<!-- WEB RESEARCH (Enhanced) -->
+<div class="page" id="page-research">
+  <div id="wr-section" style="display:flex;flex-direction:column;height:100%;overflow:hidden">
+
+    <!-- ── Search Panel ── -->
+    <div style="padding:12px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <h2 style="font-size:15px;font-weight:600">🔍 Web Research</h2>
+        <span class="text-sm text-m">Multi-source academic paper search</span>
+        <span id="wr-source-status" class="text-sm text-m" style="margin-left:auto"></span>
+      </div>
+
+      <!-- Big textarea -->
+      <div class="form-row" style="margin:0">
+        <textarea id="wr-q" placeholder="Describe your research topic in detail...&#10;e.g. 'cybersecurity awareness programs in higher education institutions and their impact on student data protection behavior'"
+          style="width:100%;min-height:62px;resize:vertical;font-size:13px;line-height:1.5;padding:10px 12px"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();searchWebResearch()}"></textarea>
+      </div>
+
+      <!-- Options row 1: Years + Sources -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;align-items:center;gap:4px">
+          <label style="font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap">📅 Year:</label>
+          <select id="wr-year-from" style="width:80px;padding:5px 8px;font-size:11px"><option value="">Any from</option></select>
+          <span style="color:var(--muted);font-size:11px">→</span>
+          <select id="wr-year-to" style="width:80px;padding:5px 8px;font-size:11px"><option value="">Any to</option></select>
+        </div>
+
+        <div class="separator" style="width:1px;height:20px;background:var(--border);margin:0 2px"></div>
+
+        <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+          <label style="font-size:11px;color:var(--muted);font-weight:500">📡 Sources:</label>
+          <label class="wr-src" style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(108,99,255,.08)">
+            <input type="checkbox" id="src-openalex" checked style="accent-color:var(--accent);width:12px;height:12px">
+            <span style="color:var(--accent)">OpenAlex</span>
+          </label>
+          <label class="wr-src" style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(0,212,170,.08)">
+            <input type="checkbox" id="src-crossref" checked style="accent-color:var(--a2);width:12px;height:12px">
+            <span style="color:var(--a2)">Crossref</span>
+          </label>
+          <label class="wr-src" style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(245,197,24,.08)">
+            <input type="checkbox" id="src-semantic" checked style="accent-color:var(--gold);width:12px;height:12px">
+            <span style="color:var(--gold)">Semantic Scholar</span>
+          </label>
+          <label class="wr-src" style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(255,107,0,.08)">
+            <input type="checkbox" id="src-arxiv" style="accent-color:#ff6b00;width:12px;height:12px">
+            <span style="color:#ff6b00">ArXiv</span>
+          </label>
+          <label class="wr-src" style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(179,136,255,.08)">
+            <input type="checkbox" id="src-pubmed" style="accent-color:#b388ff;width:12px;height:12px">
+            <span style="color:#b388ff">PubMed</span>
+          </label>
+        </div>
+
+        <div class="separator" style="width:1px;height:20px;background:var(--border);margin:0 2px"></div>
+
+        <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+          <label style="font-size:11px;color:var(--muted);font-weight:500">Sort:</label>
+          <select id="wr-sort" style="width:100px;padding:5px 8px;font-size:11px">
+            <option value="citations">📊 Citations ↓</option>
+            <option value="date" selected>📅 Date ↓</option>
+            <option value="relevance">🎯 Relevance</option>
+          </select>
+          <label style="font-size:11px;color:var(--muted);font-weight:500">Show:</label>
+          <select id="wr-max" style="width:60px;padding:5px 8px;font-size:11px">
+            <option>10</option><option selected>20</option><option>30</option><option>50</option>
+          </select>
+          <button class="btn btn-p" onclick="searchWebResearch()" id="wr-search-btn" style="font-size:12px;padding:6px 16px">🔍 Search</button>
+          <button class="btn btn-g btn-s" onclick="clearResearchResults()" title="Clear results &amp; reset">✕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Results Area ── -->
+    <div id="wr-results-area" style="flex:1;overflow-y:auto">
+      <!-- Welcome -->
+      <div id="wr-welcome" style="text-align:center;padding:48px 20px;color:var(--muted)">
+        <div style="font-size:36px;margin-bottom:12px">🔍</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:6px">Academic Paper Search Engine</div>
+        <div class="text-sm">Search across <strong>5 sources</strong> simultaneously — OpenAlex, Crossref, Semantic Scholar, ArXiv &amp; PubMed.</div>
+        <div class="text-sm" style="margin-top:8px">📌 <strong>Read</strong> — preview full abstract &amp; details</div>
+        <div class="text-sm">🌐 <strong>Open</strong> — go to the exact paper page</div>
+        <div class="text-sm">📥 <strong>Download PDF</strong> (OA papers) — download PDF + auto-convert to .md via Docling</div>
+        <div class="text-sm">📥 <strong>Download .md (12-Point)</strong> (non-OA) — save with AI-powered 12-point research analysis</div>
+        <div class="text-sm mt12">🚫 Predatory journals automatically filtered out. All free APIs — no API keys needed.</div>
+      </div>
+
+      <!-- Results -->
+      <div id="wr-results" style="display:none">
+        <div id="wr-results-header" style="padding:8px 18px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center"></div>
+        <div id="wr-results-body" style="padding:10px 18px"></div>
+      </div>
+    </div>
+
+    <!-- ── Imported Papers ── -->
+    <div id="wr-imported" style="display:none;border-top:1px solid var(--border);flex-shrink:0;max-height:200px;overflow-y:auto">
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface)">
+        <span style="font-size:12px;font-weight:600">📥 Downloaded Papers (UNREAD-WEB)</span>
+        <span class="badge" id="wr-imported-count">0</span>
+        <button class="btn btn-g btn-s ml-a" onclick="loadWebPapers()" style="font-size:10px">⟳ Refresh</button>
+      </div>
+      <table class="tbl" id="wr-imported-tbl">
+        <thead><tr><th>File</th><th>Type</th><th>Size</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="wr-imported-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- LIBRARY -->
+<div class="page" id="page-library">
+  <div class="ph">
+    <h2>📚 File Library</h2>
+    <div class="ph-actions">
+      <input type="text" id="lib-q" placeholder="Search…" style="width:200px" oninput="filterLib()">
+    </div>
+  </div>
+    <div style="overflow-y:auto;flex:1">
+    <table class="tbl" id="lib-tbl">
+      <thead><tr><th>Project</th><th>File</th><th>Type</th><th>Size</th><th>MD?</th><th>Move To</th><th>Actions</th></tr></thead>
+      <tbody id="lib-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- MEMORY (all .md files in one place) -->
+<div class="page" id="page-memory">
+  <div class="ph">
+    <h2>🧠 Memory — All .md Files</h2>
+    <div class="ph-actions">
+      <input type="text" id="mem-q" placeholder="Search…" style="width:200px" oninput="filterMem()">
+    </div>
+  </div>
+  <div style="overflow-y:auto;flex:1">
+    <table class="tbl">
+      <thead><tr><th>Source</th><th>Project</th><th>File</th><th>Size</th><th>Modified</th><th>Actions</th></tr></thead>
+      <tbody id="mem-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PLUGINS -->
+<div class="page" id="page-plugins">
+  <div class="ph"><h2>🔌 AI Plugin Engine</h2></div>
+  <div class="pb" style="max-width:640px">
+    <div class="section-title">Available Engine Types</div>
+    <div class="text-sm text-m mb12">MRBLANK_RA supports these AI engine types. Add new ones by installing Python plugins into <code>00-SYSTEM-CORE/plugins/</code>.</div>
+    <div id="plugins-list"></div>
+    <hr class="separator">
+    <div class="section-title">➡️ How to Add Claude</div>
+    <div class="card">
+      <div class="card-t">🤖 Option 1: Claude API (Recommended)</div>
+      <div class="card-s">Get an API key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a> → Add it in Settings → AI Engines → Enable "Claude API".</div>
+    </div>
+    <div class="card">
+      <div class="card-t">🔐 Option 2: Claude Login (Plugin)</div>
+      <div class="card-s">If you have a paid Claude account, install the CLI: <code>pip install claude-cli</code> then run <code>claude login</code>. MRBLANK_RA will auto-detect it.</div>
+    </div>
+    <div class="card">
+      <div class="card-t">📦 Option 3: Custom OpenAI-Compatible</div>
+      <div class="card-s">Any OpenAI-compatible API (OpenRouter, Jan, LocalAI) can be added in Settings → AI Engines with type "Custom API".</div>
+    </div>
+  </div>
+</div>
+
+<!-- OBSIDIAN -->
+<div class="page" id="page-obsidian">
+  <div class="ph"><h2>🪨 Obsidian Graph View</h2></div>
+  <div class="pb" style="max-width:800px">
+    <div class="card">
+      <div class="card-t">📂 This folder IS your Obsidian vault</div>
+      <div class="card-s" style="margin-top:4px">
+        Open this folder in Obsidian to see all your research connected in a graph.<br>
+        <code style="color:var(--a2);font-size:12px">C:\F- Drive\MYWORK-Research1</code>
+      </div>
+    </div>
+    <div class="grid2" style="grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-size:32px;margin-bottom:8px">📂</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">Open in Obsidian</div>
+        <div class="card-s">Launches Obsidian with this vault loaded</div>
+        <button class="btn btn-p mt12" onclick="openObsidian()" style="width:100%">🚀 Open Vault</button>
+      </div>
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-size:32px;margin-bottom:8px">🔗</div>
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px">Graph View</div>
+        <div class="card-s">Open Obsidian's local graph for the entire vault</div>
+        <button class="btn btn-p mt12" onclick="openObsidianGraph()" style="width:100%">🕸 Open Graph</button>
+      </div>
+    </div>
+    <div class="card" id="obsidian-stats">
+      <div class="card-t">📊 Vault Statistics</div>
+      <div id="obsidian-stats-body" style="margin-top:8px">
+        <div class="flex gap8 items-c" style="flex-wrap:wrap;gap:12px">
+          <span class="badge" id="obs-md-count">.md files: —</span>
+          <span class="badge" id="obs-proj-count">Projects: —</span>
+          <span class="badge" id="obs-chat-count">Chats: —</span>
+        </div>
+        <div class="card-s mt12">Every file is a node. Every link between files creates an edge in the graph. Tags like <code>#MRBLANK_RA</code> <code>#research</code> <code>#chat</code> cluster related nodes.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t">💡 How Obsidian Graph Helps</div>
+      <div class="card-s">
+        <ul style="margin:8px 0;padding-left:16px;line-height:1.8">
+          <li><strong>Connections:</strong> Papers linked to their extractions show as connected nodes</li>
+          <li><strong>Clusters:</strong> Related projects form natural clusters</li>
+          <li><strong>Chats:</strong> Every chat session is a searchable .md node</li>
+          <li><strong>Search:</strong> Obsidian's built-in search across all research</li>
+          <li><strong>Plugins:</strong> Use Dataview, Graph Analysis, Excalidraw for deeper insights</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- GRAPH -->
+<div class="page" id="page-graph">
+  <div class="ph" style="flex-wrap:wrap;gap:6px">
+    <h2 style="margin-right:4px">🕸 Knowledge Graph</h2>
+    <div class="ph-actions" style="gap:4px">
+      <button class="btn btn-p btn-s" onclick="runGraphify()">⟳ Refresh</button>
+      <button class="btn btn-g btn-s" onclick="clearGraphFilters()" title="Clear all filters">✕ Clear Filters</button>
+    </div>
+  </div>
+  <div class="pb" style="padding:0;display:flex;flex-direction:column;height:100%">
+
+    <!-- Multi-Layer Filter Bar -->
+    <div id="graph-filter-bar" style="padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:var(--surface)">
+      <span class="text-sm text-m" style="font-weight:600;font-size:10px">FILTER LAYERS:</span>
+
+      <!-- Layer 1 -->
+      <div class="graph-layer" style="display:flex;gap:4px;align-items:center;padding:4px 8px;background:var(--panel);border-radius:6px;border:1px solid var(--border)">
+        <span class="badge" style="background:rgba(108,99,255,.2);color:var(--accent);border:none">1</span>
+        <select id="gf-dim1" onchange="updateGraphLayer(1)" style="width:90px;padding:3px 6px;font-size:10px">
+          <option value="">— Dim —</option>
+          <option value="author">👤 Author</option>
+          <option value="year">📅 Year</option>
+          <option value="journal">📰 Journal</option>
+          <option value="quartile">⭐ Quartile</option>
+          <option value="method">🔬 Method</option>
+          <option value="framework">📐 Framework</option>
+          <option value="keyword">🏷 Keyword</option>
+        </select>
+        <select id="gf-val1" onchange="loadGraph()" style="width:120px;padding:3px 6px;font-size:10px;display:none">
+          <option value="">— Value —</option>
+        </select>
+        <button class="btn btn-d btn-s" onclick="removeGraphLayer(1)" style="padding:1px 5px;font-size:9px;display:none" id="gf-rm1">✕</button>
+      </div>
+
+      <!-- Layer 2 -->
+      <div class="graph-layer" id="gl2" style="display:none;gap:4px;align-items:center;padding:4px 8px;background:var(--panel);border-radius:6px;border:1px solid var(--border)">
+        <span class="badge" style="background:rgba(0,212,170,.2);color:var(--a2);border:none">2</span>
+        <select id="gf-dim2" onchange="updateGraphLayer(2)" style="width:90px;padding:3px 6px;font-size:10px">
+          <option value="">— Dim —</option>
+          <option value="author">👤 Author</option>
+          <option value="year">📅 Year</option>
+          <option value="journal">📰 Journal</option>
+          <option value="quartile">⭐ Quartile</option>
+          <option value="method">🔬 Method</option>
+          <option value="framework">📐 Framework</option>
+          <option value="keyword">🏷 Keyword</option>
+        </select>
+        <select id="gf-val2" onchange="loadGraph()" style="width:120px;padding:3px 6px;font-size:10px;display:none">
+          <option value="">— Value —</option>
+        </select>
+        <select id="gf-op2" style="width:55px;padding:3px 6px;font-size:9px" onchange="loadGraph()">
+          <option value="AND">AND</option>
+          <option value="OR">OR</option>
+        </select>
+        <button class="btn btn-d btn-s" onclick="removeGraphLayer(2)" style="padding:1px 5px;font-size:9px" id="gf-rm2">✕</button>
+      </div>
+
+      <!-- Layer 3 -->
+      <div class="graph-layer" id="gl3" style="display:none;gap:4px;align-items:center;padding:4px 8px;background:var(--panel);border-radius:6px;border:1px solid var(--border)">
+        <span class="badge" style="background:rgba(245,197,24,.2);color:var(--gold);border:none">3</span>
+        <select id="gf-dim3" onchange="updateGraphLayer(3)" style="width:90px;padding:3px 6px;font-size:10px">
+          <option value="">— Dim —</option>
+          <option value="author">👤 Author</option>
+          <option value="year">📅 Year</option>
+          <option value="journal">📰 Journal</option>
+          <option value="quartile">⭐ Quartile</option>
+          <option value="method">🔬 Method</option>
+          <option value="framework">📐 Framework</option>
+          <option value="keyword">🏷 Keyword</option>
+        </select>
+        <select id="gf-val3" onchange="loadGraph()" style="width:120px;padding:3px 6px;font-size:10px;display:none">
+          <option value="">— Value —</option>
+        </select>
+        <select id="gf-op3" style="width:55px;padding:3px 6px;font-size:9px" onchange="loadGraph()">
+          <option value="AND">AND</option>
+          <option value="OR">OR</option>
+        </select>
+        <button class="btn btn-d btn-s" onclick="removeGraphLayer(3)" style="padding:1px 5px;font-size:9px" id="gf-rm3">✕</button>
+      </div>
+
+      <!-- Layer 4 -->
+      <div class="graph-layer" id="gl4" style="display:none;gap:4px;align-items:center;padding:4px 8px;background:var(--panel);border-radius:6px;border:1px solid var(--border)">
+        <span class="badge" style="background:rgba(255,77,109,.2);color:var(--red);border:none">4</span>
+        <select id="gf-dim4" onchange="updateGraphLayer(4)" style="width:90px;padding:3px 6px;font-size:10px">
+          <option value="">— Dim —</option>
+          <option value="author">👤 Author</option>
+          <option value="year">📅 Year</option>
+          <option value="journal">📰 Journal</option>
+          <option value="quartile">⭐ Quartile</option>
+          <option value="method">🔬 Method</option>
+          <option value="framework">📐 Framework</option>
+          <option value="keyword">🏷 Keyword</option>
+        </select>
+        <select id="gf-val4" onchange="loadGraph()" style="width:120px;padding:3px 6px;font-size:10px;display:none">
+          <option value="">— Value —</option>
+        </select>
+        <select id="gf-op4" style="width:55px;padding:3px 6px;font-size:9px" onchange="loadGraph()">
+          <option value="AND">AND</option>
+          <option value="OR">OR</option>
+        </select>
+        <button class="btn btn-d btn-s" onclick="removeGraphLayer(4)" style="padding:1px 5px;font-size:9px" id="gf-rm4">✕</button>
+      </div>
+
+      <button class="btn btn-g btn-s" onclick="addGraphLayer()" id="gf-add-layer" style="font-size:10px;padding:3px 8px">+ Layer</button>
+    </div>
+
+    <div id="graph-stats" style="padding:6px 14px;border-bottom:1px solid var(--border);font-size:11px;color:var(--muted);flex-shrink:0;display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+    <div id="graph-legend" style="padding:4px 14px;border-bottom:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0;font-size:11px">
+      <script>
+        CAT_KEYS.forEach(k => {
+          const c = CAT_COLORS[k];
+          document.write('<label style="display:flex;align-items:center;gap:4px;cursor:pointer;color:var(--muted)">' +
+            '<input type="checkbox" id="tog-'+k+'" checked onchange="toggleGraphCat(\''+k+'\')" style="accent-color:'+c.bd+'">' +
+            '<span style="color:'+c.bd+'">●</span> '+c.label+
+          '</label>');
+        });
+      </script>
+    </div>
+    <div id="graph-container" style="flex:1;background:var(--bg);border-radius:0;position:relative;overflow:hidden"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+  <div class="settings-grid" style="height:100%">
+    <div class="settings-nav">
+      <div class="sn-item on" onclick="showSettingsSection('ai')">🤖 AI Engines</div>
+      <div class="sn-item" onclick="showSettingsSection('skills')">🎓 Skills</div>
+      <div class="sn-item" onclick="showSettingsSection('projects')">📁 Projects</div>
+      <div class="sn-item" onclick="showSettingsSection('kb')">🌐 Knowledge Base</div>
+      <div class="sn-item" onclick="showSettingsSection('keywords')">🔑 Keywords</div>
+      <div class="sn-item" onclick="showSettingsSection('predatory')">🚫 Predatory Journals</div>
+      <div class="sn-item" onclick="showSettingsSection('general')">⚙️ General</div>
+      <div class="sn-item" onclick="showSettingsSection('author')">👤 Author</div>
+      <div class="sn-item" onclick="showSettingsSection('versions')">📋 Changelog</div>
+    </div>
+    <div class="settings-body">
+
+      <!-- AI Engines -->
+      <div id="ss-ai">
+        <div class="section-title">🤖 AI Engines — Configure &amp; Enable</div>
+        <div class="text-sm text-m mb12">MRBLANK_RA tries engines top-to-bottom (by priority). First working one wins. You can have multiple enabled — it never stops.</div>
+        <div id="engines-list"></div>
+        <button class="btn btn-p" onclick="saveEngines()">💾 Save AI Settings</button>
+      </div>
+
+      <!-- Skills -->
+      <div id="ss-skills" style="display:none">
+        <div class="section-title">🎓 Skills — Teach MRBLANK_RA how to work</div>
+        <div class="text-sm text-m mb12">Skills are markdown files loaded into MRBLANK_RA's memory for every chat. Add your working style, citation rules, research preferences.</div>
+        <div id="skills-list"></div>
+        <hr class="separator">
+        <div class="section-title">+ Add New Skill</div>
+        <div class="form-row"><label>Skill Name</label><input type="text" id="sk-name" class="w100" placeholder="e.g. APA-Citation-Style"></div>
+        <div class="form-row"><label>Skill Content (markdown)</label><textarea id="sk-content" class="w100" rows="6" placeholder="Write instructions MRBLANK_RA should always follow…"></textarea></div>
+        <button class="btn btn-p" onclick="saveSkill()">💾 Save Skill</button>
+      </div>
+
+      <!-- Projects -->
+      <div id="ss-projects" style="display:none">
+        <div class="section-title">📁 Project Management</div>
+        <div id="settings-proj-list"></div>
+        <hr class="separator">
+        <div class="section-title">+ Create New Project</div>
+        <div class="form-row"><label>Project Name (no spaces)</label><input type="text" id="np-name" class="w100" placeholder="e.g. P3-CYBERSECURITY"></div>
+        <div class="form-row"><label>Focus</label><input type="text" id="np-focus" class="w100" placeholder="Short description of research focus"></div>
+        <div class="form-row"><label>Goal</label><input type="text" id="np-goal" class="w100" placeholder="Publication target or outcome"></div>
+        <button class="btn btn-p" onclick="createProject()">📁 Create Project</button>
+      </div>
+
+      <!-- Knowledge Base -->
+      <div id="ss-kb" style="display:none">
+        <div class="section-title">🌐 Master Knowledge Base</div>
+        <div class="text-sm text-m mb12">Synthesis of all papers across all projects — read-only from here.</div>
+        <div class="card"><div class="md-view" id="kb-view" style="max-height:60vh;overflow-y:auto">Loading…</div></div>
+      </div>
+
+      <!-- Keywords -->
+      <div id="ss-keywords" style="display:none">
+        <div class="section-title">🔑 Keywords — Track &amp; Find Research Faster</div>
+        <div class="flex gap8 items-c mb12" style="flex-wrap:wrap">
+          <button class="btn btn-p btn-s" onclick="scanKeywords()">🔍 Auto-Scan All .md Files</button>
+          <span class="text-sm text-m" id="kw-status"></span>
+        </div>
+        <div class="form-row" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:140px"><label>Add Keyword</label><input type="text" id="kw-new" class="w100" placeholder="e.g. qualitative" onkeydown="if(event.key==='Enter')addKeyword()"></div>
+          <div style="flex:2;min-width:200px"><label>Note (optional)</label><input type="text" id="kw-note" class="w100" placeholder="Description or context"></div>
+          <button class="btn btn-p" onclick="addKeyword()" style="margin-bottom:0">+ Add</button>
+        </div>
+        <div id="kw-search-wrap" class="form-row" style="margin-top:4px">
+          <label>Filter Keywords</label>
+          <input type="text" id="kw-filter" class="w100" placeholder="Type to filter…" oninput="renderKeywords()">
+        </div>
+        <div class="flex gap8 items-c" style="margin-bottom:8px;flex-wrap:wrap;min-height:28px">
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer">
+            <input type="checkbox" id="kw-select-all" onchange="toggleSelectAllKeywords(this.checked)" style="accent-color:var(--accent)">
+            <span class="text-m">Select All</span>
+          </label>
+          <span class="text-sm text-m" id="kw-selected-count" style="font-size:10px">0 selected</span>
+          <button class="btn btn-d btn-s" id="kw-delete-selected" onclick="deleteSelectedKeywords()" disabled style="opacity:0.4">🗑 Delete Selected</button>
+        </div>
+        <div id="keywords-list"></div>
+        <details id="discarded-kw-section" style="margin-top:8px;font-size:11px;color:var(--text-m)">
+          <summary style="cursor:pointer;user-select:none">🗑 Discarded (never auto-add) — <span id="discarded-count">0</span></summary>
+          <div id="discarded-list" style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px"></div>
+        </details>
+      </div>
+
+      <!-- Predatory Journals -->
+      <div id="ss-predatory" style="display:none">
+        <div class="section-title">🚫 Predatory Journal List</div>
+        <div class="text-sm text-m mb12">Journals listed here are filtered from search results. Matches are case-insensitive partial matches (e.g. "waset" catches "WASET Journal of...").</div>
+        <div class="flex gap8 items-c mb12" style="flex-wrap:wrap">
+          <div style="flex:1;min-width:200px"><label>Add journal name</label><input type="text" id="pj-new" class="w100" placeholder="e.g. waset" onkeydown="if(event.key==='Enter')addPredatoryJournal()"></div>
+          <button class="btn btn-p" onclick="addPredatoryJournal()">+ Add</button>
+          <button class="btn btn-g btn-s" onclick="fetchPredatoryOnline()">🌐 Fetch Latest Online</button>
+          <span class="text-sm text-m" id="pj-status"></span>
+        </div>
+        <div class="card" style="max-height:300px;overflow-y:auto">
+          <div id="pj-list" class="text-sm text-m">Loading…</div>
+        </div>
+      </div>
+
+      <!-- General -->
+      <div id="ss-general" style="display:none">
+        <div class="section-title">⚙️ General Settings</div>
+        <div class="form-row"><label>Auto-extract after upload</label>
+          <div class="flex gap8 items-c mt12">
+            <div class="toggle on" id="tog-auto" onclick="this.classList.toggle('on')"></div>
+            <span class="text-sm text-m">Create .md file for every uploaded file automatically</span>
+          </div>
+        </div>
+        <div class="form-row"><label>Max context characters (per AI call)</label>
+          <input type="text" id="gen-ctx" class="w100" value="40000">
+        </div>
+        <div class="form-row"><label>Auto-start on Windows login</label>
+          <div class="flex gap8 items-c mt12">
+            <div class="toggle" id="tog-autostart" onclick="this.classList.toggle('on')"></div>
+            <span class="text-sm text-m">Start MRBLANK_RA automatically when you log in (creates Windows scheduled task)</span>
+          </div>
+        </div>
+        <hr class="separator">
+        <div class="section-title">🪨 Obsidian Integration</div>
+        <div class="card">
+          <div class="card-t">📂 Vault this folder in Obsidian:</div>
+          <code style="font-size:11px;color:var(--a2)">C:\F- Drive\MYWORK-Research1</code>
+          <div class="card-s mt12">All chats auto-save to <code>99-SYSTEM-BACKEND/chats/</code> as .md files — full searchable memory in Obsidian.</div>
+        </div>
+        <button class="btn btn-p" onclick="saveGeneral()">💾 Save</button>
+      </div>
+
+      <!-- Author -->
+      <div id="ss-author" style="display:none">
+        <div class="section-title">👤 Author</div>
+        <div class="au-card">
+          <div class="au-av">YB</div>
+          <div class="au-nm">Md Yeahia Bhuiyan</div>
+          <div class="au-tt">Researcher, Educator and AI Enthusiast</div>
+          <span class="au-lbl">🎓 PhD</span>
+          <span class="au-val">Information Technology, Cybersecurity</span>
+          <span class="au-lbl">🎓 Masters</span>
+          <span class="au-val">Information Security</span>
+          <div class="au-cp">© 2026 Md Yeahia Bhuiyan. All rights reserved.</div>
+        </div>
+      </div>
+
+      <!-- Changelog -->
+      <div id="ss-versions" style="display:none">
+        <div class="section-title">📋 Version Changelog</div>
+        <div class="text-sm text-m mb12">Record every update or change to the system. Add new entries when you deploy changes.</div>
+        <div class="flex gap8 items-c mb12" style="flex-wrap:wrap">
+          <input type="date" id="vl-date" class="" style="width:140px;padding:5px 8px;font-size:11px">
+          <input type="text" id="vl-version" class="" style="width:100px;padding:5px 8px;font-size:11px" placeholder="v1.0.0">
+          <input type="text" id="vl-desc" class="" style="width:240px;padding:5px 8px;font-size:11px" placeholder="What changed?">
+          <button class="btn btn-p btn-s" onclick="addVersionEntry()">+ Record</button>
+        </div>
+        <div id="versions-list" style="max-height:60vh;overflow-y:auto">
+          <div class="text-sm text-m" style="padding:20px;text-align:center">Loading…</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+</div><!-- /body -->
+</div><!-- /app -->
+
+<!-- Modal -->
+<div class="overlay" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-h">
+      <span id="modal-title">View</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span id="modal-file-path" style="font-size:10px;color:var(--muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+        <button class="btn btn-g btn-s" id="modal-goto-lib" onclick="gotoFileInLibrary()" title="Go to this file in the Library" style="font-size:10px;padding:3px 8px;display:none">📂 Go to Library</button>
+        <button class="btn btn-g btn-s" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-b"><div class="md-view" id="modal-body"></div></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API='';
+let projects=[],library=[],memory=[],sessions=[],settings={},skills=[];
+let currentSession=null;
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+async function boot(){
+  clock();
+  await loadSettings();
+  await Promise.all([loadProjects(),loadLibrary(),loadMemory(),loadSessions(),loadSkills()]);
+  updateDash();
+  pollStatus();
+  setInterval(pollStatus,30000);
+  populateYearSelects();
+  loadVersion();
+  if(localStorage.getItem('mrblank-sb')==='1')document.getElementById('sidebar').classList.add('hidden');
+}
+
+function toggleSidebar(){
+  const sb=document.getElementById('sidebar');
+  const b=document.getElementById('sb-collapse');
+  sb.classList.toggle('hidden');
+  b.textContent=sb.classList.contains('hidden')?'▶':'◀';
+  localStorage.setItem('mrblank-sb',sb.classList.contains('hidden')?'1':'0');
+}
+
+function clock(){
+  const el=document.getElementById('clock');
+  setInterval(()=>{el.textContent=new Date().toLocaleTimeString();},1000);
+}
+
+async function pollStatus(){
+  try{
+    const d=await fetch(`${API}/api/status`).then(r=>r.json());
+    const dot=document.getElementById('ai-dot');
+    const nm=document.getElementById('ai-name');
+    if(d.active==='none'){dot.className='engine-dot';nm.textContent='No AI — go to Settings';}
+    else{dot.className='engine-dot ok';nm.textContent=d.active;}
+  }catch(e){}
+}
+
+// ─── Settings ─────────────────────────────────────────────────────────────────
+async function loadSettings(){
+  settings=await fetch(`${API}/api/settings`).then(r=>r.json());
+  renderEngines();
+  document.getElementById('gen-ctx').value=settings.max_context_chars||40000;
+  if(!settings.auto_extract_on_upload)document.getElementById('tog-auto').classList.remove('on');
+  if(settings.auto_start)document.getElementById('tog-autostart').classList.add('on');
+}
+
+function renderEngines(){
+  const el=document.getElementById('engines-list');
+  el.innerHTML=(settings.ai_engines||[]).map((e,i)=>`
+  <div class="engine-card" id="ec-${i}">
+    <div class="engine-head">
+      <div class="toggle ${e.enabled?'on':''}" id="tog-${i}" onclick="this.classList.toggle('on')"></div>
+      <div>
+        <div class="engine-name">${e.name}</div>
+        <div class="engine-note">${e.note||''}</div>
+      </div>
+      <div class="badge" style="margin-left:auto">P${e.priority}</div>
+    </div>
+    <div class="engine-fields">
+      ${e.type==='ollama'||e.type==='openai_compat'?`<div class="form-row"><label>URL</label><input class="w100" id="eu-${i}" value="${e.url||''}"></div>`:'<div></div>'}
+      <div class="form-row"><label>Model</label><input class="w100" id="em-${i}" value="${e.model||''}"></div>
+      ${e.type!=='ollama'?`<div class="form-row" style="grid-column:1/-1"><label>API Key</label><input class="w100" type="password" id="ek-${i}" value="${e.api_key||''}" placeholder="Paste API key here…"></div>`:''}
+    </div>
+  </div>`).join('');
+}
+
+async function saveEngines(){
+  const engines=[...(settings.ai_engines||[])].map((e,i)=>({
+    ...e,
+    enabled:document.getElementById(`tog-${i}`)?.classList.contains('on')??e.enabled,
+    url:document.getElementById(`eu-${i}`)?.value??e.url,
+    model:document.getElementById(`em-${i}`)?.value??e.model,
+    api_key:document.getElementById(`ek-${i}`)?.value??e.api_key,
+  }));
+  settings.ai_engines=engines;
+  await fetch(`${API}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)});
+  toast('AI engines saved!','ok');
+  pollStatus();
+}
+
+async function saveGeneral(){
+  settings.max_context_chars=parseInt(document.getElementById('gen-ctx').value)||40000;
+  settings.auto_extract_on_upload=document.getElementById('tog-auto').classList.contains('on');
+  const autoStart=document.getElementById('tog-autostart').classList.contains('on');
+  if(autoStart!==settings.auto_start){
+    settings.auto_start=autoStart;
+    await fetch(`${API}/api/auto-start`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:autoStart})});
+  }
+  await fetch(`${API}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)});
+  toast('Settings saved','ok');
+}
+
+function showSettingsSection(id){
+  ['ai','skills','projects','kb','keywords','predatory','general','author','versions'].forEach(s=>{
+    document.getElementById('ss-'+s).style.display=s===id?'block':'none';
+  });
+  document.querySelectorAll('.sn-item').forEach((el,i)=>{
+    el.classList.toggle('on',['ai','skills','projects','kb','keywords','predatory','general','author','versions'][i]===id);
+  });
+  if(id==='skills')renderSkills();
+  if(id==='projects')renderSettingsProjects();
+  if(id==='kb')loadKB();
+  if(id==='keywords')loadKeywords();
+  if(id==='predatory')loadPredatory();
+  if(id==='author'){};
+  if(id==='versions'){loadVersions();initVersionDate();}
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+async function loadProjects(){
+  projects=await fetch(`${API}/api/projects`).then(r=>r.json());
+  renderSidebar();
+  renderDashProjects();
+  populateProjectDropdowns();
+}
+
+function renderSidebar(){
+  document.getElementById('proj-list').innerHTML=
+    projects.map(p=>`<div class="sb-item" onclick="filterByProject('${p.id}')">
+      📁 ${p.name.replace(/-/g,' ')}
+      <span class="ct">${p.papers}</span>
+    </div>`).join('')+
+    `<div class="sb-item" onclick="filterByProject('INCOMING')">📥 INCOMING</div>`;
+}
+
+function renderDashProjects(){
+  document.getElementById('proj-cards').innerHTML=
+    projects.map(p=>`<div class="card">
+      <div class="card-t">📁 ${p.name}</div>
+      <div class="flex gap12" style="margin-top:8px">
+        <span class="badge">${p.papers} files</span>
+        <span class="badge">${p.extractions} extractions</span>
+      </div>
+    </div>`).join('');
+}
+
+function populateProjectDropdowns(){
+  const opts=projects.map(p=>`<option value="${p.id}">${p.id}</option>`).join('');
+  document.getElementById('up-proj').innerHTML='<option value="INCOMING">📥 INCOMING</option>'+opts;
+  document.getElementById('cp-project').innerHTML='<option value="">— All projects —</option>'+opts;
+}
+
+function filterByProject(id){
+  // Switch to library and filter
+  go('library');
+  loadLibrary(id);
+}
+
+async function createProject(){
+  const name=document.getElementById('np-name').value.trim();
+  const focus=document.getElementById('np-focus').value.trim();
+  const goal=document.getElementById('np-goal').value.trim();
+  if(!name)return toast('Enter a project name','err');
+  await fetch(`${API}/api/projects`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,focus,goal})});
+  toast(`Project ${name} created`,'ok');
+  await loadProjects();
+  updateDash();
+}
+
+function openNewProject(){showSettingsSection('projects');go('settings');}
+
+function renderSettingsProjects(){
+  document.getElementById('settings-proj-list').innerHTML=
+    projects.map(p=>`<div class="card flex items-c gap8" id="proj-card-${p.id}">
+      <span>📁 ${p.name}</span>
+      <span class="badge">${p.papers} files</span>
+      <span class="badge">${p.extractions} ext</span>
+      <div class="ml-a flex gap4">
+        <button class="btn btn-g btn-s" onclick="editProject('${p.id}')" title="Rename project">✏️</button>
+        <button class="btn btn-d btn-s" onclick="deleteProject('${p.id}')">🗑</button>
+      </div>
+    </div>
+    <div id="proj-edit-${p.id}" style="display:none;padding:6px 0 10px 0" class="flex gap8 items-c">
+      <input type="text" id="pe-name-${p.id}" class="" style="width:200px;padding:4px 8px;font-size:11px" value="${esc(p.name)}" placeholder="New name">
+      <button class="btn btn-p btn-s" onclick="renameProject('${p.id}')">💾 Rename</button>
+      <button class="btn btn-g btn-s" onclick="cancelEditProject('${p.id}')">✕ Cancel</button>
+    </div>`).join('');
+}
+
+function editProject(id){
+  document.getElementById('proj-card-'+id).style.display='none';
+  document.getElementById('proj-edit-'+id).style.display='flex';
+}
+function cancelEditProject(id){
+  document.getElementById('proj-card-'+id).style.display='flex';
+  document.getElementById('proj-edit-'+id).style.display='none';
+}
+
+async function renameProject(id){
+  const inp = document.getElementById('pe-name-'+id);
+  const newName = inp.value.trim().toUpperCase();
+  if(!newName) return toast('Enter a valid name','err');
+  try {
+    const d = await fetch(`${API}/api/projects/${id}`, {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({new_name: newName})
+    }).then(r => r.json());
+    if(d.ok){
+      toast(`Project renamed to ${newName}`,'ok');
+      await loadProjects();
+      updateDash();
+    } else toast(d.detail||'Rename failed','err');
+  } catch(e) { toast('Error: '+e.message,'err'); }
+}
+
+async function deleteProject(id){
+  if(!confirm(`Delete project ${id} and ALL its files? This cannot be undone.`))return;
+  await fetch(`${API}/api/projects/${id}`,{method:'DELETE'});
+  toast('Project deleted','ok');
+  await loadProjects();updateDash();
+}
+
+// ─── Library ──────────────────────────────────────────────────────────────────
+async function loadLibrary(projFilter=null){
+  const url=projFilter?`${API}/api/library?project=${projFilter}`:`${API}/api/library`;
+  library=await fetch(url).then(r=>r.json());
+  renderLib(library);
+}
+
+function renderLib(data){
+  const extIcons={'.pdf':'📄','.docx':'📝','.pptx':'📊','.txt':'📃','.md':'📋','.csv':'📈','.html':'🌐'};
+  document.getElementById('lib-body').innerHTML=data.map(f=>{
+    const safeId='mv-'+f.filename.replace(/[^a-zA-Z0-9_-]/g,'_');
+    const projOpts=projects.filter(p=>p.id!==f.project).map(p=>`<option value="${p.id}">${p.id}</option>`).join('');
+    const mdName=f.has_md?((f.ext==='.md')?f.filename:f.stem+'.md'):'';
+    return `<tr>
+    <td><span class="tag">${f.project}</span></td>
+    <td>${f.filename}</td>
+    <td>${extIcons[f.ext]||'📎'} ${f.ext}</td>
+    <td>${f.size_kb}KB</td>
+    <td>${f.has_md?'<span class="tag green">✓ MD</span>':'<span class="tag red">—</span>'}</td>
+    <td class="flex gap8" style="align-items:center">
+      <select id="${safeId}" style="width:100px;padding:4px 6px;font-size:10px">
+        <option value="">— Move —</option>
+        ${projOpts}
+      </select>
+      <button class="btn btn-s btn-g" onclick="moveFile('${f.project}','${f.filename}')" style="padding:2px 6px;font-size:10px">→</button>
+    </td>
+    <td class="flex gap8" style="flex-wrap:wrap">
+      ${f.has_md?`<button class="btn btn-g btn-s" onclick="viewMdFile('${f.project}','${mdName}')">📋 View MD</button>`:''}
+      ${f.ext==='.pdf'||f.ext==='.docx'||f.ext==='.pptx'?`<button class="btn btn-g btn-s" onclick="extractFile('${f.project}','${f.filename}')">🧠 Extract</button>`:''}
+      <button class="btn btn-g btn-s" onclick="chatWithFile('${f.project}','${f.filename}')">💬 Chat</button>
+      <button class="btn btn-d btn-s" onclick="deleteLibFile('${f.project}','${f.filename}')">🗑</button>
+    </td>
+  </tr>`}).join('')||'<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">No files yet — upload some!</td></tr>';
+}
+
+function filterLib(){
+  const q=document.getElementById('lib-q').value.toLowerCase();
+  renderLib(library.filter(f=>(f.filename+f.project).toLowerCase().includes(q)));
+}
+
+async function viewMdFile(project,filename){
+  try{
+    const d=await fetch(`${API}/api/file/${project}/${encodeURIComponent(filename)}`).then(r=>r.json());
+    openModal(filename,d.content,project,filename);
+  }catch(e){toast('Could not load MD file','err');
+  }
+}
+
+async function moveFile(project,filename){
+  const safeId='mv-'+filename.replace(/[^a-zA-Z0-9_-]/g,'_');
+  const sel=document.getElementById(safeId);
+  const dest=sel?.value;
+  if(!dest)return toast('Select a destination project first','err');
+  try{
+    const d=await fetch(`${API}/api/library/move`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({source_project:project,filename,dest_project:dest})}).then(r=>r.json());
+    if(d.ok){
+      toast(`Moved to ${dest}`,'ok');
+      loadLibrary();updateDash();
+    }else toast(d.error||'Move failed','err');
+  }catch(e){toast('Move error: '+e,'err');}
+}
+
+async function deleteLibFile(project,filename){
+  if(!confirm(`Delete "${filename}" from ${project}? This also deletes the .md version.`))return;
+  try{
+    const d=await fetch(`${API}/api/library/${project}/${encodeURIComponent(filename)}`,{method:'DELETE'}).then(r=>r.json());
+    if(d.ok){toast('Deleted','ok');loadLibrary();updateDash();}
+    else toast(d.error||'Delete failed','err');
+  }catch(e){toast('Delete error: '+e,'err');}
+}
+
+// ─── Memory (all .md files) ──────────────────────────────────────────────────
+async function loadMemory(){
+  memory=await fetch(`${API}/api/memory`).then(r=>r.json());
+  renderMem(memory);
+}
+
+function renderMem(data){
+  document.getElementById('mem-body').innerHTML=data.map(m=>`<tr>
+    <td><span class="tag ${m.source==='Library'?'green':'gold'}">${m.source}</span></td>
+    <td><span class="tag">${m.project}</span></td>
+    <td>${m.filename}</td>
+    <td>${m.size_kb}KB</td>
+    <td>${m.modified}</td>
+    <td class="flex gap8">
+      <button class="btn btn-g btn-s" onclick="viewMemFile('${m.project}','${m.filename}','${m.mode}')">👁 Read</button>
+      <button class="btn btn-d btn-s" onclick="deleteMemFile('${m.project}','${m.filename}','${m.mode}')">🗑</button>
+    </td>
+  </tr>`).join('')||'<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">No .md files found.</td></tr>';
+}
+
+function filterMem(){
+  const q=document.getElementById('mem-q').value.toLowerCase();
+  renderMem(memory.filter(m=>(m.filename+m.project+m.source).toLowerCase().includes(q)));
+}
+
+async function viewMemFile(project,filename,mode){
+  try{
+    let d;
+    if(mode==='extraction'){
+      d=await fetch(`${API}/api/extraction/${project}/${encodeURIComponent(filename)}`).then(r=>r.json());
+    }else{
+      d=await fetch(`${API}/api/file/${project}/${encodeURIComponent(filename)}`).then(r=>r.json());
+    }
+    openModal(filename,d.content,project,filename);
+  }catch(e){toast('Could not load file','err');}
+}
+
+async function deleteMemFile(project,filename,mode){
+  if(!confirm(`Delete "${filename}" from ${project}? This cannot be undone.`))return;
+  try{
+    let d;
+    if(mode==='extraction'){
+      d=await fetch(`${API}/api/extraction/${project}/${encodeURIComponent(filename)}`,{method:'DELETE'}).then(r=>r.json());
+    }else{
+      d=await fetch(`${API}/api/library/${project}/${encodeURIComponent(filename)}`,{method:'DELETE'}).then(r=>r.json());
+    }
+    if(d.ok){toast('Deleted','ok');loadMemory();updateDash();}
+    else toast(d.error||'Delete failed','err');
+  }catch(e){toast('Delete error: '+e,'err');}
+}
+
+// ─── Upload ───────────────────────────────────────────────────────────────────
+function onDrop(e){e.preventDefault();document.getElementById('dz').classList.remove('drag');onFiles(e.dataTransfer.files);}
+
+async function onFiles(files){
+  const proj=document.getElementById('up-proj').value;
+  const res=document.getElementById('up-results');res.innerHTML='';
+  for(const file of files){
+    const fd=new FormData();fd.append('file',file);fd.append('project',proj);
+    const div=document.createElement('div');div.className='card';
+    div.innerHTML=`<div class="card-t">⏳ ${file.name}</div>`;res.appendChild(div);
+    try{
+      const d=await fetch(`${API}/api/upload`,{method:'POST',body:fd}).then(r=>r.json());
+      div.innerHTML=`<div class="card-t">✅ ${file.name}</div>
+        <div class="card-s">${d.md_created?'MD auto-created ✓':''} · ${d.size_kb}KB</div>`;
+      toast('Uploaded: '+file.name,'ok');
+      loadLibrary();updateDash();
+    }catch(e){
+      div.innerHTML=`<div class="card-t">❌ ${file.name}</div><div class="card-s">${e}</div>`;
+      toast('Upload failed','err');
+    }
+  }
+}
+
+// ─── Extract ──────────────────────────────────────────────────────────────────
+async function extractFile(project,filename){
+  toast('Extracting (12-point analysis)… please wait…','ok');
+  try{
+    const d=await fetch(`${API}/api/extract`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({project,filename})}).then(r=>r.json());
+    toast(`✅ Extracted as ${d.code} via ${d.engine}`,'ok');
+    loadMemory();updateDash();
+  }catch(e){toast('Extract failed: '+e,'err');}
+}
+
+function chatWithFile(project,filename){
+  go('chat');
+  document.getElementById('cp-project').value=project;
+  loadPdfOptions(filename);
+}
+
+// ─── Skills ───────────────────────────────────────────────────────────────────
+async function loadSkills(){
+  skills=await fetch(`${API}/api/skills`).then(r=>r.json());
+  // Update skill selector in chat
+  const sel=document.getElementById('cp-skill');
+  sel.innerHTML='<option value="">None</option>'+skills.map(s=>`<option value="${s.name}">${s.stem}</option>`).join('');
+}
+
+function renderSkills(){
+  document.getElementById('skills-list').innerHTML=
+    skills.map(s=>`<div class="skill-card">
+      <div class="skill-body">
+        <div class="skill-name">🎓 ${s.stem}</div>
+        <div class="skill-prev">${s.preview}</div>
+      </div>
+      <button class="btn btn-d btn-s" onclick="deleteSkill('${s.name}')">🗑</button>
+    </div>`).join('')||'<div class="text-sm text-m mb12">No skills yet. Add your first skill below.</div>';
+}
+
+async function saveSkill(){
+  const name=document.getElementById('sk-name').value.trim();
+  const content=document.getElementById('sk-content').value.trim();
+  if(!name||!content)return toast('Fill in name and content','err');
+  await fetch(`${API}/api/skills`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,content})});
+  toast('Skill saved','ok');
+  document.getElementById('sk-name').value='';document.getElementById('sk-content').value='';
+  await loadSkills();renderSkills();
+}
+
+async function deleteSkill(name){
+  await fetch(`${API}/api/skills/${name}`,{method:'DELETE'});
+  toast('Skill deleted','ok');
+  await loadSkills();renderSkills();
+}
+
+// ─── Chat ─────────────────────────────────────────────────────────────────────
+async function loadSessions(){
+  sessions=await fetch(`${API}/api/chats`).then(r=>r.json());
+  renderSessions();
+}
+
+function renderSessions(){
+  document.getElementById('sess-list').innerHTML=
+    sessions.map(s=>`<div class="sess-item ${currentSession===s.id?'on':''}">
+      <div style="display:flex;align-items:center;gap:4px;cursor:pointer" onclick="openSession('${s.id}')">
+        <div style="flex:1;min-width:0">
+          <div class="si">💬 ${s.id.length>13?s.id.slice(11):s.id}</div>
+          <div class="sd">${s.modified}${s.project ? ' · <span class="tag" style="font-size:8px;padding:1px 4px">'+esc(s.project)+'</span>' : ''}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:2px;margin-top:2px">
+        <button class="btn btn-d btn-s" onclick="event.stopPropagation();deleteSession('${s.id}')" style="padding:1px 5px;font-size:9px">🗑</button>
+        <button class="btn btn-g btn-s" onclick="event.stopPropagation();openSession('${s.id}')" style="padding:1px 5px;font-size:9px">👁</button>
+      </div>
+    </div>`).join('')||'<div style="padding:10px;color:var(--muted);font-size:11px">No chats yet</div>';
+}
+
+async function newSession(){
+  const d=await fetch(`${API}/api/chat/new`,{method:'POST'}).then(r=>r.json());
+  currentSession=d.session_id;
+  clearMsgs();
+  await loadSessions();
+}
+
+async function openSession(id){
+  currentSession=id;
+  const d=await fetch(`${API}/api/chat/${id}`).then(r=>r.json());
+  const el=document.getElementById('msgs');
+  el.innerHTML='';
+  (d.messages||[]).forEach(m=>appendMsg(m.role,m.content,''));
+  // Restore project selector when opening a session
+  if (d.project) {
+    document.getElementById('cp-project').value = d.project;
+    await loadPdfOptions();
+  }
+  renderSessions();
+  updateContextBar();
+}
+
+function clearMsgs(){
+  document.getElementById('msgs').innerHTML=
+    '<div style="text-align:center;padding:48px 20px;color:var(--muted)"><div style="font-size:28px;margin-bottom:10px">🤖</div><div class="text-sm">New chat started — ask MRBLANK_RA anything.</div></div>';
+}
+
+function appendMsg(role,content,engine,toolsUsed){
+  const el=document.getElementById('msgs');
+  const ph=el.querySelector('div[style*="padding:48px"]');if(ph)ph.remove();
+  let toolsHtml='';
+  if(toolsUsed&&toolsUsed.length){
+    toolsHtml='<div class="tools-used" onclick="this.classList.toggle(\'expanded\')">'+
+      '<span class="tools-badge">🔧 '+toolsUsed.length+' file read'+(toolsUsed.length>1?'s':'')+'</span>'+
+      '<div class="tools-detail">'+toolsUsed.map(t=>
+        '<div class="tool-item">📖 <code>'+esc(t.tool)+'</code> '+
+        (t.args.path?'→ <span class="text-m">'+esc(t.args.path)+'</span>':'')+
+        (t.args.project?'→ <span class="text-m">'+esc(t.args.project)+'</span>':'')+
+        (t.args.filename?'/<span class="text-m">'+esc(t.args.filename)+'</span>':'')+
+        '</div>'
+      ).join('')+'</div></div>';
+  }
+  const d=document.createElement('div');d.className='msg '+role;
+  d.innerHTML=`<div class="av">${role==='user'?'👤':'🤖'}</div><div>
+    <div class="bubble">${esc(content)}</div>
+    ${toolsHtml}
+    ${engine?`<div class="eng">${engine}</div>`:''}
+  </div>`;
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+
+async function clearAndSaveChat(){
+  if(!currentSession)return toast('No active chat','err');
+  if(!confirm('Clear this chat and save as archived .md file?'))return;
+  try{
+    const d=await fetch(`${API}/api/chat/${currentSession}/clear`,{method:'POST'}).then(r=>r.json());
+    if(d.ok){
+      toast(`Archived as ${d.archived_as}`,'ok');
+      currentSession=null;
+      clearMsgs();
+      await loadSessions();
+    }else toast('Failed to clear','err');
+  }catch(e){toast('Error: '+e,'err');}
+}
+
+async function deleteSession(id){
+  if(!confirm(`Delete this chat session? This cannot be undone.`))return;
+  try{
+    await fetch(`${API}/api/chat/${id}`,{method:'DELETE'});
+    if(currentSession===id){currentSession=null;clearMsgs();}
+    toast('Chat deleted','ok');
+    await loadSessions();
+  }catch(e){toast('Delete error','err');}
+}
+
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function showThinking(){
+  const el=document.getElementById('msgs');
+  const d=document.createElement('div');d.className='msg assistant';d.id='thinking';
+  d.innerHTML='<div class="av">🤖</div><div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+function hideThinking(){const e=document.getElementById('thinking');if(e)e.remove();}
+
+async function send(){
+  const inp=document.getElementById('ci');
+  const msg=inp.value.trim();if(!msg)return;
+  if(!currentSession)await newSession();
+  inp.value='';inp.style.height='40px';
+    appendMsg('user',msg);showThinking();
+  const proj=document.getElementById('cp-project').value||null;
+  const pdf=document.getElementById('cp-pdf').value||null;
+  const skillSel=document.getElementById('cp-skill');
+  const selectedSkills=[...skillSel.selectedOptions].map(o=>o.value).filter(Boolean);
+  const excludeSummary=document.getElementById('tog-exclude-summary')?.classList.contains('on')||false;
+  try{
+    const d=await fetch(`${API}/api/chat`,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({session_id:currentSession,message:msg,project:proj,pdf_context:pdf,skills:selectedSkills,exclude_summary:excludeSummary})
+    }).then(r=>r.json());
+    hideThinking();
+    appendMsg('assistant',d.response,d.engine,d.tools_used||[]);
+    loadSessions();
+  }catch(e){hideThinking();appendMsg('assistant','❌ Error: '+e,'error');toast('Chat error','err');}
+}
+
+async function loadPdfOptions(preselect=null){
+  const proj=document.getElementById('cp-project').value;
+  const sel=document.getElementById('cp-pdf');
+  sel.innerHTML='<option value="">— None (general chat) —</option>';
+  if(!proj)return;
+  const files=library.filter(f=>f.project===proj);
+  files.forEach(f=>{const o=new Option(f.filename,f.filename);sel.appendChild(o);});
+  if(preselect)sel.value=preselect;
+  updateContextBar();
+}
+
+function onProjectChange(){
+  loadPdfOptions();
+  updateContextBar();
+}
+
+function updateContextBar(){
+  const bar = document.getElementById('chat-context-bar');
+  if (!bar) return;
+  const proj = document.getElementById('cp-project').value;
+  const pdf = document.getElementById('cp-pdf').value;
+  const skillSel = document.getElementById('cp-skill');
+  const skills = [...skillSel.selectedOptions].map(o=>o.value).filter(Boolean);
+  const parts = [];
+  if (proj) parts.push(`📁 <b>${esc(proj)}</b>`);
+  if (pdf) parts.push(`📄 <b>${esc(pdf)}</b>`);
+  if (skills.length) parts.push(`🎓 <b>${skills.length}</b> skill${skills.length>1?'s':''}`);
+  if (document.getElementById('tog-exclude-summary')?.classList.contains('on')) parts.push(`📋 <b>Full response</b>`);
+  bar.innerHTML = parts.length ? 'Context: ' + parts.join(' · ') : 'Context: <span style="color:var(--text-m)">General chat (no project selected)</span>';
+}
+
+// ─── KB ───────────────────────────────────────────────────────────────────────
+async function loadKB(){
+  const d=await fetch(`${API}/api/knowledge-base`).then(r=>r.json());
+  document.getElementById('kb-view').textContent=d.content;
+}
+
+// ─── Dashboard stats ──────────────────────────────────────────────────────────
+function updateDash(){
+  document.getElementById('s-p').textContent=projects.length;
+  document.getElementById('s-f').textContent=library.length;
+  document.getElementById('s-e').textContent=memory.length;
+  document.getElementById('s-c').textContent=sessions.length;
+  renderDashProjects();
+}
+
+// ─── Plugins ──────────────────────────────────────────────────────────────────
+async function loadPlugins(){
+  const d=await fetch(`${API}/api/plugins`).then(r=>r.json());
+  document.getElementById('plugins-list').innerHTML=d.plugins.map(p=>`
+    <div class="card">
+      <div class="card-t">${p.icon} ${p.name}</div>
+      <div class="card-s">${p.description}</div>
+      <div class="flex gap8 items-c mt12">
+        ${p.connected
+          ? `<span class="tag green">✓ Connected</span>
+             <button class="btn btn-d btn-s" onclick="disconnectPlugin('${p.id}')">Disconnect</button>`
+          : `<span class="tag red">Not connected</span>
+             <button class="btn btn-p btn-s" onclick="showPluginConnect('${p.id}')">Connect</button>`
+        }
+        <a href="${p.docs_url}" target="_blank" class="btn btn-g btn-s" style="text-decoration:none">Get API Key</a>
+      </div>
+    </div>`).join('');
+}
+
+function showPluginConnect(id){
+  const el=document.getElementById('plugins-list');
+  const card=el.querySelector('.card')||el;
+  const form=document.createElement('div');form.id='plugin-form';
+  form.innerHTML=`
+    <div class="card" style="border-color:var(--accent)">
+      <div class="card-t">🔑 Connect Claude AI</div>
+      <div class="form-row"><label>Claude API Key</label>
+        <input type="password" id="pk-key" class="w100" placeholder="sk-ant-... paste your API key here">
+      </div>
+      <div class="form-row"><label>API Key URL</label>
+        <input class="w100" value="https://console.anthropic.com" readonly style="color:var(--muted)">
+      </div>
+      <div class="flex gap8">
+        <button class="btn btn-p" onclick="connectPlugin('${id}')">Connect</button>
+        <button class="btn btn-g" onclick="document.getElementById('plugin-form').remove()">Cancel</button>
+      </div>
+      <div id="pk-status" class="mt12 text-sm"></div>
+    </div>`;
+  el.appendChild(form);
+}
+
+async function connectPlugin(id){
+  const key=document.getElementById('pk-key').value.trim();
+  if(!key)return document.getElementById('pk-status').textContent='Please paste your API key';
+  document.getElementById('pk-status').textContent='Connecting...';
+  try{
+    const d=await fetch(`${API}/api/plugins/${id}/connect`,{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:key})}).then(r=>r.json());
+    if(d.ok){toast('Claude connected!','ok');loadPlugins();}
+    else document.getElementById('pk-status').textContent=d.error||'Connection failed';
+  }catch(e){document.getElementById('pk-status').textContent='Error: '+e;}
+}
+
+async function disconnectPlugin(id){
+  const d=await fetch(`${API}/api/plugins/${id}/disconnect`,{method:'POST'}).then(r=>r.json());
+  if(d.ok){toast('Claude disconnected','ok');loadPlugins();}
+}
+
+// ─── Tab navigation ───────────────────────────────────────────────────────────
+const TABS=['dashboard','chat','upload','research','library','memory','plugins','graph','obsidian','settings'];
+function go(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',TABS[i]===name));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.id==='page-'+name));
+  const sidebar=document.getElementById('sidebar');
+  sidebar.style.display=(name==='settings'||name==='chat')?'none':'flex';
+  if(name==='library')loadLibrary();
+  if(name==='memory')loadMemory();
+  if(name==='chat'){loadSessions();loadSkills();}
+  if(name==='plugins')loadPlugins();
+  if(name==='graph'){loadGraphFilterData();loadGraph();}
+  if(name==='obsidian')updateObsidianStats();
+  if(name==='research'){loadWebPapers();populateYearSelects();}
+}
+
+// ─── Modal ───────────────────────────────────────────────────────────────────
+function openModal(title,content,project,filepath){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-body').textContent=content;
+  document.getElementById('modal').style.display='flex';
+  const glb=document.getElementById('modal-goto-lib');
+  const fp=document.getElementById('modal-file-path');
+  if(project && filepath){
+    glb.style.display='inline-flex';
+    glb.dataset.project=project;
+    glb.dataset.filepath=filepath;
+    fp.textContent=project+'/'+filepath;
+  } else {
+    glb.style.display='none';
+    fp.textContent='';
+  }
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+
+function gotoFileInLibrary(){
+  const glb=document.getElementById('modal-goto-lib');
+  const project=glb.dataset.project;
+  const filepath=glb.dataset.filepath;
+  if(project && filepath){
+    closeModal();
+    go('library');
+    // Filter library to this project and highlight file
+    loadLibrary(project);
+    setTimeout(()=>{
+      document.getElementById('lib-q').value=filepath.replace(/\.md$/,'');
+      filterLib();
+    },300);
+    toast('Showing: '+project+'/'+filepath,'ok');
+  }
+}
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+let tt;
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className='show '+type;
+  clearTimeout(tt);tt=setTimeout(()=>{el.className='';},3200);
+}
+
+// ─── Keywords (with Multi-Select) ─────────────────────────────────────
+let keywordsData = [];
+let kwSelected = new Set();
+
+async function loadKeywords(){
+  try {
+    const d = await fetch(`${API}/api/keywords`).then(r => r.json());
+    keywordsData = d.keywords||[];
+    kwSelected.clear();
+    renderKeywords();
+  } catch(e) { toast('Error loading keywords','err'); }
+  await loadDiscarded();
+}
+
+function renderKeywords(){
+  const q = (document.getElementById('kw-filter')?.value||'').toLowerCase();
+  const filtered = keywordsData.filter(k => q==='' || k.word.includes(q));
+  const el = document.getElementById('keywords-list');
+  const selAll = document.getElementById('kw-select-all');
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="text-sm text-m" style="margin-top:8px">No keywords. Add one above or click Auto-Scan.</div>';
+    updateKwDeleteBtn();
+    return;
+  }
+
+  // Remove words no longer in filtered from selection
+  const filteredWords = new Set(filtered.map(k => k.word));
+  for (const w of kwSelected) { if (!filteredWords.has(w)) kwSelected.delete(w); }
+
+  el.innerHTML = filtered.map(k => {
+    const checked = kwSelected.has(k.word) ? 'checked' : '';
+    return `<div class="card" style="padding:10px;margin-bottom:6px;cursor:pointer;${checked ? 'border-color:var(--accent);background:rgba(108,99,255,.06)' : ''}"
+      onclick="toggleKeywordSel('${esc(k.word)}', event)">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <input type="checkbox" ${checked} style="accent-color:var(--accent);width:14px;height:14px;cursor:pointer"
+          onclick="event.stopPropagation();toggleKeywordSel('${esc(k.word)}', event)">
+        <span class="tag" style="background:rgba(255,107,0,.15);color:#ff6b00;font-size:12px">${esc(k.word)}</span>
+        <span class="badge">${k.count} files</span>
+        <span class="text-sm text-m" style="flex:1;font-size:10px">${esc(k.note||'')}</span>
+        <button class="btn btn-g btn-s" onclick="event.stopPropagation();editKeyword('${esc(k.word)}')" style="padding:2px 6px;font-size:10px">✏</button>
+        <button class="btn btn-d btn-s" onclick="event.stopPropagation();removeKeyword('${esc(k.word)}')" style="padding:2px 6px;font-size:10px">✕</button>
+      </div>
+      ${k.files?.length ? '<div class="text-sm text-m" style="margin-top:4px;font-size:10px;max-height:40px;overflow:hidden">📄 '+k.files.slice(0,6).map(f=>esc(f.replace(/\\/g,'/'))).join(', ')+(k.files.length>6?'…':'')+'</div>' : ''}
+    </div>`;
+  }).join('');
+
+  if (selAll) selAll.checked = kwSelected.size === filtered.length && filtered.length > 0;
+  updateKwDeleteBtn();
+}
+
+function toggleKeywordSel(word, event){
+  if (event?.target?.tagName === 'INPUT' && event.target.type === 'checkbox') {
+    // handled by checkbox click
+  }
+  if (kwSelected.has(word)) kwSelected.delete(word);
+  else kwSelected.add(word);
+  renderKeywords();
+}
+
+function toggleSelectAllKeywords(checked){
+  const q = (document.getElementById('kw-filter')?.value||'').toLowerCase();
+  const filtered = keywordsData.filter(k => q==='' || k.word.includes(q));
+  if (checked) {
+    filtered.forEach(k => kwSelected.add(k.word));
+  } else {
+    filtered.forEach(k => kwSelected.delete(k.word));
+  }
+  renderKeywords();
+}
+
+function updateKwDeleteBtn(){
+  const btn = document.getElementById('kw-delete-selected');
+  const cnt = document.getElementById('kw-selected-count');
+  if (!btn) return;
+  const n = kwSelected.size;
+  cnt.textContent = n + ' selected';
+  if (n > 0) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.textContent = '🗑 Delete (' + n + ')';
+  } else {
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.textContent = '🗑 Delete Selected';
+  }
+}
+
+async function addKeyword(){
+  const word = document.getElementById('kw-new').value.trim();
+  const note = document.getElementById('kw-note').value.trim();
+  if (!word) return toast('Enter a keyword','err');
+  await fetch(`${API}/api/keywords`, {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'add', word, note}) });
+  document.getElementById('kw-new').value = '';
+  document.getElementById('kw-note').value = '';
+  toast(`Keyword "${word}" added`,'ok');
+  await loadKeywords();
+}
+
+async function removeKeyword(word){
+  if (!confirm(`Remove keyword "${word}"?`)) return;
+  await fetch(`${API}/api/keywords`, {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'remove', word}) });
+  toast('Keyword removed','ok');
+  kwSelected.delete(word);
+  await loadKeywords();
+}
+
+async function deleteSelectedKeywords(){
+  if (kwSelected.size === 0) return toast('No keywords selected','err');
+  if (!confirm(`Delete ${kwSelected.size} selected keywords?`)) return;
+  const words = Array.from(kwSelected);
+  try {
+    const d = await fetch(`${API}/api/keywords`, {method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'batch_remove', words}) }).then(r => r.json());
+    if (d.ok) {
+      toast(`Deleted ${words.length} keywords`,'ok');
+      kwSelected.clear();
+      await loadKeywords();
+    } else {
+      toast(d.error || 'Batch delete failed','err');
+    }
+  } catch(e) { toast('Error: '+e.message,'err'); }
+}
+
+async function editKeyword(word){
+  const note = prompt(`Edit note for "${word}":`, keywordsData.find(k=>k.word===word)?.note||'');
+  if (note === null) return;
+  await fetch(`${API}/api/keywords`, {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'edit', word, note}) });
+  toast('Updated','ok');
+  await loadKeywords();
+}
+
+async function loadDiscarded(){
+  try {
+    const d = await fetch(`${API}/api/keywords/discarded`).then(r => r.json());
+    const words = d.discarded||[];
+    document.getElementById('discarded-count').textContent = words.length;
+    const el = document.getElementById('discarded-list');
+    if (!words.length) { el.innerHTML = '<span class="text-m">None</span>'; return; }
+    el.innerHTML = words.map(w =>
+      `<span class="tag" style="background:rgba(255,80,80,.12);color:#ff5050;font-size:10px;display:inline-flex;align-items:center;gap:4px">
+        ${esc(w)}
+        <span onclick="restoreDiscarded('${esc(w)}')" style="cursor:pointer;font-weight:bold;opacity:.7" title="Allow auto-add again">✕</span>
+      </span>`
+    ).join('');
+  } catch(e) {}
+}
+async function restoreDiscarded(word){
+  await fetch(`${API}/api/keywords/discarded`, {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({word}) });
+  toast(`"${word}" can now be auto-added again`,'ok');
+  await loadDiscarded();
+}
+
+// ─── Predatory Journals ──────────────────────────────────────────────
+let predatoryData = [];
+async function loadPredatory(){
+  try {
+    const d = await fetch(`${API}/api/predatory`).then(r => r.json());
+    predatoryData = d.journals||[];
+    renderPredatory();
+  } catch(e) {}
+}
+function renderPredatory(){
+  const el = document.getElementById('pj-list');
+  if (!el) return;
+  if (!predatoryData.length) { el.innerHTML = '<span class="text-m">No predatory journals listed. Add one above or fetch from online sources.</span>'; return; }
+  el.innerHTML = predatoryData.map(j =>
+    `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px">
+      <span style="flex:1">${esc(j)}</span>
+      <button class="btn btn-d btn-s" onclick="removePredatoryJournal('${esc(j)}')" style="padding:1px 5px;font-size:9px">✕</button>
+    </div>`
+  ).join('');
+}
+async function addPredatoryJournal(){
+  const inp = document.getElementById('pj-new');
+  const name = inp.value.trim().toLowerCase();
+  if (!name) return toast('Enter a journal name','err');
+  await fetch(`${API}/api/predatory`, {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'add', name}) });
+  inp.value = '';
+  toast(`"${name}" added to predatory list`,'ok');
+  await loadPredatory();
+}
+async function removePredatoryJournal(name){
+  await fetch(`${API}/api/predatory`, {method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'remove', name}) });
+  toast(`"${name}" removed`,'ok');
+  await loadPredatory();
+}
+async function fetchPredatoryOnline(){
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Fetching…'; }
+  try {
+    const d = await fetch(`${API}/api/predatory/online`, {method:'GET'}).then(r => r.json());
+    toast(`Fetched! Added ${d.added} journals. Total: ${d.total}`,'ok');
+    document.getElementById('pj-status').textContent = `📥 +${d.added} new, total ${d.total}`;
+    await loadPredatory();
+  } catch(e) { toast('Error fetching: '+e.message,'err'); }
+  if (btn) { btn.disabled = false; btn.textContent = '🌐 Fetch Latest Online'; }
+}
+async function scanKeywords(){
+  const st = document.getElementById('kw-status');
+  const el = document.getElementById('keywords-list');
+  st.textContent = '⏳ Scanning all .md files…';
+  el.innerHTML = '<div class="text-sm text-m">Scanning… this may take a moment.</div>';
+  try {
+    const d = await fetch(`${API}/api/keywords/scan`, {method:'POST'}).then(r => r.json());
+    st.textContent = `✅ Scanned! Added ${d.added} new keywords. Total: ${d.total}`;
+    toast(`Scan complete: ${d.added} new keywords`,'ok');
+    await loadKeywords();
+  } catch(e) { st.textContent = '❌ Error: '+e.message; }
+}
+
+// ─── Web Research (Enhanced) ──────────────────────────────────────────
+let wrSearching = false;
+let wrResultsCache = [];
+
+// Populate year dropdowns with a nice range
+function populateYearSelects(){
+  const from = document.getElementById('wr-year-from');
+  const to = document.getElementById('wr-year-to');
+  if (!from) return;
+  const cur = new Date().getFullYear();
+  from.innerHTML = '<option value="">Any from</option>';
+  to.innerHTML = '<option value="">Any to</option>';
+  for (let y = cur; y >= 1900; y--) {
+    from.innerHTML += `<option value="${y}">${y}</option>`;
+    to.innerHTML += `<option value="${y}">${y}</option>`;
+  }
+}
+
+function getEnabledSources(){
+  const sources = [];
+  if (document.getElementById('src-openalex')?.checked) sources.push('openalex');
+  if (document.getElementById('src-crossref')?.checked) sources.push('crossref');
+  if (document.getElementById('src-semantic')?.checked) sources.push('semantic');
+  if (document.getElementById('src-arxiv')?.checked) sources.push('arxiv');
+  if (document.getElementById('src-pubmed')?.checked) sources.push('pubmed');
+  return sources;
+}
+
+async function searchWebResearch(){
+  const q = document.getElementById('wr-q').value.trim();
+  if (!q) return toast('Enter a research query','err');
+  if (wrSearching) return;
+  wrSearching = true;
+
+  const yearFrom = document.getElementById('wr-year-from').value;
+  const yearTo = document.getElementById('wr-year-to').value;
+  const maxResults = document.getElementById('wr-max').value || 20;
+  const sort = document.getElementById('wr-sort').value || 'citations';
+  const sources = getEnabledSources();
+
+  if (!sources.length) return toast('Enable at least one source','err');
+
+  const btn = document.getElementById('wr-search-btn');
+  btn.disabled = true; btn.textContent = '⏳ Searching…';
+
+  const resultsEl = document.getElementById('wr-results');
+  const headerEl = document.getElementById('wr-results-header');
+  const bodyEl = document.getElementById('wr-results-body');
+  const welcome = document.getElementById('wr-welcome');
+  if (welcome) welcome.style.display = 'none';
+  resultsEl.style.display = 'block';
+  headerEl.innerHTML = '<span style="margin:auto">🔍 Searching ' + sources.join(', ') + '…</span>';
+  bodyEl.innerHTML = '';
+
+  try {
+    const params = new URLSearchParams({
+      q, year_from: yearFrom, year_to: yearTo,
+      max_results: maxResults, sort,
+      sources: sources.join(',')
+    });
+    const d = await fetch(`${API}/api/research/search?${params}`).then(r => r.json());
+
+    if (!d.results || !d.results.length) {
+      headerEl.innerHTML = '<span style="margin:auto;color:var(--muted)">No results found. Try different keywords or sources.</span>';
+      bodyEl.innerHTML = '';
+      wrSearching = false;
+      btn.disabled = false; btn.textContent = '🔍 Search';
+      return;
+    }
+
+    wrResultsCache = d.results;
+
+    // Build sources badge
+    const srcBadges = Object.entries(d.sources||{}).map(([k,v]) => {
+      const colors = {openalex:'--accent', crossref:'--a2', semantic:'--gold', arxiv:'#ff6b00', pubmed:'#b388ff'};
+      return `<span class="badge" style="color:var(${colors[k]||'--muted'})">${k}: ${v}</span>`;
+    }).join('');
+
+    headerEl.innerHTML = `
+      <span class="badge" style="color:var(--accent);font-weight:600">${d.total} results</span>
+      <span class="badge">Sort: ${sort}</span>
+      ${srcBadges}
+      <span class="text-sm text-m ml-a" style="font-size:10px">${d.query_time||''}</span>
+    `;
+
+    bodyEl.innerHTML = d.results.map((r, idx) => {
+      const doi = r.doi || '';
+      const authors = (r.authors||[]).slice(0,5).join(', ') + ((r.authors||[]).length > 5 ? ' et al.' : '');
+      const abs = r.abstract ? r.abstract.slice(0,300) + (r.abstract.length>300?'…':'') : 'No abstract available';
+      const srcColorMap = {
+        'OpenAlex': 'rgba(108,99,255,.15);color:var(--accent)',
+        'Crossref': 'rgba(0,212,170,.15);color:var(--a2)',
+        'Semantic Scholar': 'rgba(245,197,24,.15);color:var(--gold)',
+        'ArXiv': 'rgba(255,107,0,.15);color:#ff6b00',
+        'PubMed': 'rgba(179,136,255,.15);color:#b388ff'
+      };
+      const srcColor = srcColorMap[r.source] || 'rgba(42,47,69,.3);color:var(--muted)';
+      const hasUrl = !!(r.url || (doi && `https://doi.org/${doi}`));
+
+      return `<div class="card" style="margin-bottom:8px;padding:12px;${r.is_predatory ? 'border-color:#ff5050;opacity:.75' : ''}">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0">
+            <div class="card-t" style="font-size:13px;margin-bottom:3px">
+              ${esc(r.title)}
+              <span class="tag" style="margin-left:6px;font-size:9px;background:${srcColor}">${esc(r.source)}</span>
+              ${r.is_predatory ? `<span class="tag" style="background:rgba(255,80,80,.15);color:#ff5050;font-size:9px">🚫 PREDATORY</span>` : ''}
+            </div>
+            <div class="card-s" style="font-size:11px;line-height:1.5">
+              <span>${esc(authors)}</span>
+              <span style="margin:0 5px">·</span>
+              <span>${esc(r.journal||'?')}</span>
+              <span style="margin:0 5px">·</span>
+              <span>${esc(r.year)}</span>
+              ${r.citations != null ? `<span style="margin:0 5px">·</span><span>📊 ${r.citations} cit.</span>` : ''}
+              ${r.is_oa ? `<span class="tag green" style="margin-left:4px">OA</span>` : ''}
+              ${r.is_predatory ? `<span class="tag" style="background:rgba(255,80,80,.12);color:#ff5050;margin-left:4px">⚠️ Verify</span>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <div class="text-sm text-m" style="margin-top:6px;line-height:1.55;font-size:11px">${esc(abs)}</div>
+
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          ${doi ? `<span class="badge" style="font-size:9px">DOI: ${esc(doi)}</span>` : ''}
+
+          <!-- READ: preview abstract/details in modal -->
+          <button class="btn btn-g btn-s" onclick="readWebPaperResult(${idx})" title="Read full details">👁 Read</button>
+
+          <!-- OPEN: exact URL in browser -->
+          ${hasUrl ? `<button class="btn btn-g btn-s" onclick="openWebPaperInBrowser(${idx})" title="Open paper page in browser">🌐 Open</button>` : ''}
+
+          <!-- DOWNLOAD: conditional — OA → PDF, Non-OA → .md with 12-point analysis -->
+          ${r.is_oa
+            ? `<button class="btn btn-p btn-s" onclick="downloadWebPaperPDF(${idx})" title="Download PDF + auto-convert to .md">📥 Download PDF</button>`
+            : `<button class="btn btn-p btn-s" onclick="downloadWebPaperWithAnalysis(${idx})" title="Download .md with AI 12-point analysis">📥 Download .md (12-Point)</button>`
+          }
+        </div>
+      </div>`;
+    }).join('');
+
+  } catch(e) {
+    headerEl.innerHTML = `<span style="margin:auto;color:var(--red)">❌ Error: ${esc(e.message)}</span>`;
+    bodyEl.innerHTML = '';
+  }
+  wrSearching = false;
+  btn.disabled = false; btn.textContent = '🔍 Search';
+}
+
+function clearResearchResults(){
+  document.getElementById('wr-welcome').style.display = 'block';
+  document.getElementById('wr-results').style.display = 'none';
+  document.getElementById('wr-results-body').innerHTML = '';
+  document.getElementById('wr-results-header').innerHTML = '';
+  wrResultsCache = [];
+}
+
+// 👁 READ — show full details in modal
+function readWebPaperResult(idx){
+  const r = wrResultsCache[idx];
+  if (!r) return toast('Paper data not found','err');
+  const doi = r.doi || '';
+  const url = r.url || (doi ? `https://doi.org/${doi}` : '');
+  const authors = (r.authors||[]).join(', ') || 'N/A';
+  const abs = r.abstract || 'No abstract available';
+  const content = `# ${r.title}\n\n` +
+    `**Source**: ${r.source}\n` +
+    `**Authors**: ${authors}\n` +
+    `**Year**: ${r.year || 'N/A'}\n` +
+    `**Journal**: ${r.journal || 'N/A'}\n` +
+    `**DOI**: ${doi || 'N/A'}\n` +
+    `**Citations**: ${r.citations != null ? r.citations : 'N/A'}\n` +
+    `**Open Access**: ${r.is_oa ? 'Yes' : 'No'}\n` +
+    (url ? `**URL**: ${url}\n` : '') +
+    `\n---\n\n## Abstract\n\n${abs}\n` +
+    (r.oa_url ? `\n## Open Access PDF\n\n${r.oa_url}\n` : '') +
+    (r.pdf_url ? `\n## PDF\n\n${r.pdf_url}\n` : '');
+  openModal(r.title, content, 'Web Research', r.title);
+}
+
+// 🌐 OPEN — open exact paper page in browser
+function openWebPaperInBrowser(idx){
+  const r = wrResultsCache[idx];
+  if (!r) return toast('Paper data not found','err');
+  const url = r.url || (r.doi ? `https://doi.org/${r.doi}` : '') || r.oa_url || r.pdf_url;
+  if (!url) return toast('No URL available for this paper','err');
+  window.open(url, '_blank');
+  toast('Opened in browser: ' + url.slice(0,60) + '…', 'ok');
+}
+
+// 📥 DOWNLOAD PDF — OA papers: download PDF + auto-convert to .md via docling
+async function downloadWebPaperPDF(idx){
+  const r = wrResultsCache[idx];
+  if (!r) return toast('Paper data not found','err');
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Downloading PDF…'; }
+  try {
+    const d = await fetch(`${API}/api/research/download-pdf`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(r)
+    }).then(r2 => r2.json());
+    if (d.ok) {
+      const msg = d.pdf_downloaded ? `✅ PDF + .md saved` : `✅ .md saved (PDF unavailable)`;
+      toast(msg,'ok');
+      loadWebPapers();
+    } else {
+      toast('Download failed: '+(d.error||'unknown'),'err');
+    }
+  } catch(e) {
+    toast('Download error: '+e.message,'err');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '📥 Download PDF'; }
+}
+
+// 📥 DOWNLOAD .md WITH 12-POINT ANALYSIS — non-OA papers: save .md with AI analysis
+async function downloadWebPaperWithAnalysis(idx){
+  const r = wrResultsCache[idx];
+  if (!r) return toast('Paper data not found','err');
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating analysis…'; }
+  try {
+    const d = await fetch(`${API}/api/research/save-md-with-analysis`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(r)
+    }).then(r2 => r2.json());
+    if (d.ok) {
+      const msg = d.ai_analysis ? `✅ .md with 12-point analysis saved` : `✅ .md saved (AI unavailable, template used)`;
+      toast(msg,'ok');
+      loadWebPapers();
+    } else {
+      toast('Save failed: '+(d.error||'unknown'),'err');
+    }
+  } catch(e) {
+    toast('Save error: '+e.message,'err');
+  }
+  if (btn) { btn.disabled = false; btn.textContent = '📥 Download .md (12-Point)'; }
+}
+
+// ─── Imported papers display ───
+async function loadWebPapers(){
+  const el = document.getElementById('wr-imported');
+  const body = document.getElementById('wr-imported-body');
+  const cnt = document.getElementById('wr-imported-count');
+  try {
+    const d = await fetch(`${API}/api/research/papers`).then(r => r.json());
+    if (!d.length) {
+      el.style.display = 'none';
+      return;
+    }
+    el.style.display = 'block';
+    if (cnt) cnt.textContent = d.length;
+    const projOpts = projects.map(p => `<option value="${p.id}">${p.id}</option>`).join('');
+    body.innerHTML = d.map(f => `
+      <tr>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(f.filename)}">${esc(f.filename)}</td>
+        <td>${f.is_pdf ? '<span class="tag green">PDF</span>' : f.is_metadata ? '<span class="tag gold">MD (Analysis)</span>' : '<span class="tag">File</span>'}</td>
+        <td>${f.size_kb}KB</td>
+        <td>${f.modified}</td>
+        <td class="flex gap8" style="flex-wrap:wrap">
+          ${f.is_pdf ? `<button class="btn btn-g btn-s" onclick="window.open('${API}/api/research/pdf/${encodeURIComponent(f.filename)}','_blank')">📄 PDF</button>` : ''}
+          ${!f.is_pdf ? `<button class="btn btn-g btn-s" onclick="viewWebMeta('${encodeURIComponent(f.filename)}')">👁 View</button>` : ''}
+          <select id="mv-${esc(f.filename.replace(/[^a-zA-Z0-9_-]/g,'_'))}" style="width:90px;padding:2px 4px;font-size:10px">
+            <option value="">→ Move</option>
+            ${projOpts}
+          </select>
+          <button class="btn btn-g btn-s" onclick="moveWebPaper('${esc(f.filename)}')" style="padding:2px 6px;font-size:10px">📁</button>
+          <button class="btn btn-d btn-s" onclick="deleteWebPaper('${esc(f.filename)}')">🗑</button>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    toast('Error loading web papers: '+e.message,'err');
+  }
+}
+
+async function viewWebMeta(filename){
+  try {
+    const d = await fetch(`${API}/api/research/file/${filename}`).then(r => r.json());
+    openModal(decodeURIComponent(filename), d.content, 'UNREAD-WEB', filename);
+  } catch(e) {
+    toast('Error loading file','err');
+  }
+}
+
+async function moveWebPaper(filename){
+  const safeId = 'mv-' + filename.replace(/[^a-zA-Z0-9_-]/g,'_');
+  const sel = document.getElementById(safeId);
+  const dest = sel?.value;
+  if (!dest) return toast('Select a destination project','err');
+  try {
+    const d = await fetch(`${API}/api/research/move-to-project`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({filename, project: dest})
+    }).then(r => r.json());
+    if (d.ok) {
+      toast(`Moved to ${dest}`,'ok');
+      loadWebPapers();
+      loadLibrary();
+    } else toast(d.error||'Move failed','err');
+  } catch(e) { toast('Move error: '+e,'err'); }
+}
+
+async function deleteWebPaper(filename){
+  if (!confirm(`Delete "${filename}" from UNREAD-WEB?`)) return;
+  try {
+    const d = await fetch(`${API}/api/research/paper/${encodeURIComponent(filename)}`,{method:'DELETE'}).then(r=>r.json());
+    if (d.ok) { toast('Deleted','ok'); loadWebPapers(); }
+    else toast(d.error||'Delete failed','err');
+  } catch(e) { toast('Delete error: '+e,'err'); }
+}
+
+// ─── Author Settings ────────────────────────────────────────────────
+
+// ─── Version Changelog ──────────────────────────────────────────────
+function initVersionDate(){
+  const inp = document.getElementById('vl-date');
+  if(inp && !inp.value) inp.value = new Date().toISOString().slice(0,10);
+}
+async function addVersionEntry(){
+  const date = document.getElementById('vl-date').value;
+  const ver = document.getElementById('vl-version').value.trim();
+  const desc = document.getElementById('vl-desc').value.trim();
+  if (!desc) return toast('Enter a description','err');
+  await fetch(`${API}/api/settings/versions`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'add', date: date || new Date().toISOString().slice(0,10), version: ver || 'v' + new Date().toISOString().slice(0,10), description: desc})
+  });
+  document.getElementById('vl-desc').value = '';
+  document.getElementById('vl-version').value = '';
+  toast('Version entry added','ok');
+  loadVersions();
+  loadVersion();
+}
+async function loadVersion(){
+  try {
+    const d = await fetch(`${API}/api/settings/versions`).then(r => r.json());
+    const v = d.versions && d.versions.length ? d.versions[d.versions.length-1] : null;
+    document.getElementById('version-badge').textContent = v ? v.version : 'v0.0.0';
+  } catch(e) { document.getElementById('version-badge').textContent = 'v0.0.0'; }
+}
+
+async function loadVersions(){
+  try {
+    const d = await fetch(`${API}/api/settings/versions`).then(r => r.json());
+    const el = document.getElementById('versions-list');
+    if (!d.versions || !d.versions.length) {
+      el.innerHTML = '<div class="text-sm text-m" style="padding:20px;text-align:center">No version entries yet. Record the first update above.</div>';
+      return;
+    }
+    el.innerHTML = d.versions.slice().reverse().map(v => `
+      <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:11px">
+        <span class="badge" style="flex-shrink:0;background:rgba(108,99,255,.15);color:var(--accent);min-width:90px">${esc(v.date)}</span>
+        <span class="badge" style="flex-shrink:0;background:rgba(0,212,170,.12);color:var(--a2);min-width:60px">${esc(v.version||'—')}</span>
+        <span style="flex:1;color:var(--text)">${esc(v.description)}</span>
+        <button class="btn btn-d btn-s" onclick="deleteVersionEntry('${esc(v.date)}','${esc(v.description.slice(0,50))}')" style="padding:1px 5px;font-size:9px;flex-shrink:0">✕</button>
+      </div>
+    `).join('');
+  } catch(e) { console.error('Load versions error:', e); }
+}
+async function deleteVersionEntry(date, descPreview){
+  if (!confirm(`Delete entry "${descPreview}…"?`)) return;
+  await fetch(`${API}/api/settings/versions`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({action:'remove', date, description: descPreview})
+  });
+  toast('Entry removed','ok');
+  loadVersions();
+}
+
+boot();
+
+// ─── Graph ──────────────────────────────────────────────────────────
+let graphNetwork = null;
+const CAT_COLORS = {
+  code:      { bg:'#1c2030', bd:'#6c63ff', shape:'dot',      sz:18, label:'Code' },
+  research:  { bg:'#0d2818', bd:'#00d4aa', shape:'dot',      sz:22, label:'Research .md' },
+  extraction:{ bg:'#1a0d28', bd:'#b388ff', shape:'diamond',  sz:20, label:'Extraction' },
+  system:    { bg:'#2a1a0a', bd:'#f5c518', shape:'square',   sz:16, label:'System' },
+  chat:      { bg:'#1a1a2e', bd:'#ff6b9d', shape:'star',     sz:14, label:'Chat' },
+  rationale: { bg:'#1c2030', bd:'#ff9f43', shape:'triangle', sz:12, label:'Rationale' },
+  keyword:   { bg:'#0a1a2e', bd:'#ff6b00', shape:'triangle', sz:10, label:'Keyword' },
+  other:     { bg:'#202438', bd:'#8892a4', shape:'dot',      sz:12, label:'Other' }
+};
+const CAT_KEYS = Object.keys(CAT_COLORS);
+let graphDataCache = null;
+let graphFilterData = null;
+let graphLayerCount = 1;
+
+// ─── Multi-Layer Graph Filter ──────────────────────────────────────
+async function loadGraphFilterData(){
+  try{
+    const d = await fetch(`${API}/api/graph/filters`).then(r => r.json());
+    graphFilterData = d.dimensions||[];
+    // Populate initial dimension value dropdowns
+    updateGraphLayer(1);
+  } catch(e) { console.error('Graph filter load error:', e); }
+}
+
+function updateGraphLayer(layer){
+  const dim = document.getElementById('gf-dim'+layer)?.value;
+  const valSel = document.getElementById('gf-val'+layer);
+  if(!valSel) return;
+  if(!dim){
+    valSel.style.display='none';
+    return;
+  }
+  valSel.style.display='inline-block';
+  // Populate values from filter data
+  const dimData = (graphFilterData||[]).find(d => d.id === dim);
+  const vals = dimData ? dimData.values : [];
+  valSel.innerHTML = '<option value="">— Value —</option>' +
+    vals.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  loadGraph();
+}
+
+function addGraphLayer(){
+  if(graphLayerCount >= 4) return;
+  graphLayerCount++;
+  const el = document.getElementById('gl'+graphLayerCount);
+  if(el) el.style.display = 'flex';
+  updateGraphLayer(graphLayerCount);
+  if(graphLayerCount >= 4){
+    document.getElementById('gf-add-layer').style.display = 'none';
+  }
+}
+
+function removeGraphLayer(layer){
+  if(layer <= 1) return;
+  const el = document.getElementById('gl'+layer);
+  if(el) el.style.display = 'none';
+  document.getElementById('gf-dim'+layer).value = '';
+  document.getElementById('gf-val'+layer).value = '';
+  document.getElementById('gf-val'+layer).style.display = 'none';
+  if(layer === graphLayerCount) graphLayerCount--;
+  document.getElementById('gf-add-layer').style.display = 'inline-flex';
+  loadGraph();
+}
+
+function clearGraphFilters(){
+  for(let i=1; i<=4; i++){
+    document.getElementById('gf-dim'+i).value = '';
+    document.getElementById('gf-val'+i).value = '';
+    const vs = document.getElementById('gf-val'+i);
+    if(vs) vs.style.display = 'none';
+    if(i>1){
+      const el = document.getElementById('gl'+i);
+      if(el) el.style.display = 'none';
+    }
+  }
+  graphLayerCount = 1;
+  document.getElementById('gf-add-layer').style.display = 'inline-flex';
+  loadGraph();
+}
+
+function buildFilterQueryString(){
+  const layers = [];
+  for(let i=1; i<=4; i++){
+    const dim = document.getElementById('gf-dim'+i)?.value;
+    const val = document.getElementById('gf-val'+i)?.value;
+    const op = (i>1) ? (document.getElementById('gf-op'+i)?.value||'AND') : '';
+    if(dim && val){
+      layers.push({dim, val, op});
+    }
+  }
+  if(!layers.length) return 'all';
+  // Build a compact filter string: dim1:val1|OP:dim2:val2|...
+  return layers.map((l, idx) => {
+    if(idx === 0) return `${l.dim}:${l.val}`;
+    return `${l.op}:${l.dim}:${l.val}`;
+  }).join('|');
+}
+
+async function loadGraph(){
+  const el = document.getElementById('graph-container');
+  const st = document.getElementById('graph-stats');
+  const filter = buildFilterQueryString();
+  el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">Loading graph data…</div>';
+  try {
+    const d = await fetch(`${API}/api/graph?filter=${encodeURIComponent(filter)}`).then(r => r.json());
+    graphDataCache = d;
+    renderGraph();
+    const cats = d.categories||{};
+    // Build filter description
+    const filterParts = [];
+    for(let i=1; i<=4; i++){
+      const dim = document.getElementById('gf-dim'+i)?.value;
+      const val = document.getElementById('gf-val'+i)?.value;
+      const op = (i>1) ? (document.getElementById('gf-op'+i)?.value||'AND') : '';
+      if(dim && val){
+        const iconMap = {author:'👤',year:'📅',journal:'📰',quartile:'⭐',method:'🔬',framework:'📐',keyword:'🏷'};
+        filterParts.push((i>1?' <span class="text-m" style="font-size:9px">'+op+'</span> ':'') +
+          '<span class="badge" style="background:rgba(108,99,255,.15);color:var(--accent);font-size:9px">'+
+          (iconMap[dim]||'')+' '+esc(val)+'</span>');
+      }
+    }
+    const filterDesc = filterParts.length ? 'Filters: '+filterParts.join('') : 'No filters active — showing all';
+    st.innerHTML = `<span class="badge" style="color:var(--accent)">${filterDesc}</span> ` +
+      Object.entries(CAT_COLORS).map(([k,v]) =>
+        (cats[k]||0) ? `<span class="badge" style="background:${v.bg};border-color:${v.bd};color:${v.bd}">${v.label}: ${cats[k]}</span>` : ''
+      ).filter(Boolean).join(' ') + ` · <span class="badge">Total: ${d.files_analyzed||0}</span>`;
+  } catch(e) {
+    el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--red)">Error: ' + e.message + '</div>';
+  }
+}
+
+function renderGraph(){
+  const el = document.getElementById('graph-container');
+  if (!graphDataCache) return;
+  const d = graphDataCache;
+  const filter = document.getElementById('graph-filter')?.value||'all';
+  // Get active categories from toggles
+  const active = CAT_KEYS.filter(k => {
+    const cb = document.getElementById('tog-' + k);
+    return !cb || cb.checked;
+  });
+  const keep = new Set(active);
+  // When a specific filter is selected, hide system/code/rationale/other — only show research files
+  const filterHide = new Set(['system','code','rationale','other']);
+  const nodes = (d.nodes||[]).filter(n => {
+    if (filter !== 'all' && filterHide.has(n.file_type)) return false;
+    return keep.has(n.file_type);
+  }).map(n => {
+    const c = CAT_COLORS[n.file_type]||CAT_COLORS.other;
+    return {
+      id: n.id, label: n.label,
+      title: n.rel_path || n.source_file || '',
+      group: n.file_type,
+      shape: c.shape, size: c.sz,
+      color: { background: c.bg, border: c.bd, highlight: { background: c.bg, border: '#ffffff' } },
+      font: { color: '#e8eaf0', size: n.file_type==='extraction'?9:10 },
+      relPath: n.rel_path || ''
+    };
+  });
+  const nodeIds = new Set(nodes.map(n => n.id));
+  const edgeMap = {};
+  (d.edges||[]).forEach(e => {
+    if (!nodeIds.has(e.source) || !nodeIds.has(e.target)) return;
+    const key = `${e.source}|${e.target}|${e.relation}`;
+    if (!edgeMap[key]) edgeMap[key] = { ...e, weight: 1 };
+    else edgeMap[key].weight += 0.5;
+  });
+  const edgeColors = { keyword:'#ff6b00', imports:'#6c63ff', calls:'#00d4aa', contains:'#2a2f45', same_project:'#8892a4', rationale_for:'#f5c518', extends:'#ff6b9d', inherits:'#ff6b9d', references:'#b388ff', imports_from:'#6c63ff', shared_keywords:'#ff9f43' };
+  const edges = Object.values(edgeMap).map(e => ({
+    from: e.source, to: e.target,
+    label: e.relation, arrows: 'to',
+    color: { color: edgeColors[e.relation]||'#2a2f45', opacity: e.relation==='same_project'?0.3:0.7 },
+    width: Math.min(Math.max(e.weight||1, 0.3), 3),
+    dashes: e.relation==='same_project' || e.relation==='shared_keywords'
+  }));
+  if (!nodes.length) {
+    el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">No nodes match active filters.</div>';
+    return;
+  }
+  const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
+  const opts = {
+    nodes: { font: { face:'Inter,system-ui,sans-serif' }, borderWidth: 2 },
+    edges: { font: { color:'#8892a4', size:7, strokeWidth:0 }, smooth: { type:'curvedCW', roundness:0.12 } },
+    physics: { solver:'forceAtlas2Based', forceAtlas2Based:{ gravitationalConstant:-30, centralGravity:0.003, springLength:200, springConstant:0.015, damping:0.45 }, stabilization:{ iterations:150 } },
+    interaction: { hover:true, tooltipDelay:150, navigationButtons:true, keyboard:true },
+    groups: Object.fromEntries(Object.entries(CAT_COLORS).map(([k,v]) => [k, { shape:v.shape, color:{ background:v.bg, border:v.bd } }]))
+  };
+  if (graphNetwork) graphNetwork.destroy();
+  graphNetwork = new vis.Network(el, data, opts);
+  graphNetwork.on('click', p => {
+    if (!p.nodes.length) return;
+    const n = nodes.find(x => x.id === p.nodes[0]);
+    if (!n) return;
+    const rp = n.relPath;
+    if (rp) {
+      // Extract project from relPath (e.g. "01-PROJECTS/P1-HEI-CULTURE/02-EXTRACTIONS/P001 - ...")
+      const parts = rp.split(/[\\\/]/);
+      let project = '';
+      let filename = parts[parts.length-1] || '';
+      // Look for project folder pattern
+      const projIdx = parts.findIndex(p => p.startsWith('P') && p.includes('-'));
+      if (projIdx >= 0) project = parts[projIdx];
+      else if (parts[0] === 'INCOMING') project = 'INCOMING';
+      else project = parts[0] || '';
+      // Try to open the .md file
+      fetch(`${API}/api/graph/file?rel_path=${encodeURIComponent(rp)}`).then(r => r.json()).then(d2 => {
+        if (d2.content) openModal(n.label, d2.content, project, filename);
+        else toast('Cannot open file','err');
+      }).catch(() => toast('Error loading file','err'));
+    } else {
+      toast(n.title || n.label, 'ok');
+    }
+  });
+  graphNetwork.on('hoverNode', p => {
+    const n = nodes.find(x => x.id === p.node);
+    if (n && n.relPath) el.style.cursor = 'pointer';
+  });
+  graphNetwork.on('blurNode', () => { el.style.cursor = 'default'; });
+}
+
+function toggleGraphCat(k){
+  renderGraph();
+}
+
+async function runGraphify(){
+  // Refresh == re-scan keywords + metadata, then reload graph
+  const st = document.getElementById('graph-stats');
+  st.innerHTML = '<span class="badge" style="color:var(--gold)">⏳ Re-scanning files & keywords…</span>';
+  try {
+    const d = await fetch(`${API}/api/graph/refresh`, {method:'POST'}).then(r => r.json());
+    if(d.ok) {
+      const info = `✅ ${d.keywords_total||0} keywords, ${Object.keys(d.dimensions||{}).length} metadata dims`;
+      toast('Refresh complete: '+info, 'ok');
+      loadGraph();
+    } else st.innerHTML = '<span class="badge" style="color:var(--red)">❌ '+(d.error||'failed')+'</span>';
+  } catch(e) { st.innerHTML = '<span class="badge" style="color:var(--red)">❌ '+e.message+'</span>'; }
+}
+
+// ─── Obsidian ──────────────────────────────────────────────────────────
+function openObsidian(){
+  const url='obsidian://open?vault=C%3A%5CF-%20Drive%5CMYWORK-Research1';
+  window.open(url,'_blank');
+  toast('Opening Obsidian vault...','ok');
+}
+
+function openObsidianGraph(){
+  const url='obsidian://graph?vault=C%3A%5CF-%20Drive%5CMYWORK-Research1';
+  window.open(url,'_blank');
+  toast('Opening Obsidian graph...','ok');
+}
+
+function updateObsidianStats(){
+  const mds=document.querySelectorAll('#mem-body tr').length||memory.length;
+  document.getElementById('obs-md-count').textContent='.md files: '+mds;
+  document.getElementById('obs-proj-count').textContent='Projects: '+projects.length;
+  document.getElementById('obs-chat-count').textContent='Chats: '+sessions.length;
+}
+</script>
+</body>
+</html>
