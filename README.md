@@ -1,6 +1,6 @@
 # ResearchPilot
 
-> **AI-native research infrastructure for PhDs and academics.**  
+> **AI-native research infrastructure for academics or students.**  
 > Ingest papers, extract insights via AI, search across 5 academic databases, visualise knowledge graphs, and write with RAG-powered chat — all self-hosted, all local-first.
 
 ---
