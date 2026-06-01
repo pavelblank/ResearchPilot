@@ -2530,76 +2530,6 @@ async def _search_semantic_scholar(q: str, year_from: str, year_to: str, max_res
         print(f"[Research] Semantic Scholar error: {e}")
         return []
 
-async def _search_arxiv(q: str, year_from: str, year_to: str, max_results: int) -> list:
-    try:
-        # ArXiv API uses a different query format
-        query_parts = []
-        # Clean query for ArXiv - remove special chars
-        clean_q = re.sub(r'[^a-zA-Z0-9\s]', ' ', q).strip()
-        query_parts.append(f'all:"{clean_q}"')
-        if year_from:
-            query_parts.append(f"submittedDate:[{year_from}0101 TO {year_to or '2030'}1231]")
-        elif year_to:
-            query_parts.append(f"submittedDate:[19000101 TO {year_to}1231]")
-        query_str = "+AND+".join(query_parts)
-        url = f"https://export.arxiv.org/api/query?search_query={query_str}&start=0&max_results={max_results}&sortBy=submittedDate&sortOrder=descending"
-        headers = {"User-Agent": "ResearchPilot-ResearchAssistant/2.0"}
-        async with httpx.AsyncClient(timeout=20.0) as c:
-            r = await c.get(url, headers=headers)
-            if r.status_code != 200:
-                return []
-            # Parse XML response
-            import xml.etree.ElementTree as ET
-            root = ET.fromstring(r.text)
-            ns = {'atom': 'http://www.w3.org/2005/Atom',
-                  'arxiv': 'http://arxiv.org/schemas/atom'}
-        results = []
-        for entry in root.findall('atom:entry', ns):
-            title = entry.find('atom:title', ns)
-            title = title.text.strip().replace('\n', ' ') if title is not None else 'Untitled'
-            summary = entry.find('atom:summary', ns)
-            abstract = summary.text.strip().replace('\n', ' ') if summary is not None else ''
-            published = entry.find('atom:published', ns)
-            year = published.text[:4] if published is not None else ''
-            authors = []
-            for author in entry.findall('atom:author', ns):
-                name = author.find('atom:name', ns)
-                if name is not None:
-                    authors.append(name.text.strip())
-            doi_el = entry.find('arxiv:doi', ns)
-            doi = doi_el.text.strip().lower() if doi_el is not None else ''
-            links = entry.findall('atom:link', ns)
-            url_link = ''
-            pdf_url = ''
-            for link in links:
-                href = link.get('href', '')
-                title_attr = link.get('title', '')
-                if title_attr == 'pdf':
-                    pdf_url = href
-                elif not url_link and 'abs/' in href:
-                    url_link = href
-            if not url_link and links:
-                url_link = links[0].get('href', '')
-            results.append({
-                "title": title,
-                "authors": authors[:20],
-                "year": year,
-                "journal": "ArXiv e-prints",
-                "doi": doi,
-                "abstract": abstract[:800],
-                "url": url_link,
-                "citations": 0,
-                "is_oa": True,
-                "oa_url": pdf_url,
-                "source": "ArXiv",
-                "pdf_url": pdf_url,
-                "primary_location": url_link
-            })
-        return results
-    except Exception as e:
-        print(f"[Research] ArXiv error: {e}")
-        return []
-
 async def _search_google_scholar(q: str, year_from: str, year_to: str, max_results: int) -> list:
     """Search Google Scholar via scholarly library (free, no API key)."""
     if not HAS_SCHOLARLY:
@@ -2771,8 +2701,6 @@ async def research_web_search(
         tasks["crossref"] = _search_crossref(q, year_from, year_to, max_results)
     if "semantic" in source_list:
         tasks["semantic"] = _search_semantic_scholar(q, year_from, year_to, max_results)
-    if "arxiv" in source_list:
-        tasks["arxiv"] = _search_arxiv(q, year_from, year_to, max_results)
     if "pubmed" in source_list:
         tasks["pubmed"] = _search_pubmed(q, year_from, year_to, max_results)
     if "google_scholar" in source_list:
