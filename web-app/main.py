@@ -49,6 +49,13 @@ except ImportError:
 # docling — heavy PDF→MD converter (lazy import to avoid slow startup)
 HAS_DOCLING = None  # None = not checked yet
 
+# scholarly — Google Scholar scraper (free, no key)
+try:
+    import scholarly as _scholarly
+    HAS_SCHOLARLY = True
+except ImportError:
+    HAS_SCHOLARLY = False
+
 # ─── Paths ────────────────────────────────────────────────────────────────────
 BASE       = Path(r"C:\F- Drive\MYWORK-Research1")
 PROJECTS   = BASE / "01-PROJECTS"
@@ -2593,6 +2600,61 @@ async def _search_arxiv(q: str, year_from: str, year_to: str, max_results: int) 
         print(f"[Research] ArXiv error: {e}")
         return []
 
+async def _search_google_scholar(q: str, year_from: str, year_to: str, max_results: int) -> list:
+    """Search Google Scholar via scholarly library (free, no API key)."""
+    if not HAS_SCHOLARLY:
+        return []
+    try:
+        loop = asyncio.get_event_loop()
+        search_query = _scholarly.scholarly.search_pubs(q)
+        results = []
+        count = 0
+        while count < max_results:
+            try:
+                pub = await asyncio.wait_for(
+                    loop.run_in_executor(None, lambda: next(search_query)),
+                    timeout=10.0
+                )
+            except StopIteration:
+                break
+            except Exception:
+                break
+            if not pub or not pub.get("bib"):
+                continue
+            bib = pub["bib"]
+            year = str(bib.get("pub_year", ""))
+            # Year filter
+            if year_from and year and int(year) < int(year_from):
+                continue
+            if year_to and year and int(year) > int(year_to):
+                continue
+            authors = bib.get("author", "")
+            if isinstance(authors, str):
+                authors = [a.strip() for a in authors.split(" and ")]
+            elif not isinstance(authors, list):
+                authors = []
+            doi = (pub.get("doi") or pub.get("gsrank") or "")
+            results.append({
+                "title": bib.get("title", "Untitled"),
+                "authors": authors[:20],
+                "year": year,
+                "journal": bib.get("journal", ""),
+                "doi": str(doi),
+                "abstract": (bib.get("abstract") or "")[:800],
+                "url": pub.get("url", "") or pub.get("pub_url", ""),
+                "citations": pub.get("num_citations", 0),
+                "is_oa": False,
+                "oa_url": "",
+                "source": "Google Scholar",
+                "pdf_url": pub.get("eprint_url", ""),
+                "primary_location": doi or ""
+            })
+            count += 1
+        return results
+    except Exception as e:
+        print(f"[Research] Google Scholar error: {e}")
+        return []
+
 async def _search_pubmed(q: str, year_from: str, year_to: str, max_results: int) -> list:
     try:
         # Step 1: Search for IDs
@@ -2713,6 +2775,8 @@ async def research_web_search(
         tasks["arxiv"] = _search_arxiv(q, year_from, year_to, max_results)
     if "pubmed" in source_list:
         tasks["pubmed"] = _search_pubmed(q, year_from, year_to, max_results)
+    if "google_scholar" in source_list:
+        tasks["google_scholar"] = _search_google_scholar(q, year_from, year_to, max_results)
 
     t0 = datetime.datetime.now()
     results_map = {}

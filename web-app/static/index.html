@@ -369,6 +369,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
             <input type="checkbox" id="src-pubmed" style="accent-color:#b388ff;width:12px;height:12px">
             <span style="color:#b388ff">PubMed</span>
           </label>
+          <label class="wr-src" style="font-size:11px;display:flex;align-items:center;gap:3px;cursor:pointer;padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.06)">
+            <input type="checkbox" id="src-google-scholar" style="accent-color:#fff;width:12px;height:12px">
+            <span style="color:#ccc">Google Scholar</span>
+          </label>
         </div>
 
         <div class="separator" style="width:1px;height:20px;background:var(--border);margin:0 2px"></div>
@@ -1789,6 +1793,7 @@ function getEnabledSources(){
   if (document.getElementById('src-semantic')?.checked) sources.push('semantic');
   if (document.getElementById('src-arxiv')?.checked) sources.push('arxiv');
   if (document.getElementById('src-pubmed')?.checked) sources.push('pubmed');
+  if (document.getElementById('src-google-scholar')?.checked) sources.push('google_scholar');
   return sources;
 }
 
@@ -1838,7 +1843,7 @@ async function searchWebResearch(){
 
     // Build sources badge
     const srcBadges = Object.entries(d.sources||{}).map(([k,v]) => {
-      const colors = {openalex:'--accent', crossref:'--a2', semantic:'--gold', arxiv:'#ff6b00', pubmed:'#b388ff'};
+      const colors = {openalex:'--accent', crossref:'--a2', semantic:'--gold', arxiv:'#ff6b00', pubmed:'#b388ff', google_scholar:'#ccc'};
       return `<span class="badge" style="color:var(${colors[k]||'--muted'})">${k}: ${v}</span>`;
     }).join('');
 
@@ -1858,7 +1863,8 @@ async function searchWebResearch(){
         'Crossref': 'rgba(0,212,170,.15);color:var(--a2)',
         'Semantic Scholar': 'rgba(245,197,24,.15);color:var(--gold)',
         'ArXiv': 'rgba(255,107,0,.15);color:#ff6b00',
-        'PubMed': 'rgba(179,136,255,.15);color:#b388ff'
+        'PubMed': 'rgba(179,136,255,.15);color:#b388ff',
+        'Google Scholar': 'rgba(255,255,255,.08);color:#ccc'
       };
       const srcColor = srcColorMap[r.source] || 'rgba(42,47,69,.3);color:var(--muted)';
       const hasUrl = !!(r.url || (doi && `https://doi.org/${doi}`));
