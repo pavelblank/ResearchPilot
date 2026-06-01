@@ -184,19 +184,4 @@ Accessible from the UI: **Settings →**
 
 ---
 
-##  Author
 
-**Md Yeahia Bhuiyan**
-*PhD Researcher · University Lecturer · AI Systems Designer*
-
-I am a researcher and educator specialising in cybersecurity behaviour, organisational culture, and privacy mental models in Higher Education Institutions. My work bridges qualitative academic research and applied AI systems design.
-
-ResearchPilot was built as part of a broader effort to construct portable, AI-assisted research infrastructure — systems that reduce cognitive overhead, preserve research continuity, and support publication-quality output across long-term academic projects.
-
-**Research Interests**
-Cybersecurity behaviour · Privacy mental models · Organisational culture · Protection Motivation Theory · AI-assisted academic workflows
-
-**Connect**
-- GitHub: [your-github-handle]
-- Institution: [your institution, optional]
-- Contact: [your email or profile link, optional]
