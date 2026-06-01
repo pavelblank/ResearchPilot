@@ -129,7 +129,6 @@ MRBLANK_RA-Research-Assistant/
 ├── 01-PROJECTS/                      # Research projects (P1, P2, ...)
 ├── 99-SYSTEM-BACKEND/               # Chats, logs, automation reports
 ├── INCOMING/                         # Landing zone for new papers
-├── INCOMING/                         # PDF landing zone
 ├── .gitignore
 └── README.md                        # This file
 ```
