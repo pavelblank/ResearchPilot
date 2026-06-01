@@ -1,4 +1,4 @@
-# MRBLANK_RA Research Assistant
+# MRBLANK_RA-Research-Assistant
 
 > **Multi-AI Research Assistant** — Universal file ingestion, 12-point paper extraction, knowledge graph, and academic writing engine.
 
