@@ -202,8 +202,8 @@ ResearchPilot was built as part of a broader effort to construct portable, AI-as
 Cybersecurity behaviour · Privacy mental models · Organisational culture · Protection Motivation Theory · AI-assisted academic workflows
 
 **Connect**
-- GitHub: [https://github.com/pavelblank]
-- Institution: [your institution, optional]
+- GitHub: [pavelblank]
+- Institution: [skip]
 - Contact: mrblank1010ai@gmail.com
 
 ---
