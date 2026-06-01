@@ -18,7 +18,13 @@ MRBLANK_RA is a self-hosted research assistant that connects to multiple AI back
 
 ---
 
-![MRBLANK_RA interface](screenshot.png)
+<p align="center">
+  <img src="screenshot-1.png" alt="Screenshot 1" width="800">
+  <br><br>
+  <img src="screenshot-2.png" alt="Screenshot 2" width="800">
+  <br><br>
+  <img src="screenshot-3.png" alt="Screenshot 3" width="800">
+</p>
 
 ---
 
