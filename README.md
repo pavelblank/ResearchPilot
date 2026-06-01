@@ -5,6 +5,8 @@
 
 ---
 
+> `CLAUDE.md` contains AI behaviour instructions for Claude Code integration — optional, safe to ignore.
+
 ##  Overview
 
 ResearchPilot is a self-hosted research assistant that connects to multiple AI backends (Ollama, Gemini, Claude, OpenRouter, etc.) and provides a complete workflow for academic research:
@@ -19,11 +21,14 @@ ResearchPilot is a self-hosted research assistant that connects to multiple AI b
 ---
 
 <p align="center">
-  <img src="1.png" alt="Screenshot 1" width="800">
+  <img src="screenshot-dashboard.png" alt="ResearchPilot Dashboard — multi-AI chat interface" width="800">
+  <br><em>Dashboard — chat with multiple AI engines, manage conversations</em>
   <br><br>
-  <img src="2.png" alt="Screenshot 2" width="800">
+  <img src="screenshot-knowledge-graph.png" alt="ResearchPilot Knowledge Graph — 7-dimension visualization" width="800">
+  <br><em>Knowledge Graph — visualise research across author, year, journal, method, and more</em>
   <br><br>
-  <img src="3.png" alt="Screenshot 3" width="800">
+  <img src="screenshot-search-results.png" alt="ResearchPilot Database Search — academic paper discovery" width="800">
+  <br><em>Database Search — discover papers across 5 academic databases with AI-powered extraction</em>
 </p>
 
 ---
@@ -85,11 +90,11 @@ Open **http://127.0.0.1:8000** in your browser.
 ###  Universal File Ingestion
 | Format | Auto-converts to .md |
 |--------|:---:|
-| PDF |  (via PyMuPDF or Docling) |
-| DOCX / DOC |  |
-| PPTX / PPT |  |
-| HTML / HTM |  |
-| TXT / CSV / JSON |  |
+| PDF | ✅ (via PyMuPDF or Docling) |
+| DOCX / DOC | ✅ |
+| PPTX / PPT | ✅ |
+| HTML / HTM | ✅ |
+| TXT / CSV / JSON | ✅ |
 
 ###  Multi-AI Engine Router
 Tries enabled engines in priority order. First one that responds wins — **your AI never stops**.
