@@ -119,6 +119,8 @@ Visualize your research across 7 dimensions:
 
 Multi-layer filtering with AND/OR logic. Built-in Obsidian vault integration.
 
+**Graphify** — built-in code-level AST graph engine. Annotates every source file, class, and function with semantic metadata. Renders an interactive visual code-map alongside your paper graph, powered by `graphify-out/cache/`.
+
 ###  12-Point Extraction Protocol
 Every paper is analyzed through:
 
@@ -156,6 +158,7 @@ ResearchPilot/
 ├── 01-PROJECTS/                      # Research projects (P1, P2, ...)
 ├── 99-SYSTEM-BACKEND/               # Chats, logs, automation reports
 ├── INCOMING/                         # Landing zone for new papers
+├── graphify-out/                    # Graphify AST cache (knowledge graph engine)
 ├── .gitignore
 └── README.md                        # This file
 ```
