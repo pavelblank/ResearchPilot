@@ -23,9 +23,24 @@ ResearchPilot is a self-hosted research assistant that connects to multiple AI b
 
 ---
 
+## 📸 Screenshots (V5.3)
+
+<div align="center">
+  <table>
+    <tr>
+      <td><img src="5.3.0-%20Home%20page%20dashbard%20.png" alt="Home Dashboard" width="300"></td>
+      <td><img src="5.3.0-%20Web%20Research%20page.png" alt="Web Research" width="300"></td>
+      <td><img src="5.3.0-%20Knowledge%20Graph%20page.png" alt="Knowledge Graph" width="300"></td>
+    </tr>
+    <tr>
+      <td align="center"><b>🏠 Home Dashboard</b></td>
+      <td align="center"><b>🔍 Web Research</b></td>
+      <td align="center"><b>🕸 Knowledge Graph</b></td>
+    </tr>
+  </table>
+</div>
+
 ---
-
-
 
 ##  Prerequisites
 
