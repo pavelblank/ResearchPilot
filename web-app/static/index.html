@@ -2804,6 +2804,7 @@ function go(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.id==='page-'+name));
   const sidebar=document.getElementById('sidebar');
   sidebar.style.display=(name==='settings'||name==='chat')?'none':'flex';
+  if(name==='dashboard')updateDash();
   if(name==='library')loadLibrary();
   if(name==='memory')loadMemory();
   if(name==='chat'){loadSessions();loadSkills();}

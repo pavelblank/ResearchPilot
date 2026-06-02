@@ -23,16 +23,7 @@ ResearchPilot is a self-hosted research assistant that connects to multiple AI b
 
 ---
 
-<p align="center">
-  <img src="screenshot-dashboard.png" alt="ResearchPilot Dashboard — multi-AI chat interface" width="800">
-  <br><em>Dashboard — chat with multiple AI engines, manage conversations</em>
-  <br><br>
-  <img src="screenshot-knowledge-graph.png" alt="ResearchPilot Knowledge Graph — 7-dimension visualization" width="800">
-  <br><em>Knowledge Graph — visualise research across author, year, journal, method, and more</em>
-  <br><br>
-  <img src="screenshot-search-results.png" alt="ResearchPilot Database Search — academic paper discovery" width="800">
-  <br><em>Graphify Search — discover memory across databases with AI-powered extraction</em>
-</p>
+*Screenshots coming soon*
 
 ---
 
