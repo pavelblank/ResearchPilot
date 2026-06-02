@@ -17,6 +17,9 @@ ResearchPilot is a self-hosted research assistant that connects to multiple AI b
 - **Visualize** research with a multi-dimension knowledge graph
 - **Chat** with AI using your research library as RAG context
 - **Track** keywords, predatory journals, and version changelog
+- **Dashboard** — live System Pulse graph with animated nodes, Quote of the Day (365 quotes)
+- **Quick Notes** — persistent CRUD notes stored server-side in `99-SYSTEM-BACKEND/notes.json`
+- **12 AI Engines** — interleaved OpenRouter / NVIDIA / local, auto-failover on empty response
 
 ---
 
@@ -96,10 +99,12 @@ Open **http://127.0.0.1:8000** in your browser.
 | HTML / HTM | ✅ |
 | TXT / CSV / JSON | ✅ |
 
-###  Multi-AI Engine Router
-Tries enabled engines in priority order. First one that responds wins — **your AI never stops**.
+###  Multi-AI Engine Router (12 Engines)
+Tries enabled engines in priority order. First one that responds wins — **your AI never stops**. Engines interleaved across OpenRouter, NVIDIA, and local for maximum uptime.
 
-Supported: `Ollama` · `LM Studio` · `Gemini` · `Claude (API)` · `Claude (CLI)` · `OpenRouter` · `Custom OpenAI-compatible`
+Supported: `OpenRouter` · `NVIDIA (build.nvidia.com)` · `Ollama` · `Gemini` · `Claude (API)` · `Claude (CLI)` · `Custom OpenAI-compatible`
+
+Includes auto-failover on empty content (reasoning models), tool calling on NVIDIA backend, and per-engine enable/disable.
 
 ###  Academic Web Search
 Search across 5 sources simultaneously:
@@ -140,6 +145,15 @@ Every paper is analyzed through:
 ###  Chat with RAG
 Chat with any enabled AI engine. Automatically injects relevant context from your research library — no manual file selection needed.
 
+###  System Pulse Dashboard
+Live animated graph with 6 interconnected nodes: **ResearchPilot** (center), AI Engine, Library, Chat, Extractions, and Knowledge Graph — each with pulsing status dots and real-time counts.
+
+###  Quote of the Day
+365+ inspiring quotes from Einstein, Curie, Sagan, Feynman, Tesla, Rumi, Mandela, and more — rotates by day of year with a refresh button for random picks. No network fetch needed (all embedded client-side).
+
+###  Quick Notes
+Persistent sticky notes with full CRUD (Create, Read, Update, Delete). Stored server-side in `99-SYSTEM-BACKEND/notes.json` — survives browser clears and reboots. Accessible from sidebar, max 3 visible with scroll.
+
 ---
 
 ##  Project Structure
@@ -151,12 +165,13 @@ ResearchPilot/
 │   ├── requirements.txt              # Python dependencies
 │   ├── .env.example                  # Environment template
 │   ├── static/
-│   │   └── index.html               # Single-page frontend (~2400 lines)
+│   │   └── index.html               # Single-page frontend (~3800 lines)
 │   ├── START-SERVER.bat             # Windows launcher
 │   └── test_final.py                # Test suite
 ├── 00-SYSTEM-CORE/                   # System protocols, master knowledge base
 ├── 01-PROJECTS/                      # Research projects (P1, P2, ...)
-├── 99-SYSTEM-BACKEND/               # Chats, logs, automation reports
+├── 99-SYSTEM-BACKEND/               # Chats, logs, notes, automation reports
+│   └── notes.json                   # Quick Notes persistent storage
 ├── INCOMING/                         # Landing zone for new papers
 ├── graphify-out/                    # Graphify AST cache (knowledge graph engine)
 ├── .gitignore
@@ -171,13 +186,14 @@ Accessible from the UI: **Settings →**
 
 | Section | Purpose |
 |---------|---------|
+| General | Context size, auto-extract, auto-start |
 | AI Engines | Configure and enable/disable AI backends |
+| Model Selection | View all 12 engines in priority order with provider badges |
 | Skills | Custom markdown instructions loaded with every chat |
 | Projects | Create, rename, delete research projects |
 | Knowledge Base | Read-only view of the master synthesis |
 | Keywords | Auto-scan and track research keywords |
 | Predatory Journals | Manage filtered journal list |
-| General | Context size, auto-extract, auto-start |
 | Author | Display information |
 | Changelog | Record version history |
 
