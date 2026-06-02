@@ -575,17 +575,17 @@ def build_rag_prompt(query: str, project: str = None, skills: list = None) -> st
 # ─── Multi-AI Router ──────────────────────────────────────────────────────────
 async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
     async with httpx.AsyncClient(timeout=300.0) as c:
-        # Check reachable
+        # Fast health check — failover if not reachable within 3s
         r = await c.get(f"{engine['url']}/api/tags", timeout=3.0)
         if r.status_code != 200:
             raise Exception("Ollama not reachable")
 
         model = engine["model"]
 
-        # Get model info to check context window size
-        model_ctx = 8192  # default
+        # Quick model info check
+        model_ctx = 8192
         try:
-            r2 = await c.post(f"{engine['url']}/api/show", json={"name": model}, timeout=5.0)
+            r2 = await c.post(f"{engine['url']}/api/show", json={"name": model}, timeout=3.0)
             if r2.status_code == 200:
                 info = r2.json()
                 if "modelfile" in info:
@@ -598,7 +598,6 @@ async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
         except Exception:
             pass
 
-        # Tool-calling loop (max 3 iterations, fail fast)
         tool_uses = []
         for iteration in range(3):
             payload = {
@@ -608,15 +607,18 @@ async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
                 "options": {"num_ctx": min(model_ctx, 64000)}
             }
 
-            # Send tool definitions on first request
             if iteration == 0:
                 payload["tools"] = ResearchPilot_TOOLS
 
-            r = await c.post(f"{engine['url']}/api/chat", json=payload, timeout=180.0)
+            r = await c.post(f"{engine['url']}/api/chat", json=payload, timeout=120.0)
+            if r.status_code != 200:
+                err = ""
+                try: err = r.json().get("error", r.text[:200])
+                except: err = r.text[:200]
+                raise Exception(f"Ollama returned {r.status_code}: {err}")
             data = r.json()
             msg = data.get("message", {})
 
-            # Check for tool calls
             tool_calls = msg.get("tool_calls", [])
             if tool_calls:
                 messages.append({"role": "assistant", "content": msg.get("content", ""), "tool_calls": tool_calls})
@@ -633,22 +635,31 @@ async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
                     tool_uses.append({"tool": fn, "args": fn_args, "status": status})
                     content_str = json.dumps(result, ensure_ascii=False)
                     messages.append({"role": "tool", "content": content_str, "name": fn})
-                continue  # Send back to model with tool results
+                continue
 
-            # No tool calls — this is the final response
             content = msg.get("content", "")
             return content, tool_uses
 
         return "I read several files but couldn't formulate a complete response. Please try asking more specifically.", tool_uses
 
 async def _try_openai_compat(engine: dict, messages: list) -> tuple[str, list]:
-    headers = {"Content-Type": "application/json"}
-    if engine.get("api_key") and engine["api_key"] not in ("", "lm-studio"):
-        headers["Authorization"] = f"Bearer {engine['api_key']}"
+    # Fail fast if no API key
+    api_key = engine.get("api_key", "")
+    if not api_key or api_key in ("", "lm-studio"):
+        raise Exception(f"{engine.get('name','OpenAI')}: no API key configured")
+
+    headers = {"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"}
     # Add OpenRouter identity headers if using OpenRouter
     if "openrouter" in engine.get("url", "").lower():
         headers["HTTP-Referer"] = "https://github.com/ResearchPilot"
         headers["X-Title"] = "ResearchPilot"
+
+    # Quick health check — try a models list request
+    async with httpx.AsyncClient(timeout=10.0) as c:
+        try:
+            hr = await c.get(f"{engine['url']}/models", timeout=3.0)
+        except Exception:
+            pass  # not all APIs support /models; proceed anyway
 
     tool_uses = []
     async with httpx.AsyncClient(timeout=300.0) as c:
@@ -665,8 +676,13 @@ async def _try_openai_compat(engine: dict, messages: list) -> tuple[str, list]:
                 f"{engine['url']}/chat/completions",
                 json=payload,
                 headers=headers,
-                timeout=180.0
+                timeout=60.0
             )
+            if r.status_code != 200:
+                err = ""
+                try: err = r.json().get("error", {}).get("message", r.text[:200])
+                except: err = r.text[:200]
+                raise Exception(f"{engine.get('name','API')} returned {r.status_code}: {err}")
             data = r.json()
             msg = data.get("choices", [{}])[0].get("message", {})
 
@@ -2442,6 +2458,57 @@ async def fetch_predatory_online():
     existing.update(all_names)
     _save_predatory(existing)
     return {"ok": True, "added": len(all_names), "total": len(existing)}
+
+# ── Quick Notes ──
+NOTES_FILE = BACKEND / "notes.json"
+
+def _load_notes() -> list:
+    if NOTES_FILE.exists():
+        try: return json.loads(NOTES_FILE.read_text(encoding="utf-8"))
+        except: pass
+    return []
+
+def _save_notes(notes: list):
+    NOTES_FILE.write_text(json.dumps(notes, ensure_ascii=False, indent=2), encoding="utf-8")
+
+@app.get("/api/notes")
+async def get_notes():
+    return {"notes": _load_notes()}
+
+@app.post("/api/notes")
+async def create_note():
+    notes = _load_notes()
+    n = len(notes) + 1
+    note = {
+        "id": f"n{int(datetime.datetime.now().timestamp())}",
+        "title": f"Note {n}",
+        "content": "",
+        "created": datetime.datetime.now().isoformat(),
+        "updated": datetime.datetime.now().isoformat()
+    }
+    notes.append(note)
+    _save_notes(notes)
+    return note
+
+@app.put("/api/notes/{note_id}")
+async def update_note(note_id: str, req: Request):
+    data = await req.json()
+    notes = _load_notes()
+    for note in notes:
+        if note["id"] == note_id:
+            if "title" in data: note["title"] = data["title"]
+            if "content" in data: note["content"] = data["content"]
+            note["updated"] = datetime.datetime.now().isoformat()
+            _save_notes(notes)
+            return note
+    raise HTTPException(404, "Note not found")
+
+@app.delete("/api/notes/{note_id}")
+async def delete_note(note_id: str):
+    notes = _load_notes()
+    notes = [n for n in notes if n["id"] != note_id]
+    _save_notes(notes)
+    return {"ok": True}
 
 # ─── Research Web Search ──────────────────────────────────────────────────────
 def _decode_openalex_abstract(inverted_index: dict) -> str:

@@ -12,30 +12,30 @@
   --red:#ff4d6d;--text:#e8eaf0;--muted:#8892a4;--font:'Inter',system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--bg);color:var(--text)}
+html,body{height:100%;overflow:hidden;font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px}
 /* scrollbar */
 ::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 /* layout */
 .app{display:flex;flex-direction:column;height:100vh}
 header{height:50px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
-.logo{font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px}
-.logo-i{width:26px;height:26px;background:linear-gradient(135deg,var(--accent),var(--a2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px}
-#ai-status{margin-left:auto;font-size:11px;display:flex;align-items:center;gap:6px}
-.engine-dot{width:7px;height:7px;border-radius:50%;background:var(--red)}
+.logo{font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px}
+.logo-i{width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--a2));border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px}
+#ai-status{margin-left:auto;font-size:12px;display:flex;align-items:center;gap:6px}
+.engine-dot{width:8px;height:8px;border-radius:50%;background:var(--red)}
 .engine-dot.ok{background:var(--a2)}.engine-dot.warn{background:var(--gold)}
-#ai-name{color:var(--muted);font-size:11px}
+#ai-name{color:var(--muted);font-size:12px}
 nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex;padding:0 12px;overflow-x:auto;flex-shrink:0}
-.tab{padding:10px 16px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s}
+.tab{padding:10px 16px;font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s}
 .tab:hover{color:var(--text)}.tab.on{color:var(--accent);border-color:var(--accent)}
 .body{flex:1;display:flex;overflow:hidden}
 /* sidebar */
 .sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;transition:width .2s}
 .sb-head{padding:12px 14px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
 .sb-list{flex:1;overflow-y:auto;padding:4px}
-.sb-item{padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12px;display:flex;align-items:center;gap:7px;margin-bottom:2px;transition:.15s}
+.sb-item{padding:8px 11px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:7px;margin-bottom:2px;transition:.15s}
 .sb-item:hover{background:var(--panel)}.sb-item.on{background:rgba(108,99,255,.15);color:var(--accent)}
-.sb-item .ct{margin-left:auto;font-size:10px;color:var(--muted)}
+.sb-item .ct{margin-left:auto;font-size:11px;color:var(--muted)}
 /* main */
 .main{flex:1;overflow:hidden;display:flex;flex-direction:column}
 .page{display:none;flex:1;overflow-y:auto;flex-direction:column}
@@ -46,35 +46,35 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);display:flex
 /* cards */
 .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;transition:.2s}
 .card:hover{border-color:rgba(108,99,255,.4)}
-.card-t{font-size:13px;font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:7px}
-.card-s{font-size:12px;color:var(--muted)}
+.card-t{font-size:14px;font-weight:600;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+.card-s{font-size:13px;color:var(--muted)}
 .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
-.stat-c{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
-.stat-c .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.stat-c .val{font-size:26px;font-weight:700}
+.stat-c{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px}
+.stat-c .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.stat-c .val{font-size:28px;font-weight:700}
 .stat-c.a .val{color:var(--accent)}.stat-c.g .val{color:var(--a2)}.stat-c.d .val{color:var(--gold)}
 /* buttons */
-.btn{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-weight:500;font-family:var(--font);transition:.15s}
+.btn{padding:8px 16px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:500;font-family:var(--font);transition:.15s}
 .btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:#7c75ff}
 .btn-g{background:var(--panel);border:1px solid var(--border);color:var(--text)}.btn-g:hover{border-color:var(--accent);color:var(--accent)}
 .btn-d{background:transparent;border:1px solid var(--red);color:var(--red)}.btn-d:hover{background:rgba(255,77,109,.1)}
-.btn-s{padding:5px 10px;font-size:11px}
+.btn-s{padding:6px 12px;font-size:12px}
 /* forms */
-input,select,textarea{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:7px;font-size:12px;font-family:var(--font)}
+input,select,textarea{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:7px;font-size:13px;font-family:var(--font)}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 .form-row{margin-bottom:12px}
-.form-row label{display:block;font-size:11px;color:var(--muted);margin-bottom:5px}
+.form-row label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
 .w100{width:100%}
 /* upload */
 .drop-zone{border:2px dashed var(--border);border-radius:10px;padding:36px;text-align:center;cursor:pointer;transition:.2s}
 .drop-zone:hover,.drop-zone.drag{border-color:var(--accent);background:rgba(108,99,255,.05)}
 .drop-zone input{display:none}
 /* table */
-.tbl{width:100%;border-collapse:collapse;font-size:12px}
-.tbl th{background:var(--surface);padding:9px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);position:sticky;top:0}
-.tbl td{padding:9px 12px;border-bottom:1px solid rgba(42,47,69,.4)}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{background:var(--surface);padding:10px 14px;text-align:left;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);position:sticky;top:0}
+.tbl td{padding:10px 14px;border-bottom:1px solid rgba(42,47,69,.4)}
 .tbl tr:hover td{background:rgba(108,99,255,.04)}
-.tag{font-size:10px;padding:2px 7px;border-radius:8px;background:rgba(108,99,255,.15);color:var(--accent);font-weight:500}
+.tag{font-size:11px;padding:3px 8px;border-radius:8px;background:rgba(108,99,255,.15);color:var(--accent);font-weight:500}
 .tag.green{background:rgba(0,212,170,.12);color:var(--a2)}
 .tag.gold{background:rgba(245,197,24,.12);color:var(--gold)}
 .tag.red{background:rgba(255,77,109,.12);color:var(--red)}
@@ -83,73 +83,92 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 .sess-panel{width:190px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
 .sess-top{padding:10px;border-bottom:1px solid var(--border)}
 .sess-list{flex:1;overflow-y:auto;padding:4px}
-.sess-item{padding:7px 9px;border-radius:7px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:.15s}
+.sess-item{padding:8px 10px;border-radius:7px;cursor:pointer;margin-bottom:2px;border:1px solid transparent;transition:.15s}
 .sess-item:hover{background:var(--panel)}.sess-item.on{background:rgba(108,99,255,.12);border-color:rgba(108,99,255,.3)}
-.sess-item .si{font-size:11px;font-weight:500}.sess-item .sd{font-size:10px;color:var(--muted);margin-top:2px}
+.sess-item .si{font-size:12px;font-weight:500}.sess-item .sd{font-size:11px;color:var(--muted);margin-top:2px}
 .chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.chat-toolbar{padding:8px 14px;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex-shrink:0}
-.chat-toolbar select{padding:5px 9px;font-size:11px}
-.msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
-.msg{display:flex;gap:8px;max-width:88%;animation:fu .25s ease}
+.chat-toolbar{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+.chat-toolbar select{padding:6px 10px;font-size:12px}
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+.msg{display:flex;gap:10px;max-width:90%;animation:fu .25s ease}
 @keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 .msg.user{align-self:flex-end;flex-direction:row-reverse}
-.bubble{padding:10px 14px;border-radius:10px;font-size:12px;line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.bubble{padding:12px 16px;border-radius:10px;font-size:14px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
 .msg.user .bubble{background:linear-gradient(135deg,var(--accent),#8b84ff);color:#fff;border-bottom-right-radius:3px}
 .msg.assistant .bubble{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:3px}
-.av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}
+.av{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px}
 .msg.user .av{background:var(--accent)}.msg.assistant .av{background:var(--panel);border:1px solid var(--border)}
-.eng{font-size:9px;color:var(--muted);margin-top:3px}
-.tools-used{margin-top:6px;font-size:11px;cursor:pointer;user-select:none}
-.tools-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.25);border-radius:5px;color:var(--accent);font-size:10px;font-weight:500}
-.tools-detail{display:none;margin-top:5px;padding:6px 8px;background:var(--panel);border-radius:5px;border:1px solid var(--border)}
+.eng{font-size:10px;color:var(--muted);margin-top:3px}
+.tools-used{margin-top:6px;font-size:12px;cursor:pointer;user-select:none}
+.tools-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;background:rgba(108,99,255,.1);border:1px solid rgba(108,99,255,.25);border-radius:5px;color:var(--accent);font-size:11px;font-weight:500}
+.tools-detail{display:none;margin-top:5px;padding:7px 9px;background:var(--panel);border-radius:5px;border:1px solid var(--border)}
 .tools-used.expanded .tools-detail{display:block}
-.tool-item{padding:2px 0;font-size:11px;line-height:1.5}
+.tool-item{padding:2px 0;font-size:12px;line-height:1.5}
 .thinking{display:flex;gap:4px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;width:fit-content}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:b .8s infinite}
 .dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
 @keyframes b{0%,80%,100%{transform:scale(.8);opacity:.5}40%{transform:scale(1.1);opacity:1}}
-.cin{padding:12px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
-.cin textarea{flex:1;resize:none;min-height:40px;max-height:120px;line-height:1.5}
+.cin{padding:14px 16px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:flex-end;flex-shrink:0}
+.cin textarea{flex:1;resize:none;min-height:44px;max-height:140px;line-height:1.5;font-size:14px}
 /* Settings */
 .settings-grid{display:grid;grid-template-columns:220px 1fr;gap:0;height:100%}
 .settings-nav{background:var(--surface);border-right:1px solid var(--border);padding:8px}
-.sn-item{padding:8px 12px;border-radius:7px;cursor:pointer;font-size:12px;margin-bottom:2px;transition:.15s}
+.sn-item{padding:9px 14px;border-radius:7px;cursor:pointer;font-size:13px;margin-bottom:2px;transition:.15s}
 .sn-item:hover{background:var(--panel)}.sn-item.on{background:rgba(108,99,255,.12);color:var(--accent)}
 .settings-body{overflow-y:auto;padding:18px}
-.section-title{font-size:13px;font-weight:600;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
-.engine-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.section-title{font-size:15px;font-weight:600;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.engine-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:10px}
 .engine-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.engine-name{font-size:13px;font-weight:600;flex:1}
-.engine-note{font-size:10px;color:var(--muted);margin-top:4px}
+.engine-name{font-size:14px;font-weight:600;flex:1}
+.engine-note{font-size:11px;color:var(--muted);margin-top:4px}
 .engine-fields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.engine-expand{font-size:10px;color:var(--a2);cursor:pointer;text-align:center;padding:4px;margin-top:6px;border-top:1px solid var(--border);opacity:.6;user-select:none}
+.engine-expand:hover{opacity:1}
+.model-provider-group{margin-bottom:18px}
+.model-provider-header{font-size:14px;font-weight:700;padding:8px 0;margin-bottom:6px;color:var(--text);display:flex;align-items:center;gap:8px}
+.model-provider-header .text-m{font-weight:400}
 .toggle{width:38px;height:20px;background:var(--border);border-radius:10px;cursor:pointer;position:relative;transition:.2s;flex-shrink:0}
 .toggle.on{background:var(--accent)}.toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s}
 .toggle.on::after{left:20px}
 /* modal */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
 .modal{background:var(--panel);border:1px solid var(--border);border-radius:12px;width:100%;max-width:700px;max-height:85vh;display:flex;flex-direction:column}
-.modal-h{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:14px}
-.modal-b{flex:1;overflow-y:auto;padding:18px}
-.md-view{font-size:12px;line-height:1.8;white-space:pre-wrap;word-break:break-word}
+.modal-h{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:15px}
+.modal-b{flex:1;overflow-y:auto;padding:20px}
+.md-view{font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word}
 /* toast */
-#toast{position:fixed;bottom:16px;right:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;font-size:12px;z-index:300;opacity:0;transition:.25s;transform:translateY(8px);pointer-events:none}
+#toast{position:fixed;bottom:16px;right:16px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 18px;font-size:13px;z-index:300;opacity:0;transition:.25s;transform:translateY(8px);pointer-events:none}
 #toast.show{opacity:1;transform:translateY(0)}
 #toast.ok{border-color:var(--a2);color:var(--a2)}#toast.err{border-color:var(--red);color:var(--red)}
+/* System Graph */
+.sys-node{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:.3s;z-index:3}
+.sys-node:hover{transform:scale(1.1)}
+.sys-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;position:relative}
+.sys-dot.pulse::after{content:'';position:absolute;inset:-3px;border-radius:50%;animation:sysPulse 2s ease-in-out infinite;border:2px solid}
+.sys-dot.ok{background:rgba(0,212,170,.2);border:2px solid var(--a2);color:var(--a2)}
+.sys-dot.ok.pulse::after{border-color:var(--a2)}
+.sys-dot.warn{background:rgba(245,197,24,.2);border:2px solid var(--gold);color:var(--gold)}
+.sys-dot.warn.pulse::after{border-color:var(--gold)}
+.sys-dot.off{background:rgba(255,77,109,.15);border:2px solid var(--red);color:var(--red)}
+.sys-label{font-size:9px;font-weight:600;color:var(--muted);white-space:nowrap;text-align:center;line-height:1.2}
+.sys-label .stat{font-size:8px;color:var(--a2);display:block;font-weight:400}
+.sys-line{position:absolute;height:2px;border-radius:2px;transform-origin:0 50%;opacity:.4;pointer-events:none;z-index:1}
+@keyframes sysPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:0;transform:scale(1.6)}}
 /* skills */
-.skill-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
-.skill-body{flex:1}.skill-name{font-size:12px;font-weight:600;margin-bottom:3px}
-.skill-prev{font-size:11px;color:var(--muted)}
+.skill-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.skill-body{flex:1}.skill-name{font-size:13px;font-weight:600;margin-bottom:3px}
+.skill-prev{font-size:12px;color:var(--muted)}
 /* misc */
 .flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}.items-c{align-items:center}
 .ml-a{margin-left:auto}.mt12{margin-top:12px}.mb12{margin-bottom:12px}
-.text-m{color:var(--muted)}.text-sm{font-size:11px}
-.w100{width:100%}.separator{border:none;border-top:1px solid var(--border);margin:14px 0}
-.badge{display:inline-flex;align-items:center;font-size:10px;padding:2px 6px;border-radius:6px;background:var(--panel);border:1px solid var(--border);color:var(--muted)}
+.text-m{color:var(--muted)}.text-sm{font-size:12px}
+.w100{width:100%}.separator{border:none;border-top:1px solid var(--border);margin:16px 0}
+.badge{display:inline-flex;align-items:center;font-size:11px;padding:3px 7px;border-radius:6px;background:var(--panel);border:1px solid var(--border);color:var(--muted)}
 /* author card */
 .au-card{max-width:480px;margin:1rem auto;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:2rem 2rem 1.5rem;text-align:center}
 .au-av{width:72px;height:72px;border-radius:50%;background:rgba(108,99,255,.12);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;color:var(--accent);margin:0 auto 1rem;border:1px solid rgba(108,99,255,.3)}
 .au-nm{font-size:18px;font-weight:700;color:var(--text)}
-.au-tt{font-size:13px;color:var(--a2);margin-top:4px;margin-bottom:16px}
+.au-tt{font-size:14px;color:var(--a2);margin-top:4px;margin-bottom:16px}
 .au-lbl{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:2px}
 .au-val{font-size:13px;color:var(--text);display:block;margin-bottom:12px}
 .au-cp{font-size:11px;color:var(--muted);margin-top:16px;padding-top:12px;border-top:1px solid var(--border)}
@@ -231,36 +250,63 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
   </div>
   <div class="sb-list" id="proj-list"></div>
 
+  <!-- ── Quick Notes ── -->
+  <div id="sb-notes" style="border-top:1px solid var(--border);padding:8px 10px;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <span style="font-size:12px;font-weight:600">📝 Quick Notes</span>
+      <button class="btn btn-s" onclick="noteCreate()" style="padding:2px 8px;font-size:11px;background:transparent;border:1px solid var(--border);color:var(--a2);cursor:pointer;border-radius:3px">+ New</button>
+    </div>
+    <div id="notes-list" style="display:flex;flex-direction:column;gap:3px;max-height:105px;overflow-y:auto"></div>
+  </div>
+
+  <!-- ── Clock ── -->
+  <div id="sb-clock" style="border-top:1px solid var(--border);padding:10px;text-align:center;flex-shrink:0">
+    <div id="clock-display" style="font-size:22px;font-weight:700;font-family:monospace;letter-spacing:1px;line-height:1.2">--:--:--</div>
+    <div id="clock-date" style="font-size:10px;color:var(--muted);margin-top:2px">---</div>
+  </div>
+
   <!-- ── Calendar ── -->
   <div id="sb-calendar" style="border-top:1px solid var(--border);padding:8px 10px;flex-shrink:0">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-      <span id="cal-title" style="font-size:11px;font-weight:600"></span>
+      <span id="cal-title" style="font-size:12px;font-weight:600"></span>
       <div style="display:flex;gap:2px">
         <button class="btn btn-s" onclick="calPrev()" style="padding:1px 5px;font-size:10px;background:transparent;border:none;color:var(--muted);cursor:pointer">◀</button>
         <button class="btn btn-s" onclick="calNext()" style="padding:1px 5px;font-size:10px;background:transparent;border:none;color:var(--muted);cursor:pointer">▶</button>
       </div>
     </div>
-    <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;font-size:10px;text-align:center"></div>
-    <div id="cal-tz" style="margin-top:4px;display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)">
+    <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;font-size:11px;text-align:center"></div>
+    <div id="cal-tz" style="margin-top:4px;display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)">
       <span id="cal-tz-label">UTC</span>
       <button class="btn btn-s" onclick="cycleTimezone()" style="padding:1px 5px;font-size:9px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;border-radius:3px">🔄</button>
     </div>
   </div>
 </div>
-
 <div class="main">
 
-<!-- DASHBOARD -->
 <div class="page on" id="page-dashboard">
   <div class="ph"><h2>🏠 Dashboard</h2></div>
-  <div class="pb">
+  <div class="pb" style="display:flex;flex-direction:column;gap:12px;height:calc(100vh - 50px - 42px - 12px)">
+    <!-- Stats row -->
     <div class="grid2" id="dash-stats">
       <div class="stat-c a"><div class="lbl">Projects</div><div class="val" id="s-p">—</div></div>
       <div class="stat-c g"><div class="lbl">Files</div><div class="val" id="s-f">—</div></div>
       <div class="stat-c d"><div class="lbl">Extractions</div><div class="val" id="s-e">—</div></div>
       <div class="stat-c"><div class="lbl">Chats</div><div class="val" id="s-c">—</div></div>
     </div>
-    <div id="proj-cards"></div>
+    <!-- System Graph -->
+    <div class="card" style="flex:1;overflow:hidden;position:relative;min-height:180px">
+      <div class="card-t" style="padding:10px 14px 4px;margin:0">⚡ System Pulse</div>
+      <div id="sys-graph" style="width:100%;height:calc(100% - 32px);position:relative;overflow:hidden"></div>
+    </div>
+    <!-- Quote of the Day -->
+    <div class="card" style="flex-shrink:0;padding:12px 16px;text-align:center">
+      <div id="quote-text" style="font-size:14px;font-style:italic;line-height:1.6;color:var(--text);margin-bottom:4px">Loading…</div>
+      <div id="quote-author" style="font-size:12px;color:var(--a2);font-weight:500"></div>
+      <div style="margin-top:6px;display:flex;gap:8px;justify-content:center;align-items:center">
+        <span id="quote-day" class="text-xs text-m" style="font-size:10px"></span>
+        <button class="btn btn-g btn-s" onclick="refreshQuote()" style="font-size:10px;padding:3px 10px">⟳ New Quote</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -676,24 +722,64 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 <div class="page" id="page-settings">
   <div class="settings-grid" style="height:100%">
     <div class="settings-nav">
-      <div class="sn-item on" onclick="showSettingsSection('ai')">🤖 AI Engines</div>
+      <div class="sn-item on" onclick="showSettingsSection('general')">⚙️ General</div>
+      <div class="sn-item" onclick="showSettingsSection('ai')">🤖 AI Engines</div>
+      <div class="sn-item" onclick="showSettingsSection('models')">🧠 Model Selection</div>
       <div class="sn-item" onclick="showSettingsSection('skills')">🎓 Skills</div>
       <div class="sn-item" onclick="showSettingsSection('projects')">📁 Projects</div>
       <div class="sn-item" onclick="showSettingsSection('kb')">🌐 Knowledge Base</div>
       <div class="sn-item" onclick="showSettingsSection('keywords')">🔑 Keywords</div>
       <div class="sn-item" onclick="showSettingsSection('predatory')">🚫 Predatory Journals</div>
-      <div class="sn-item" onclick="showSettingsSection('general')">⚙️ General</div>
       <div class="sn-item" onclick="showSettingsSection('author')">👤 Author</div>
       <div class="sn-item" onclick="showSettingsSection('versions')">📋 Changelog</div>
     </div>
     <div class="settings-body">
 
+      <!-- General -->
+      <div id="ss-general">
+        <div class="section-title">⚙️ General Settings</div>
+        <div class="form-row"><label>Auto-extract after upload</label>
+          <div class="flex gap8 items-c mt12">
+            <div class="toggle on" id="tog-auto" onclick="this.classList.toggle('on')"></div>
+            <span class="text-sm text-m">Create .md file for every uploaded file automatically</span>
+          </div>
+        </div>
+        <div class="form-row"><label>Max context characters (per AI call)</label>
+          <input type="text" id="gen-ctx" class="w100" value="40000">
+        </div>
+        <div class="form-row"><label>Auto-start on Windows login</label>
+          <div class="flex gap8 items-c mt12">
+            <div class="toggle" id="tog-autostart" onclick="this.classList.toggle('on')"></div>
+            <span class="text-sm text-m">Start ResearchPilot automatically when you log in (creates Windows scheduled task)</span>
+          </div>
+        </div>
+        <div class="form-row"><label>Timezone</label>
+          <select id="gen-tz" class="w100" style="max-width:300px"></select>
+        </div>
+        <hr class="separator">
+        <div class="section-title">🪨 Obsidian Integration</div>
+        <div class="card">
+          <div class="card-t">📂 Vault this folder in Obsidian:</div>
+          <code style="font-size:11px;color:var(--a2)">C:\F- Drive\MYWORK-Research1</code>
+          <div class="card-s mt12">All chats auto-save to <code>99-SYSTEM-BACKEND/chats/</code> as .md files — full searchable memory in Obsidian.</div>
+        </div>
+        <button class="btn btn-p" onclick="saveGeneral()">💾 Save</button>
+      </div>
+
       <!-- AI Engines -->
-      <div id="ss-ai">
+      <div id="ss-ai" style="display:none">
         <div class="section-title">🤖 AI Engines — Configure &amp; Enable</div>
         <div class="text-sm text-m mb12">ResearchPilot tries engines top-to-bottom (by priority). First working one wins. You can have multiple enabled — it never stops.</div>
         <div id="engines-list"></div>
         <button class="btn btn-p" onclick="saveEngines()">💾 Save AI Settings</button>
+      </div>
+
+      <!-- Model Selection -->
+      <div id="ss-models" style="display:none">
+        <div class="section-title">🧠 Model Selection — Choose Your Fallback Chain</div>
+        <div class="text-sm text-m mb12">All enabled engines are tried in priority order. Disabled ones are skipped. Click any card to expand and configure.</div>
+        <div id="models-list"></div>
+        <button class="btn btn-p" onclick="saveModels()">💾 Save Model Settings</button>
       </div>
 
       <!-- Skills -->
@@ -773,37 +859,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         </div>
       </div>
 
-      <!-- General -->
-      <div id="ss-general" style="display:none">
-        <div class="section-title">⚙️ General Settings</div>
-        <div class="form-row"><label>Auto-extract after upload</label>
-          <div class="flex gap8 items-c mt12">
-            <div class="toggle on" id="tog-auto" onclick="this.classList.toggle('on')"></div>
-            <span class="text-sm text-m">Create .md file for every uploaded file automatically</span>
-          </div>
-        </div>
-        <div class="form-row"><label>Max context characters (per AI call)</label>
-          <input type="text" id="gen-ctx" class="w100" value="40000">
-        </div>
-        <div class="form-row"><label>Auto-start on Windows login</label>
-          <div class="flex gap8 items-c mt12">
-            <div class="toggle" id="tog-autostart" onclick="this.classList.toggle('on')"></div>
-            <span class="text-sm text-m">Start ResearchPilot automatically when you log in (creates Windows scheduled task)</span>
-          </div>
-        </div>
-        <div class="form-row"><label>Timezone</label>
-          <select id="gen-tz" class="w100" style="max-width:300px"></select>
-        </div>
-        <hr class="separator">
-        <div class="section-title">🪨 Obsidian Integration</div>
-        <div class="card">
-          <div class="card-t">📂 Vault this folder in Obsidian:</div>
-          <code style="font-size:11px;color:var(--a2)">C:\F- Drive\MYWORK-Research1</code>
-          <div class="card-s mt12">All chats auto-save to <code>99-SYSTEM-BACKEND/chats/</code> as .md files — full searchable memory in Obsidian.</div>
-        </div>
-        <button class="btn btn-p" onclick="saveGeneral()">💾 Save</button>
-      </div>
-
       <!-- Author -->
       <div id="ss-author" style="display:none">
         <div class="section-title">👤 Author</div>
@@ -866,7 +921,8 @@ let currentSession=null;
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 async function boot(){
-  clock();
+  updateClock();
+  loadNotes();
   await loadSettings();
   await Promise.all([loadProjects(),loadLibrary(),loadMemory(),loadSessions(),loadSkills()]);
   updateDash();
@@ -948,8 +1004,105 @@ function cycleTimezone(){
   settings.timezone=COMMON_TZS[idx];
   document.getElementById('gen-tz').value=COMMON_TZS[idx];
   calRender();
-  // Persist
   fetch(`${API}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)});
+}
+
+// ─── Clock ─────────────────────────────────────────────────────────────────────
+function updateClock(){
+  const tz=settings?.timezone||'UTC';
+  const now=new Date();
+  try{
+    const time=now.toLocaleString('en-US',{timeZone:tz,hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+    const date=now.toLocaleString('en-US',{timeZone:tz,weekday:'short',month:'short',day:'numeric',year:'numeric'});
+    document.getElementById('clock-display').textContent=time;
+    document.getElementById('clock-date').textContent=date;
+  }catch(e){
+    document.getElementById('clock-display').textContent=now.toLocaleTimeString();
+    document.getElementById('clock-date').textContent=now.toLocaleDateString();
+  }
+}
+setInterval(updateClock,1000);
+
+// ─── Quick Notes ───────────────────────────────────────────────────────────────
+const NOTES_API=`${API}/api/notes`;
+let notesData=[];
+
+async function loadNotes(){
+  try{const r=await fetch(NOTES_API).then(r=>r.json());notesData=r.notes||[];}catch(e){notesData=[];}
+  renderNotes();
+}
+
+function renderNotes(){
+  const el=document.getElementById('notes-list');
+  if(!el)return;
+  if(!notesData.length){el.innerHTML='<span class="text-xs text-m" style="padding:4px 0">No notes yet. Click + New to start.</span>';return;}
+  el.innerHTML=notesData.map((n,i)=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:5px;cursor:pointer;font-size:13px"
+         onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;font-size:13px" onclick="noteView('${n.id}')">📄 ${n.title}</span>
+      <span style="font-size:11px;color:var(--muted);cursor:pointer" onclick="noteRename('${n.id}')" title="Rename">✏️</span>
+      <span style="font-size:11px;color:var(--muted);cursor:pointer" onclick="noteDelete('${n.id}')" title="Delete">🗑</span>
+    </div>
+  `).join('');
+}
+
+async function noteCreate(){
+  try{
+    const note=await fetch(NOTES_API,{method:'POST'}).then(r=>r.json());
+    notesData.push(note);
+    renderNotes();
+    noteView(note.id);
+    toast('Note created!','ok');
+  }catch(e){toast('Failed to create note','err');}
+}
+
+async function noteView(id){
+  const note=notesData.find(n=>n.id===id);
+  if(!note)return;
+  document.getElementById('modal-title').innerHTML=`📝 ${note.title} <span class="text-xs text-m" style="font-weight:400">(${note.updated.slice(0,10)})</span>`;
+  document.getElementById('modal-body').innerHTML=`
+    <textarea id="note-content-${id}" style="width:100%;height:300px;background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:13px;font-family:inherit;resize:vertical">${note.content.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-p" onclick="noteSave('${id}')">💾 Save</button>
+      <button class="btn btn-g" onclick="closeModal()">Close</button>
+    </div>`;
+  document.getElementById('modal').style.display='flex';
+  document.getElementById('modal-goto-lib').style.display='none';
+}
+
+async function noteSave(id){
+  const note=notesData.find(n=>n.id===id);
+  if(!note)return;
+  const content=document.getElementById(`note-content-${id}`)?.value||'';
+  try{
+    const updated=await fetch(`${NOTES_API}/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({content})}).then(r=>r.json());
+    note.content=updated.content;
+    note.updated=updated.updated;
+    toast('Note saved!','ok');
+  }catch(e){toast('Failed to save note','err');}
+}
+
+async function noteRename(id){
+  const note=notesData.find(n=>n.id===id);
+  if(!note)return;
+  const newTitle=prompt('Rename note:',note.title);
+  if(!newTitle||newTitle===note.title)return;
+  try{
+    const updated=await fetch(`${NOTES_API}/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({title:newTitle})}).then(r=>r.json());
+    note.title=updated.title;
+    renderNotes();
+    toast('Note renamed!','ok');
+  }catch(e){toast('Failed to rename note','err');}
+}
+
+async function noteDelete(id){
+  if(!confirm('Delete this note?'))return;
+  try{
+    await fetch(`${NOTES_API}/${id}`,{method:'DELETE'});
+    notesData=notesData.filter(n=>n.id!==id);
+    renderNotes();
+    toast('Note deleted','ok');
+  }catch(e){toast('Failed to delete note','err');}
 }
 
 async function pollStatus(){
@@ -1008,6 +1161,58 @@ async function saveEngines(){
   pollStatus();
 }
 
+function renderModels(){
+  const el=document.getElementById('models-list');
+  if(!el)return;
+  let html='<div style="display:flex;flex-direction:column;gap:6px">';
+  (settings.ai_engines||[]).forEach((e,i)=>{
+    const prov=e.url.includes('openrouter')?'OR':e.url.includes('nvidia')?'NV':'Local';
+    const provColor=prov==='OR'?'var(--a2)':prov==='NV'?'#76b900':'var(--muted)';
+    html+=`<div class="engine-card" id="mc-${i}" style="margin-bottom:0">
+      <div class="engine-head">
+        <div class="toggle ${e.enabled?'on':''}" id="mtog-${i}" onclick="this.classList.toggle('on')"></div>
+        <div style="flex:1;min-width:0">
+          <div class="engine-name" style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:9px;font-weight:700;color:${provColor};background:${provColor}15;padding:1px 5px;border-radius:3px">${prov}</span>
+            ${e.name.replace(/\(P\d+\)/,'').trim()}
+          </div>
+          <div class="engine-note">${e.note||''}</div>
+        </div>
+        <div class="badge" style="margin-left:8px;font-size:9px">P${e.priority}</div>
+        <div style="margin-left:4px;display:flex;gap:4px">
+          <span class="text-xs" style="background:var(--bg2);padding:2px 5px;border-radius:3px;font-family:monospace;font-size:9px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.model||'—'}</span>
+        </div>
+      </div>
+      <div class="engine-fields" style="display:none" id="mfields-${i}">
+        <div class="form-row"><label>URL</label><input class="w100" id="meu-${i}" value="${e.url||''}"></div>
+        <div class="form-row"><label>Model</label><input class="w100" id="mem-${i}" value="${e.model||''}"></div>
+        ${e.type!=='ollama'?`<div class="form-row" style="grid-column:1/-1"><label>API Key</label><input class="w100" type="password" id="mek-${i}" value="${e.api_key||''}"></div>`:''}
+      </div>
+      <div class="engine-expand" onclick="const f=document.getElementById('mfields-${i}');f.style.display=f.style.display==='none'?'grid':'none'">⚙️ Edit</div>
+    </div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+async function saveModels(){
+  const engines=[...(settings.ai_engines||[])].map((e,i)=>{
+    const ec=document.getElementById(`mc-${i}`);
+    if(!ec)return e;
+    return {
+      ...e,
+      enabled:document.getElementById(`mtog-${i}`)?.classList.contains('on')??e.enabled,
+      url:document.getElementById(`meu-${i}`)?.value??e.url,
+      model:document.getElementById(`mem-${i}`)?.value??e.model,
+      api_key:document.getElementById(`mek-${i}`)?.value??e.api_key,
+    };
+  });
+  settings.ai_engines=engines;
+  await fetch(`${API}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)});
+  toast('Model settings saved!','ok');
+  pollStatus();
+}
+
 async function saveGeneral(){
   settings.max_context_chars=parseInt(document.getElementById('gen-ctx').value)||40000;
   settings.auto_extract_on_upload=document.getElementById('tog-auto').classList.contains('on');
@@ -1023,12 +1228,15 @@ async function saveGeneral(){
 }
 
 function showSettingsSection(id){
-  ['ai','skills','projects','kb','keywords','predatory','general','author','versions'].forEach(s=>{
-    document.getElementById('ss-'+s).style.display=s===id?'block':'none';
+  ['general','ai','models','skills','projects','kb','keywords','predatory','author','versions'].forEach(s=>{
+    const el=document.getElementById('ss-'+s);
+    if(el)el.style.display=s===id?'block':'none';
   });
   document.querySelectorAll('.sn-item').forEach((el,i)=>{
-    el.classList.toggle('on',['ai','skills','projects','kb','keywords','predatory','general','author','versions'][i]===id);
+    el.classList.toggle('on',['general','ai','models','skills','projects','kb','keywords','predatory','author','versions'][i]===id);
   });
+  if(id==='ai'){renderEngines();}
+  if(id==='models'){renderModels();}
   if(id==='skills')renderSkills();
   if(id==='projects')renderSettingsProjects();
   if(id==='kb')loadKB();
@@ -1512,7 +1720,1023 @@ function updateDash(){
   document.getElementById('s-f').textContent=library.length;
   document.getElementById('s-e').textContent=memory.length;
   document.getElementById('s-c').textContent=sessions.length;
-  renderDashProjects();
+  renderSysGraph();
+  renderDailyQuote();
+}
+
+// ─── System Graph ─────────────────────────────────────────────────────────────
+function renderSysGraph(){
+  const el=document.getElementById('sys-graph');
+  if(!el)return;
+  const W=el.clientWidth||400, H=el.clientHeight||200;
+  const cx=W/2, cy=H/2;
+  const nodes=[
+    {id:'brain',label:'ResearchPilot',icon:'🧠',x:cx,y:cy,size:48,center:true},
+    {id:'ai',label:'AI Engine',icon:'🤖',status:'ok',desc:settings?.ai_engines?.find(e=>e.enabled)?.name||'None'},
+    {id:'lib',label:'Library',icon:'📚',status:'ok',desc:library.length+' files'},
+    {id:'chat',label:'Chat',icon:'💬',status:settings?.ai_engines?.some(e=>e.enabled)?'ok':'off',desc:sessions.length+' sessions'},
+    {id:'ext',label:'Extractions',icon:'📋',status:'ok',desc:memory.length+' entries'},
+    {id:'graph',label:'Knowledge Graph',icon:'🕸',status:'ok',desc:'Connected'},
+  ];
+  const radius=Math.min(W,H)*0.3;
+  const angles=[-Math.PI/2, -Math.PI/2+Math.PI/3, -Math.PI/2+2*Math.PI/3, -Math.PI/2+Math.PI, -Math.PI/2+4*Math.PI/3, -Math.PI/2+5*Math.PI/3];
+  nodes.slice(1).forEach((n,i)=>{n.x=cx+radius*Math.cos(angles[i]);n.y=cy+radius*Math.sin(angles[i]);});
+
+  let html='';
+  // lines from center to each node
+  nodes.slice(1).forEach(n=>{
+    const dx=n.x-cx, dy=n.y-cy;
+    const len=Math.sqrt(dx*dx+dy*dy);
+    const active=n.status!=='off';
+    html+=`<div class="sys-line" style="width:${len-28}px;left:${cx+24}px;top:${cy-1}px;transform:rotate(${Math.atan2(dy,dx)}rad);background:${active?'linear-gradient(90deg,var(--accent),rgba(108,99,255,.15))':'var(--border)'}"></div>`;
+  });
+  // center node
+  html+=`<div class="sys-center-dot" style="left:${cx-24}px;top:${cy-24}px">🧠</div>`;
+  html+=`<div class="sys-center-label" style="left:${cx-40}px;top:${cy+28}px">ResearchPilot</div>`;
+  // outer nodes
+  nodes.slice(1).forEach(n=>{
+    const dotClass='sys-dot '+(n.status==='ok'?'ok pulse':n.status==='warn'?'warn pulse':'off');
+    html+=`<div class="sys-node" style="left:${n.x-16}px;top:${n.y-16}px" title="${n.desc||''}">
+      <div class="${dotClass}">${n.icon}</div>
+      <div class="sys-label">${n.label}<span class="stat">${n.desc||''}</span></div>
+    </div>`;
+  });
+  el.innerHTML=html;
+}
+
+// ─── Daily Quotes ─────────────────────────────────────────────────────────────
+const QUOTES=[
+  ["The important thing is not to stop questioning. Curiosity has its own reason for existing.","Albert Einstein"],
+  ["Science is a way of thinking much more than it is a body of knowledge.","Carl Sagan"],
+  ["The greatest enemy of knowledge is not ignorance, it is the illusion of knowledge.","Stephen Hawking"],
+  ["We are like butterflies who flutter for a day and think it is forever.","Carl Sagan"],
+  ["The scientist is not a person who gives the right answers, but one who asks the right questions.","Claude Lévi-Strauss"],
+  ["Research is formalized curiosity. It is poking and prying with a purpose.","Zora Neale Hurston"],
+  ["The more I learn, the more I realize how much I don't know.","Albert Einstein"],
+  ["Imagination is more important than knowledge. For knowledge is limited, whereas imagination embraces the entire world.","Albert Einstein"],
+  ["The best way to predict the future is to invent it.","Alan Kay"],
+  ["If I have seen further, it is by standing on the shoulders of giants.","Isaac Newton"],
+  ["Science knows no country, because knowledge belongs to humanity, and is the torch which illuminates the world.","Louis Pasteur"],
+  ["The pursuit of truth and beauty is a sphere of activity in which we are permitted to remain children all our lives.","Albert Einstein"],
+  ["Nothing in life is to be feared, it is only to be understood. Now is the time to understand more, so that we may fear less.","Marie Curie"],
+  ["The most beautiful thing we can experience is the mysterious. It is the source of all true art and science.","Albert Einstein"],
+  ["Learn from yesterday, live for today, hope for tomorrow. The important thing is not to stop questioning.","Albert Einstein"],
+  ["The universe is under no obligation to make sense to you.","Neil deGrasse Tyson"],
+  ["In the middle of difficulty lies opportunity.","Albert Einstein"],
+  ["It is not the strongest of the species that survives, nor the most intelligent, but the one most responsive to change.","Charles Darwin"],
+  ["The noblest pleasure is the joy of understanding.","Leonardo da Vinci"],
+  ["Study the past if you would define the future.","Confucius"],
+  ["The only true wisdom is in knowing you know nothing.","Socrates"],
+  ["Science never solves a problem without creating ten more.","George Bernard Shaw"],
+  ["We can only see a short distance ahead, but we can see plenty there that needs to be done.","Alan Turing"],
+  ["To raise new questions, new possibilities, to regard old problems from a new angle, requires creative imagination and marks real advance in science.","Albert Einstein"],
+  ["Knowledge is power.","Francis Bacon"],
+  ["The whole of science is nothing more than a refinement of everyday thinking.","Albert Einstein"],
+  ["I have no special talents. I am only passionately curious.","Albert Einstein"],
+  ["The mind is not a vessel to be filled, but a fire to be kindled.","Plutarch"],
+  ["Equipped with his five senses, man explores the universe around him and calls the adventure Science.","Edwin Hubble"],
+  ["The science of today is the technology of tomorrow.","Edward Teller"],
+  ["We are all now connected by the Internet, like neurons in a giant brain.","Stephen Hawking"],
+  ["Research is what I'm doing when I don't know what I'm doing.","Wernher von Braun"],
+  ["Art is the queen of all sciences communicating knowledge to all the generations of the world.","Leonardo da Vinci"],
+  ["The important thing is to never stop questioning.","Albert Einstein"],
+  ["Science and everyday life cannot and should not be separated.","Rosalind Franklin"],
+  ["The good thing about science is that it's true whether or not you believe in it.","Neil deGrasse Tyson"],
+  ["For me, I am driven by two main philosophies: know more today about the world than I knew yesterday and lessen the suffering of others.","Neil deGrasse Tyson"],
+  ["Somewhere, something incredible is waiting to be known.","Carl Sagan"],
+  ["The cosmos is within us. We are made of star-stuff. We are a way for the universe to know itself.","Carl Sagan"],
+  ["Extraordinary claims require extraordinary evidence.","Carl Sagan"],
+  ["Read, read, read. That's all I can say.","William Faulkner"],
+  ["The cure for boredom is curiosity. There is no cure for curiosity.","Dorothy Parker"],
+  ["Discovery is seeing what everybody else has seen and thinking what nobody else has thought.","Albert Szent-Györgyi"],
+  ["It's not that I'm so smart, it's just that I stay with problems longer.","Albert Einstein"],
+  ["The only source of knowledge is experience.","Albert Einstein"],
+  ["A person who never made a mistake never tried anything new.","Albert Einstein"],
+  ["Try not to become a man of success, but rather try to become a man of value.","Albert Einstein"],
+  ["Logic will get you from A to B. Imagination will take you everywhere.","Albert Einstein"],
+  ["Life is like riding a bicycle. To keep your balance, you must keep moving.","Albert Einstein"],
+  ["Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.","Albert Einstein"],
+  ["We cannot solve our problems with the same thinking we used when we created them.","Albert Einstein"],
+  ["If you can't explain it simply, you don't understand it well enough.","Albert Einstein"],
+  ["We should remember that good fortune often happens when opportunity meets with preparation.","Ada Lovelace"],
+  ["That brain of mine is something more than merely mortal, as time will show.","Ada Lovelace"],
+  ["The more you know, the less you need.","Yvon Chouinard"],
+  ["The greatest glory in living lies not in never falling, but in rising every time we fall.","Nelson Mandela"],
+  ["The way to get started is to quit talking and begin doing.","Walt Disney"],
+  ["Your time is limited, so don't waste it living someone else's life.","Steve Jobs"],
+  ["Believe you can and you're halfway there.","Theodore Roosevelt"],
+  ["The future belongs to those who believe in the beauty of their dreams.","Eleanor Roosevelt"],
+  ["If you look at what you have in life, you'll always have more.","Oprah Winfrey"],
+  ["It does not matter how slowly you go as long as you do not stop.","Confucius"],
+  ["The journey of a thousand miles begins with a single step.","Lao Tzu"],
+  ["What we know is a drop, what we don't know is an ocean.","Isaac Newton"],
+  ["To know that we know what we know, and to know that we do not know what we do not know, that is true knowledge.","Nicolaus Copernicus"],
+  ["The greatest scientists are artists as well.","Albert Einstein"],
+  ["All of physics is either impossible or trivial. It is impossible until you understand it, and then it becomes trivial.","Ernest Rutherford"],
+  ["An expert is a person who has made all the mistakes that can be made in a very narrow field.","Niels Bohr"],
+  ["Everything should be made as simple as possible, but not simpler.","Albert Einstein"],
+  ["Nature is the source of all true knowledge.","Leonardo da Vinci"],
+  ["There is nothing so absurd but some philosopher has said it.","Marcus Tullius Cicero"],
+  ["The function of education is to teach one to think intensively and to think critically.","Martin Luther King Jr."],
+  ["Intelligence plus character — that is the goal of true education.","Martin Luther King Jr."],
+  ["Education is the most powerful weapon which you can use to change the world.","Nelson Mandela"],
+  ["The roots of education are bitter, but the fruit is sweet.","Aristotle"],
+  ["It is the mark of an educated mind to be able to entertain a thought without accepting it.","Aristotle"],
+  ["We are what we repeatedly do. Excellence, then, is not an act, but a habit.","Aristotle"],
+  ["Happiness depends upon ourselves.","Aristotle"],
+  ["Patience is the art of hoping.","Marquis de Vauvenargues"],
+  ["The mind once enlightened cannot again become dark.","Thomas Paine"],
+  ["Doubt is the origin of wisdom.","René Descartes"],
+  ["I think, therefore I am.","René Descartes"],
+  ["The reading of all good books is like a conversation with the finest minds of past centuries.","René Descartes"],
+  ["It is not enough to have a good mind; the main thing is to use it well.","René Descartes"],
+  ["Science is organized knowledge. Wisdom is organized life.","Immanuel Kant"],
+  ["All our knowledge begins with the senses, proceeds then to the understanding, and ends with reason.","Immanuel Kant"],
+  ["The scientist only imposes two things, namely truth and sincerity, imposes them upon himself and upon other scientists.","Ernst Mayr"],
+  ["What is a scientist after all? It is a curious person looking through a keyhole, the keyhole of nature, trying to know what's going on.","Jacques Yves Cousteau"],
+  ["The important thing in science is not so much to obtain new facts as to discover new ways of thinking about them.","William Lawrence Bragg"],
+  ["Innovation distinguishes between a leader and a follower.","Steve Jobs"],
+  ["Creativity is intelligence having fun.","Albert Einstein"],
+  ["The only limit to our realization of tomorrow will be our doubts of today.","Franklin D. Roosevelt"],
+  ["It always seems impossible until it's done.","Nelson Mandela"],
+  ["The best and most beautiful things in the world cannot be seen or even touched — they must be felt with the heart.","Helen Keller"],
+  ["Alone we can do so little; together we can do so much.","Helen Keller"],
+  ["Life is either a daring adventure or nothing at all.","Helen Keller"],
+  ["What lies behind us and what lies before us are tiny matters compared to what lies within us.","Ralph Waldo Emerson"],
+  ["Do not go where the path may lead, go instead where there is no path and leave a trail.","Ralph Waldo Emerson"],
+  ["The only person you are destined to become is the person you decide to be.","Ralph Waldo Emerson"],
+  ["The purpose of life is not to be happy. It is to be useful, to be honorable, to be compassionate, to have it make some difference that you have lived and lived well.","Ralph Waldo Emerson"],
+  ["The best way to cheer yourself up is to try to cheer somebody else up.","Mark Twain"],
+  ["Never let your sense of morals prevent you from doing what is right.","Isaac Asimov"],
+  ["The saddest aspect of life right now is that science gathers knowledge faster than society gathers wisdom.","Isaac Asimov"],
+  ["Self-education is, I firmly believe, the only kind of education there is.","Isaac Asimov"],
+  ["The most exciting phrase to hear in science, the one that heralds new discoveries, is not 'Eureka!' but 'That's funny...'","Isaac Asimov"],
+  ["It is change, continuing change, inevitable change, that is the dominant factor in society today.","Isaac Asimov"],
+  ["In the long history of humankind (and animal kind, too) those who learned to collaborate and improvise most effectively have prevailed.","Charles Darwin"],
+  ["A man who dares to waste one hour of time has not discovered the value of life.","Charles Darwin"],
+  ["Ignorance more frequently begets confidence than does knowledge.","Charles Darwin"],
+  ["The love for all living creatures is the most noble attribute of man.","Charles Darwin"],
+  ["I love fools' experiments. I am always making them.","Charles Darwin"],
+  ["Intelligence is not the ability to store information, but the ability to apply it.","Stephen Hawking"],
+  ["Look up at the stars and not down at your feet. Try to make sense of what you see, and wonder about what makes the universe exist. Be curious.","Stephen Hawking"],
+  ["Science can lift people out of poverty and cure disease. It is the key to our future as a planet.","Stephen Hawking"],
+  ["The rise of AI could be the worst or the best thing that ever happens to humanity.","Stephen Hawking"],
+  ["We are in danger of destroying ourselves by our greed and stupidity. We cannot remain looking inwards at ourselves on a small and increasingly polluted and overcrowded planet.","Stephen Hawking"],
+  ["I would rather have questions that can't be answered than answers that can't be questioned.","Richard Feynman"],
+  ["The first principle is that you must not fool yourself — and you are the easiest person to fool.","Richard Feynman"],
+  ["Physics is like sex: sure, it may give some practical results, but that's not why we do it.","Richard Feynman"],
+  ["I think I can safely say that nobody understands quantum mechanics.","Richard Feynman"],
+  ["What I cannot create, I do not understand.","Richard Feynman"],
+  ["Study hard what interests you the most in the most undisciplined, irreverent and original manner possible.","Richard Feynman"],
+  ["The problem is not that there are problems. The problem is expecting otherwise and thinking that having problems is a problem.","Theodore Rubin"],
+  ["The secret of getting ahead is getting started.","Mark Twain"],
+  ["Twenty years from now you will be more disappointed by the things that you didn't do than by the ones you did do.","Mark Twain"],
+  ["Don't let schooling interfere with your education.","Mark Twain"],
+  ["The man who does not read has no advantage over the man who cannot read.","Mark Twain"],
+  ["Truth is stranger than fiction, but it is because Fiction is obliged to stick to possibilities; Truth isn't.","Mark Twain"],
+  ["The only way to do great work is to love what you do.","Steve Jobs"],
+  ["Innovation has nothing to do with how many R&D dollars you have. It's about the people.","Steve Jobs"],
+  ["Design is not just what it looks like and feels like. Design is how it works.","Steve Jobs"],
+  ["Your work is going to fill a large part of your life, and the only way to be truly satisfied is to do what you believe is great work. And the only way to do great work is to love what you do.","Steve Jobs"],
+  ["Stay hungry, stay foolish.","Steve Jobs"],
+  ["Space I can grasp, for I am in it. But the mind, what is the mind?","Blaise Pascal"],
+  ["The heart has its reasons which reason knows nothing of.","Blaise Pascal"],
+  ["We sail within a vast sphere, ever drifting in uncertainty, driven from end to end.","Blaise Pascal"],
+  ["All of humanity's problems stem from man's inability to sit quietly in a room alone.","Blaise Pascal"],
+  ["A mathematician is a device for turning coffee into theorems.","Alfréd Rényi"],
+  ["Mathematics is the queen of sciences and number theory is the queen of mathematics.","Carl Friedrich Gauss"],
+  ["Pure mathematics is, in its way, the poetry of logical ideas.","Albert Einstein"],
+  ["Do not worry about your difficulties in mathematics. I can assure you mine are still greater.","Albert Einstein"],
+  ["The pursuit of knowledge for its own sake, an almost fanatical love of justice, and the desire for personal independence — these are the features of the Jewish tradition which make me thank my stars that I belong to it.","Albert Einstein"],
+  ["A question that sometimes drives me hazy: am I or are the others crazy?","Albert Einstein"],
+  ["Freedom is the right to tell people what they do not want to hear.","George Orwell"],
+  ["The further a society drifts from the truth, the more it will hate those who speak it.","George Orwell"],
+  ["Big Brother is watching you.","George Orwell"],
+  ["In a time of deceit, telling the truth is a revolutionary act.","George Orwell"],
+  ["The unexamined life is not worth living.","Socrates"],
+  ["Be kind, for everyone you meet is fighting a hard battle.","Plato"],
+  ["Necessity is the mother of invention.","Plato"],
+  ["A good decision is based on knowledge and not on numbers.","Plato"],
+  ["The measure of a man is what he does with power.","Plato"],
+  ["Reality is merely an illusion, albeit a very persistent one.","Albert Einstein"],
+  ["Education is what remains after one has forgotten what one has learned in school.","Albert Einstein"],
+  ["If you want your children to be intelligent, read them fairy tales. If you want them to be more intelligent, read them more fairy tales.","Albert Einstein"],
+  ["I never teach my pupils. I only attempt to provide the conditions in which they can learn.","Albert Einstein"],
+  ["Wisdom is not a product of schooling but of the lifelong attempt to acquire it.","Albert Einstein"],
+  ["Any fool can know. The point is to understand.","Albert Einstein"],
+  ["The value of a college education is not the learning of many facts but the training of the mind to think.","Albert Einstein"],
+  ["Great spirits have always encountered violent opposition from mediocre minds.","Albert Einstein"],
+  ["There are only two ways to live your life. One is as though nothing is a miracle. The other is as though everything is a miracle.","Albert Einstein"],
+  ["The world is a dangerous place to live; not because of the people who are evil, but because of the people who don't do anything about it.","Albert Einstein"],
+  ["I have no special talent. I am only passionately curious.","Albert Einstein"],
+  ["Anyone who has never made a mistake has never tried anything new.","Albert Einstein"],
+  ["A ship in harbor is safe, but that is not what ships are built for.","John A. Shedd"],
+  ["The greatest threat to our planet is the belief that someone else will save it.","Robert Swan"],
+  ["We do not inherit the earth from our ancestors; we borrow it from our children.","Native American Proverb"],
+  ["The Earth is what we all have in common.","Wendell Berry"],
+  ["Nature does not hurry, yet everything is accomplished.","Lao Tzu"],
+  ["Knowing that we can be wrong is the beginning of wisdom.","Bertrand Russell"],
+  ["The trouble with the world is that the stupid are cocksure and the intelligent are full of doubt.","Bertrand Russell"],
+  ["One of the symptoms of an approaching nervous breakdown is the belief that one's work is terribly important.","Bertrand Russell"],
+  ["Science is what you know, philosophy is what you don't know.","Bertrand Russell"],
+  ["The demand for certainty is one which is natural to man, but is nevertheless an intellectual vice.","Bertrand Russell"],
+  ["Three passions, simple but overwhelmingly strong, have governed my life: the longing for love, the search for knowledge, and unbearable pity for the suffering of mankind.","Bertrand Russell"],
+  ["The whole problem with the world is that fools and fanatics are always so certain of themselves, and wiser people so full of doubts.","Bertrand Russell"],
+  ["To understand the actual world as it is, not as we wish it to be, is the beginning of wisdom.","Bertrand Russell"],
+  ["The most valuable of all education is the ability to make yourself do the thing you have to do, when it has to be done, whether you like it or not.","Aldous Huxley"],
+  ["Facts do not cease to exist because they are ignored.","Aldous Huxley"],
+  ["Experience is not what happens to a man; it is what a man does with what happens to him.","Aldous Huxley"],
+  ["That men do not learn very much from the lessons of history is the most important of all the lessons that history has to teach.","Aldous Huxley"],
+  ["The more powerful and original a mind, the more it will incline towards the religion of solitude.","Aldous Huxley"],
+  ["To seek the truth requires a collaborative effort.","Alan Turing"],
+  ["We can only see a short distance ahead, but we can see plenty there that needs to be done.","Alan Turing"],
+  ["Instead of trying to produce a programme to simulate the adult mind, why not rather try to produce one which simulates the child's?","Alan Turing"],
+  ["Machines take me by surprise with great frequency.","Alan Turing"],
+  ["A computer would deserve to be called intelligent if it could deceive a human into believing that it was human.","Alan Turing"],
+  ["Sometimes it is the people no one imagines anything of who do the things that no one can imagine.","Alan Turing"],
+  ["Those who can imagine anything, can create the impossible.","Alan Turing"],
+  ["The original question, 'Can machines think?' I believe to be too meaningless to deserve discussion.","Alan Turing"],
+  ["Do what you can, with what you have, where you are.","Theodore Roosevelt"],
+  ["Believe you can and you're halfway there.","Theodore Roosevelt"],
+  ["Speak softly and carry a big stick; you will go far.","Theodore Roosevelt"],
+  ["In any moment of decision, the best thing you can do is the right thing, the next best thing is the wrong thing, and the worst thing you can do is nothing.","Theodore Roosevelt"],
+  ["The only man who never makes a mistake is the man who never does anything.","Theodore Roosevelt"],
+  ["It is hard to fail, but it is worse never to have tried to succeed.","Theodore Roosevelt"],
+  ["A scientific man ought to have no wishes, no affections — a mere heart of stone.","Charles Darwin"],
+  ["I see no good reasons why the views given in this volume should shock the religious feelings of any one.","Charles Darwin"],
+  ["I am turned into a sort of machine for observing facts and grinding out conclusions.","Charles Darwin"],
+  ["It is not the strongest of the species that survive, nor the most intelligent, but the one most responsive to change.","Charles Darwin"],
+  ["The mystery of the beginning of all things is insoluble by us; and I for one must be content to remain an agnostic.","Charles Darwin"],
+  ["We must, however, acknowledge, as it seems to me, that man with all his noble qualities — with sympathy which feels for the most debased — with benevolence which extends not only to other men but to the humblest living creature — with his god-like intellect which has penetrated into the movements and constitution of the solar system — with all these exalted powers — Man still bears in his bodily frame the indelible stamp of his lowly origin.","Charles Darwin"],
+  ["The aim of science is to seek the simplest explanations of complex facts.","Alfred North Whitehead"],
+  ["Not ignorance, but ignorance of ignorance, is the death of knowledge.","Alfred North Whitehead"],
+  ["It requires a very unusual mind to undertake the analysis of the obvious.","Alfred North Whitehead"],
+  ["Civilization advances by extending the number of important operations which we can perform without thinking about them.","Alfred North Whitehead"],
+  ["We think in generalities, but we live in details.","Alfred North Whitehead"],
+  ["Everything of importance has been said before by somebody who did not discover it.","Alfred North Whitehead"],
+  ["Art is the imposing of a pattern on experience, and our aesthetic enjoyment is recognition of the pattern.","Alfred North Whitehead"],
+  ["The safest general characterization of the European philosophical tradition is that it consists of a series of footnotes to Plato.","Alfred North Whitehead"],
+  ["Knowledge is the life of the mind.","Mary Wollstonecraft"],
+  ["The beginning is always today.","Mary Wollstonecraft"],
+  ["The world is the great gymnasium where we come to make ourselves strong.","Swami Vivekananda"],
+  ["Take up one idea. Make that one idea your life — think of it, dream of it, live on that idea. Let the brain, muscles, nerves, every part of your body, be full of that idea, and just leave every other idea alone. This is the way to success.","Swami Vivekananda"],
+  ["In a conflict between the heart and the brain, follow your heart.","Swami Vivekananda"],
+  ["Arise! Awake! And stop not until the goal is reached.","Swami Vivekananda"],
+  ["All the powers in the universe are already ours. It is we who have put our hands before our eyes and cry that it is dark.","Swami Vivekananda"],
+  ["The more we come out and do good to others, the more our hearts will be purified, and God will be in them.","Swami Vivekananda"],
+  ["You cannot believe in God until you believe in yourself.","Swami Vivekananda"],
+  ["We are what our thoughts have made us; so take care about what you think. Words are secondary. Thoughts live; they travel far.","Swami Vivekananda"],
+  ["If I were asked to define the Hindu creed, I should simply say: Search after truth through non-violent means.","Mahatma Gandhi"],
+  ["The future depends on what you do today.","Mahatma Gandhi"],
+  ["Be the change that you wish to see in the world.","Mahatma Gandhi"],
+  ["An eye for an eye will only make the world blind.","Mahatma Gandhi"],
+  ["The weak can never forgive. Forgiveness is the attribute of the strong.","Mahatma Gandhi"],
+  ["First they ignore you, then they laugh at you, then they fight you, then you win.","Mahatma Gandhi"],
+  ["Happiness is when what you think, what you say, and what you do are in harmony.","Mahatma Gandhi"],
+  ["The best way to find yourself is to lose yourself in the service of others.","Mahatma Gandhi"],
+  ["Strength does not come from physical capacity. It comes from an indomitable will.","Mahatma Gandhi"],
+  ["A man is but the product of his thoughts. What he thinks, he becomes.","Mahatma Gandhi"],
+  ["The greatness of a nation and its moral progress can be judged by the way its animals are treated.","Mahatma Gandhi"],
+  ["Freedom is not worth having if it does not include the freedom to make mistakes.","Mahatma Gandhi"],
+  ["The difference between what we do and what we are capable of doing would suffice to solve most of the world's problems.","Mahatma Gandhi"],
+  ["I will not let anyone walk through my mind with their dirty feet.","Mahatma Gandhi"],
+  ["Science without religion is lame, religion without science is blind.","Albert Einstein"],
+  ["The day science begins to study non-physical phenomena, it will make more progress in one decade than in all the previous centuries of its existence.","Nikola Tesla"],
+  ["The scientists of today think deeply instead of clearly. One must be sane to think clearly, but one can think deeply and be quite insane.","Nikola Tesla"],
+  ["I don't care that they stole my idea. I care that they don't have any of their own.","Nikola Tesla"],
+  ["If you want to find the secrets of the universe, think in terms of energy, frequency and vibration.","Nikola Tesla"],
+  ["The present is theirs; the future, for which I really worked, is mine.","Nikola Tesla"],
+  ["Be alone, that is the secret of invention. Be alone, that is when ideas are born.","Nikola Tesla"],
+  ["My brain is only a receiver. In the Universe there is a core from which we obtain knowledge, strength and inspiration.","Nikola Tesla"],
+  ["Let the future tell the truth, and evaluate each one according to his work and accomplishments. The present is theirs; the future, for which I really worked, is mine.","Nikola Tesla"],
+  ["I do not think there is any thrill that can go through the human heart like that felt by the inventor as he sees some creation of the brain unfolding to success.","Nikola Tesla"],
+  ["The spread of civilisation may be likened to a fire; first, a feeble spark, next a flickering flame, then a mighty blaze, ever increasing in speed and power.","Nikola Tesla"],
+  ["Wisdom appears in contradiction to itself as a gift of the gods that is not made for the understanding of the common man.","Carl Jung"],
+  ["Who looks outside, dreams; who looks inside, awakes.","Carl Jung"],
+  ["I am not what happened to me, I am what I choose to become.","Carl Jung"],
+  ["Knowing your own darkness is the best method for dealing with the darknesses of other people.","Carl Jung"],
+  ["The privilege of a lifetime is to become who you truly are.","Carl Jung"],
+  ["There is no coming to consciousness without pain.","Carl Jung"],
+  ["We cannot change anything unless we accept it. Condemnation does not liberate, it oppresses.","Carl Jung"],
+  ["Science is the key to our future, and if you don't believe in science, then you're holding everybody back.","Bill Nye"],
+  ["Everyone you will ever meet knows something you don't.","Bill Nye"],
+  ["To leave the world a bit better, whether by a healthy child, a garden patch, or a redeemed social condition; to know that even one life has breathed easier because you have lived — this is to have succeeded.","Ralph Waldo Emerson"],
+  ["Our greatest glory is not in never falling, but in rising every time we fall.","Confucius"],
+  ["Success is not final, failure is not fatal: it is the courage to continue that counts.","Winston Churchill"],
+  ["The pessimist sees difficulty in every opportunity. The optimist sees opportunity in every difficulty.","Winston Churchill"],
+  ["A man is measured by the questions he asks, not by his answers.","Voltaire"],
+  ["Judge a man by his questions rather than by his answers.","Voltaire"],
+  ["I disapprove of what you say, but I will defend to the death your right to say it.","Voltaire"],
+  ["Common sense is not so common.","Voltaire"],
+  ["No problem can withstand the assault of sustained thinking.","Voltaire"],
+  ["Let us read, and let us dance; these two amusements will never do any harm to the world.","Voltaire"],
+  ["It is difficult to free fools from the chains they revere.","Voltaire"],
+  ["The more I read, the more I acquire, the more certain I am that I know nothing.","Voltaire"],
+  ["The universe is a grand book which lies open before our eyes.","Galileo Galilei"],
+  ["Philosophy is written in this grand book — I mean the universe — which stands continually open to our gaze, but it cannot be understood unless one first learns to comprehend the language and interpret the characters in which it is written. It is written in the language of mathematics.","Galileo Galilei"],
+  ["All truths are easy to understand once they are discovered; the point is to discover them.","Galileo Galilei"],
+  ["I do not feel obliged to believe that the same God who has endowed us with sense, reason, and intellect has intended us to forgo their use.","Galileo Galilei"],
+  ["In questions of science, the authority of a thousand is not worth the humble reasoning of a single individual.","Galileo Galilei"],
+  ["Science proceeds more by what it has learned to ignore than by what it takes into account.","Marshall McLuhan"],
+  ["We become what we behold. We shape our tools and then our tools shape us.","Marshall McLuhan"],
+  ["The medium is the message.","Marshall McLuhan"],
+  ["The new electronic interdependence recreates the world in the image of a global village.","Marshall McLuhan"],
+  ["There are no passengers on spaceship earth. We are all crew.","Marshall McLuhan"],
+  ["All you need in this life is ignorance and confidence, and then success is sure.","Mark Twain"],
+  ["The secret of getting ahead is getting started.","Mark Twain"],
+  ["Courage is resistance to fear, mastery of fear — not absence of fear.","Mark Twain"],
+  ["The trouble is not that I don't know what the answer is, it's that I don't know what the question is.","Mark Twain"],
+  ["A clear conscience is the sure sign of a bad memory.","Mark Twain"],
+  ["Never argue with stupid people, they will drag you down to their level and then beat you with experience.","Mark Twain"],
+  ["Get your facts first, then you can distort them as you please.","Mark Twain"],
+  ["I have never let my schooling interfere with my education.","Mark Twain"],
+  ["The difference between the almost right word and the right word is really a large matter — it's the difference between the lightning bug and the lightning.","Mark Twain"],
+  ["Kindness is the language which the deaf can hear and the blind can see.","Mark Twain"],
+  ["The two most important days in your life are the day you are born and the day you find out why.","Mark Twain"],
+  ["One of the greatest discoveries a man makes, one of his great surprises, is to find he can do what he was afraid he couldn't do.","Henry Ford"],
+  ["Whether you think you can or you think you can't, you're right.","Henry Ford"],
+  ["Coming together is a beginning, keeping together is progress, working together is success.","Henry Ford"],
+  ["Don't find fault, find a remedy.","Henry Ford"],
+  ["The only real mistake is the one from which we learn nothing.","Henry Ford"],
+  ["Any man who thinks he can be happy and prosperous by letting the government take care of him better take a closer look at the American Indian.","Henry Ford"],
+  ["Quality means doing it right when no one is looking.","Henry Ford"],
+  ["Chop your own wood and it will warm you twice.","Henry Ford"],
+  ["Nothing is particularly hard if you divide it into small jobs.","Henry Ford"],
+  ["Everything can be improved.","Clarence Birdseye"],
+  ["To invent, you need a good imagination and a pile of junk.","Thomas Edison"],
+  ["Genius is one percent inspiration and ninety-nine percent perspiration.","Thomas Edison"],
+  ["I have not failed. I've just found 10,000 ways that won't work.","Thomas Edison"],
+  ["Many of life's failures are people who did not realize how close they were to success when they gave up.","Thomas Edison"],
+  ["Opportunity is missed by most people because it is dressed in overalls and looks like work.","Thomas Edison"],
+  ["There is a way to do it better. Find it.","Thomas Edison"],
+  ["Just because something doesn't do what you planned it to do doesn't mean it's useless.","Thomas Edison"],
+  ["The three great essentials to achieve anything worthwhile are, first, hard work; second, stick-to-itiveness; third, common sense.","Thomas Edison"],
+  ["Our greatest weakness lies in giving up. The most certain way to succeed is always to try just one more time.","Thomas Edison"],
+  ["I start where the last man left off.","Thomas Edison"],
+  ["Nearly every man who develops an idea works it up to the point where it looks impossible, and then he gets discouraged. That's not the place to become discouraged.","Thomas Edison"],
+  ["I know of thousands of things that won't work. I am not discouraged.","Thomas Edison"],
+  ["The moral arc of the universe bends at the elbow of justice.","Martin Luther King Jr."],
+  ["Faith is taking the first step even when you don't see the whole staircase.","Martin Luther King Jr."],
+  ["The time is always right to do what is right.","Martin Luther King Jr."],
+  ["Darkness cannot drive out darkness; only light can do that. Hate cannot drive out hate; only love can do that.","Martin Luther King Jr."],
+  ["Injustice anywhere is a threat to justice everywhere.","Martin Luther King Jr."],
+  ["Life's most persistent and urgent question is, 'What are you doing for others?'","Martin Luther King Jr."],
+  ["The ultimate measure of a man is not where he stands in moments of comfort and convenience, but where he stands at times of challenge and controversy.","Martin Luther King Jr."],
+  ["Almost always, the creative dedicated minority has made the world better.","Martin Luther King Jr."],
+  ["We may have all come on different ships, but we're in the same boat now.","Martin Luther King Jr."],
+  ["If you can't fly then run, if you can't run then walk, if you can't walk then crawl, but whatever you do you have to keep moving forward.","Martin Luther King Jr."],
+  ["Science cannot tell a lie, but it can tell part of the truth, and leave the rest for another day.","Rita Colwell"],
+  ["The best scientist is open to experience and begins with romance — the idea that anything is possible.","Rita Colwell"],
+  ["If I have a thousand ideas and only one turns out to be good, I am satisfied.","Alfred Nobel"],
+  ["Home is where I want to do all the work I have to do, and all the thinking.","Gertrude Stein"],
+  ["We are always the same age inside.","Gertrude Stein"],
+  ["I am a citizen of the world.","Socrates"],
+  ["Science is the father of knowledge, but opinion breeds ignorance.","Hippocrates"],
+  ["Walking is man's best medicine.","Hippocrates"],
+  ["Let food be thy medicine and medicine be thy food.","Hippocrates"],
+  ["Life is short, the art long, opportunity fleeting, experience deceitful, judgment difficult.","Hippocrates"],
+  ["Cure sometimes, treat often, comfort always.","Hippocrates"],
+  ["To do nothing is also a good remedy.","Hippocrates"],
+  ["The natural healing force within each of us is the greatest force in getting well.","Hippocrates"],
+  ["Everything in excess is opposed to nature.","Hippocrates"],
+  ["Wherever the art of medicine is loved, there is also a love of humanity.","Hippocrates"],
+  ["Make a habit of two things: to help, or at least to do no harm.","Hippocrates"],
+  ["The doctor of the future will give no medicine, but will interest his patients in the care of the human frame, in diet, and in the cause and prevention of disease.","Thomas Edison"],
+  ["The art of medicine consists of amusing the patient while nature cures the disease.","Voltaire"],
+  ["The only thing that interferes with my learning is my education.","Albert Einstein"],
+  ["The world as we have created it is a process of our thinking. It cannot be changed without changing our thinking.","Albert Einstein"],
+  ["It's not that I'm so smart, it's just that I stay with problems longer.","Albert Einstein"],
+  ["Time is what the clock measures.","Albert Einstein"],
+  ["Weakness of attitude becomes weakness of character.","Albert Einstein"],
+  ["A table, a chair, a bowl of fruit and a violin; what else does a man need to be happy?","Albert Einstein"],
+  ["Once you accept the universe as matter expanding into nothing that is something, wearing stripes with plaid comes easy.","Albert Einstein"],
+  ["I used to think the brain was the most wonderful organ in my body. Then I realized who was telling me that.","Emo Phillips"],
+  ["Tact is the ability to tell someone to go to hell in such a way that they look forward to the trip.","Winston Churchill"],
+  ["If you're not making mistakes, then you're not making anything.","John Wheeler"],
+  ["A physicist is just an atom's way of looking at itself.","John Wheeler"],
+  ["The only thing we learn from history is that we learn nothing from history.","Georg Wilhelm Friedrich Hegel"],
+  ["Life must be understood backward, but it must be lived forward.","Søren Kierkegaard"],
+  ["The function of prayer is not to influence God, but rather to change the nature of the one who prays.","Søren Kierkegaard"],
+  ["It is perfectly true, as philosophers say, that life must be understood backwards. But they forget the other proposition, that it must be lived forwards.","Søren Kierkegaard"],
+  ["Once you label me, you negate me.","Søren Kierkegaard"],
+  ["People demand freedom of speech as a compensation for the freedom of thought which they seldom use.","Søren Kierkegaard"],
+  ["There are two ways to be fooled. One is to believe what isn't true; the other is to refuse to believe what is true.","Søren Kierkegaard"],
+  ["Life can only be understood backwards; but it must be lived forwards.","Søren Kierkegaard"],
+  ["What is to give light must endure burning.","Viktor Frankl"],
+  ["When we are no longer able to change a situation, we are challenged to change ourselves.","Viktor Frankl"],
+  ["Everything can be taken from a man but one thing: the last of the human freedoms — to choose one's attitude in any given set of circumstances, to choose one's own way.","Viktor Frankl"],
+  ["Those who have a 'why' to live, can bear with almost any 'how'.","Viktor Frankl"],
+  ["Between stimulus and response, there is a space. In that space is our power to choose our response. In our response lies our growth and our freedom.","Viktor Frankl"],
+  ["What man actually needs is not a tensionless state but rather the striving and struggling for a worthwhile goal, a freely chosen task.","Viktor Frankl"],
+  ["An abnormal reaction to an abnormal situation is normal behavior.","Viktor Frankl"],
+  ["I recommend that the Statue of Liberty be supplemented by a Statue of Responsibility on the west coast.","Viktor Frankl"],
+  ["No one can become fully aware of the very essence of another human being unless he loves him.","Viktor Frankl"],
+  ["Ever more people today have the means to live, but no meaning to live for.","Viktor Frankl"],
+  ["For the first time in history, we know now that man is truly alone in a universe that seems deaf to his cries.","Jacques Monod"],
+  ["Chance and necessity are the two great forces in the universe.","Jacques Monod"],
+  ["The ancient covenant is in pieces; man at last knows that he is alone in the universe's unfeeling immensity.","Jacques Monod"],
+  ["The cell is a machine driven by energy, and the machine's function is essentially to increase entropy.","Jacques Monod"],
+  ["A curious aspect of the theory of evolution is that everybody thinks he understands it.","Jacques Monod"],
+  ["Anything found to be true of E. coli must also be true of elephants.","Jacques Monod"],
+  ["In science, self-satisfaction is death. Personal service is the highest vocation.","Wilhelm Röntgen"],
+  ["I did not think; I investigated.","Wilhelm Röntgen"],
+  ["Science is nothing but trained and organized common sense.","Thomas Henry Huxley"],
+  ["The great tragedy of science — the slaying of a beautiful hypothesis by an ugly fact.","Thomas Henry Huxley"],
+  ["Try to learn something about everything and everything about something.","Thomas Henry Huxley"],
+  ["Sit down before fact as a little child, be prepared to give up every preconceived notion, follow humbly wherever and to whatever abysses nature leads, or you shall learn nothing.","Thomas Henry Huxley"],
+  ["The chessboard is the world, the pieces are the phenomena of the universe, the rules of the game are what we call the laws of Nature.","Thomas Henry Huxley"],
+  ["Knowledge is a process of piling up facts; wisdom lies in their simplification.","Martin H. Fischer"],
+  ["The best mind-altering drug is truth.","Lily Tomlin"],
+  ["We are all in the gutter, but some of us are looking at the stars.","Oscar Wilde"],
+  ["Be yourself; everyone else is already taken.","Oscar Wilde"],
+  ["Experience is simply the name we give to our mistakes.","Oscar Wilde"],
+  ["I have the simplest tastes. I am always satisfied with the best.","Oscar Wilde"],
+  ["The truth is rarely pure and never simple.","Oscar Wilde"],
+  ["Education is an admirable thing, but it is well to remember from time to time that nothing that is worth knowing can be taught.","Oscar Wilde"],
+  ["To live is the rarest thing in the world. Most people exist, that is all.","Oscar Wilde"],
+  ["A man's face is his autobiography. A woman's face is her work of fiction.","Oscar Wilde"],
+  ["The only way to get rid of a temptation is to yield to it.","Oscar Wilde"],
+  ["We live in an age when unnecessary things are our only necessities.","Oscar Wilde"],
+  ["The smallest act of kindness is worth more than the grandest intention.","Oscar Wilde"],
+  ["Every saint has a past, and every sinner has a future.","Oscar Wilde"],
+  ["It is what you read when you don't have to that determines what you will be when you can't help it.","Oscar Wilde"],
+  ["Nowadays people know the price of everything and the value of nothing.","Oscar Wilde"],
+  ["The world is a stage, but the play is badly cast.","Oscar Wilde"],
+  ["I can resist everything except temptation.","Oscar Wilde"],
+  ["A true friend stabs you in the front.","Oscar Wilde"],
+  ["The only thing worse than being talked about is not being talked about.","Oscar Wilde"],
+  ["Ah, to build a new world from the ruins of the old one. That is the work of generations.","Marie Curie"],
+  ["Nothing in life is to be feared, it is only to be understood.","Marie Curie"],
+  ["I was taught that the way of progress was neither swift nor easy.","Marie Curie"],
+  ["Life is not easy for any of us. But what of that? We must have perseverance and above all confidence in ourselves.","Marie Curie"],
+  ["One never notices what has been done; one can only see what remains to be done.","Marie Curie"],
+  ["We must believe that we are gifted for something, and that this thing, at whatever cost, must be attained.","Marie Curie"],
+  ["A scientist in his laboratory is not a mere technician: he is also a child confronting natural phenomena that impress him as though they were fairy tales.","Marie Curie"],
+  ["Nothing can be accomplished without the cooperation of others.","Marie Curie"],
+  ["All my life through, the new sights of Nature made me rejoice like a child.","Marie Curie"],
+  ["There are sadistic scientists who hurry to hunt down errors instead of establishing the truth.","Marie Curie"],
+  ["Be less curious about people and more curious about ideas.","Marie Curie"],
+  ["We must not forget that when radium was discovered, no one knew that it would prove useful in hospitals. The work was one of pure science. And that is a proof that scientific work must not be considered from the point of view of the direct usefulness of it.","Marie Curie"],
+  ["After all, science is essentially international, and it is only through lack of the historical sense that national qualities have been attributed to it.","Marie Curie"],
+  ["I am among those who think that science has great beauty.","Marie Curie"],
+  ["Nothing is to be feared, only understood.","Marie Curie"],
+  ["We must have perseverance and above all confidence in ourselves.","Marie Curie"],
+  ["So many worlds, so much to do, so little done, such things to be.","Alfred Lord Tennyson"],
+  ["To strive, to seek, to find, and not to yield.","Alfred Lord Tennyson"],
+  ["Knowledge comes, but wisdom lingers.","Alfred Lord Tennyson"],
+  ["All knowledge is of itself of some value. There is nothing so minute or inconsiderable that I would not rather know it than not.","Samuel Johnson"],
+  ["Curiosity is, in great and generous minds, the first passion and the last.","Samuel Johnson"],
+  ["The value of a thing is not the time it takes to do it, but the value of the time that is taken to learn how to do it.","Samuel Johnson"],
+  ["It is not a wonder at all that we cannot see the forest for the trees.","Samuel Johnson"],
+  ["Great works are performed not by strength but by perseverance.","Samuel Johnson"],
+  ["The true art of memory is the art of attention.","Samuel Johnson"],
+  ["People need to be reminded more often than they need to be instructed.","Samuel Johnson"],
+  ["The mind is not a vessel to be filled but a fire to be kindled.","Plutarch"],
+  ["Courage is the first of human qualities because it is the quality which guarantees all others.","Aristotle"],
+  ["To know what you know and what you do not know, that is true knowledge.","Confucius"],
+  ["Real knowledge is to know the extent of one's ignorance.","Confucius"],
+  ["The will to win, the desire to succeed, the urge to reach your full potential — these are the keys that will unlock the door to personal excellence.","Confucius"],
+  ["Respect yourself and others will respect you.","Confucius"],
+  ["Silence is a true friend who never betrays.","Confucius"],
+  ["Everything has beauty, but not everyone sees it.","Confucius"],
+  ["Wherever you go, go with all your heart.","Confucius"],
+  ["I hear and I forget. I see and I remember. I do and I understand.","Confucius"],
+  ["Our greatest glory is not in never falling, but in rising every time we fall.","Confucius"],
+  ["It does not matter how slowly you go as long as you do not stop.","Confucius"],
+  ["The man who moves a mountain begins by carrying away small stones.","Confucius"],
+  ["Success depends upon previous preparation, and without such preparation there is sure to be failure.","Confucius"],
+  ["When it is obvious that the goals cannot be reached, don't adjust the goals, adjust the action steps.","Confucius"],
+  ["The mountains are calling and I must go.","John Muir"],
+  ["In every walk with nature one receives far more than he seeks.","John Muir"],
+  ["When we try to pick out anything by itself, we find it hitched to everything else in the universe.","John Muir"],
+  ["The clearest way into the Universe is through a forest wilderness.","John Muir"],
+  ["Nature's peace will flow into you as sunshine flows into trees.","John Muir"],
+  ["The power of imagination makes us infinite.","John Muir"],
+  ["I only went out for a walk and finally concluded to stay out until sundown, for going out, I found, was really going in.","John Muir"],
+  ["Stuff your eyes with wonder, live as if you'd drop dead in ten seconds. See the world. It's more fantastic than any dream made or paid for in factories.","Ray Bradbury"],
+  ["You don't have to burn books to destroy a culture. Just get people to stop reading them.","Ray Bradbury"],
+  ["We are the miracle of force and matter making itself over into imagination and will. Incredible. The life force compares to a dream.","Ray Bradbury"],
+  ["Living at risk is jumping off the cliff and building your wings on the way down.","Ray Bradbury"],
+  ["I have never listened to anyone who criticized my taste in space travel, sideshows or gorillas. When this occurs, I pack up my dinosaurs and leave the room.","Ray Bradbury"],
+  ["If we listened to our intellect, we'd never have a love affair. We'd never have a friendship. We'd never go into business, because we'd be cynical. Well, that's nonsense. You've got to jump off cliffs all the time and build your wings on the way down.","Annie Dillard"],
+  ["How we spend our days is, of course, how we spend our lives.","Annie Dillard"],
+  ["The life of the creative man is leaded, directed and controlled by boredom. Avoiding boredom is one of our most important purposes.","Saul Bellow"],
+  ["A great deal of intelligence can be invested in ignorance when the need for illusion is deep.","Saul Bellow"],
+  ["We must be free or die, who speak the tongue that Shakespeare spake.","William Wordsworth"],
+  ["The child is father of the man.","William Wordsworth"],
+  ["The world is too much with us; late and soon, getting and spending, we lay waste our powers.","William Wordsworth"],
+  ["To begin, begin.","William Wordsworth"],
+  ["That best portion of a good man's life, his little, nameless, unremembered acts of kindness and of love.","William Wordsworth"],
+  ["Fill your paper with the breathings of your heart.","William Wordsworth"],
+  ["Faith is a passionate intuition.","William Wordsworth"],
+  ["Wisdom is the principal thing; therefore get wisdom: and with all thy getting get understanding.","King Solomon"],
+  ["The fear of the Lord is the beginning of wisdom: and the knowledge of the holy is understanding.","King Solomon"],
+  ["A wise man will hear, and will increase learning; and a man of understanding shall attain unto wise counsels.","King Solomon"],
+  ["The way of a fool is right in his own eyes: but he that hearkeneth unto counsel is wise.","King Solomon"],
+  ["He that walketh with wise men shall be wise: but a companion of fools shall be destroyed.","King Solomon"],
+  ["The tongue of the wise useth knowledge aright: but the mouth of fools poureth out foolishness.","King Solomon"],
+  ["The heart of him that hath understanding seeketh knowledge: but the mouth of fools feedeth on foolishness.","King Solomon"],
+  ["The simple believeth every word: but the prudent man looketh well to his going.","King Solomon"],
+  ["A soft answer turneth away wrath: but grievous words stir up anger.","King Solomon"],
+  ["A merry heart maketh a cheerful countenance: but by sorrow of the heart the spirit is broken.","King Solomon"],
+  ["Better is little with the fear of the Lord than great treasure and trouble therewith.","King Solomon"],
+  ["A man's heart deviseth his way: but the Lord directeth his steps.","King Solomon"],
+  ["The hoary head is a crown of glory, if it be found in the way of righteousness.","King Solomon"],
+  ["He that hath knowledge spareth his words: and a man of understanding is of an excellent spirit.","King Solomon"],
+  ["When I let go of what I am, I become what I might be.","Lao Tzu"],
+  ["The truth is not always beautiful, nor beautiful words the truth.","Lao Tzu"],
+  ["Knowing others is intelligence; knowing yourself is true wisdom. Mastering others is strength; mastering yourself is true power.","Lao Tzu"],
+  ["Nature does not hurry, yet everything is accomplished.","Lao Tzu"],
+  ["He who knows does not speak. He who speaks does not know.","Lao Tzu"],
+  ["A journey of a thousand miles begins with a single step.","Lao Tzu"],
+  ["Be content with what you have; rejoice in the way things are. When you realize there is nothing lacking, the whole world belongs to you.","Lao Tzu"],
+  ["The wise man does not lay up his own treasures. The more he gives to others, the more he has for his own.","Lao Tzu"],
+  ["To the mind that is still, the whole universe surrenders.","Lao Tzu"],
+  ["If you do not change direction, you may end up where you are heading.","Lao Tzu"],
+  ["Great acts are made up of small deeds.","Lao Tzu"],
+  ["The key to growth is the introduction of higher dimensions of consciousness into our awareness.","Lao Tzu"],
+  ["Those who have knowledge, don't predict. Those who predict, don't have knowledge.","Lao Tzu"],
+  ["New beginnings are often disguised as painful endings.","Lao Tzu"],
+  ["Being deeply loved by someone gives you strength, while loving someone deeply gives you courage.","Lao Tzu"],
+  ["Water is the softest thing, yet it can penetrate mountains and earth. This shows clearly the principle of softness overcoming hardness.","Lao Tzu"],
+  ["Everything has its beauty but not everyone sees it.","Confucius"],
+  ["They must often change who would be constant in happiness or wisdom.","Confucius"],
+  ["Learning without thought is labor lost; thought without learning is perilous.","Confucius"],
+  ["By three methods we may learn wisdom: First, by reflection, which is noblest; Second, by imitation, which is easiest; and third by experience, which is the bitterest.","Confucius"],
+  ["It is better to light one small candle than to curse the darkness.","Confucius"],
+  ["When anger rises, think of the consequences.","Confucius"],
+  ["The superior man is modest in his speech, but exceeds in his actions.","Confucius"],
+  ["Men's natures are alike; it is their habits that separate them.","Confucius"],
+  ["Before you embark on a journey of revenge, dig two graves.","Confucius"],
+  ["A superior man is modest in his speech, but exceeds in his actions.","Confucius"],
+  ["The hardest thing of all is to find a black cat in a dark room, especially if there is no cat.","Confucius"],
+  ["The superior man understands what is right; the inferior man understands what will sell.","Confucius"],
+  ["A lion chased me up a tree, and I greatly enjoyed the view from the top.","Confucius"],
+  ["The beginning of wisdom is to call things by their proper name.","Confucius"],
+  ["The deepest truth is the simplest and the most common.","Henry David Thoreau"],
+  ["I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach, and not, when I came to die, discover that I had not lived.","Henry David Thoreau"],
+  ["If a man does not keep pace with his companions, perhaps it is because he hears a different drummer. Let him step to the music which he hears, however measured or far away.","Henry David Thoreau"],
+  ["Rather than love, than money, than fame, give me truth.","Henry David Thoreau"],
+  ["The mass of men lead lives of quiet desperation.","Henry David Thoreau"],
+  ["Simplify, simplify.","Henry David Thoreau"],
+  ["Our life is frittered away by detail. Simplify, simplify.","Henry David Thoreau"],
+  ["It is not enough to be busy. So are the ants. The question is: What are we busy about?","Henry David Thoreau"],
+  ["I have learned, that if one advances confidently in the direction of his dreams, and endeavors to live the life which he has imagined, he will meet with a success unexpected in common hours.","Henry David Thoreau"],
+  ["Go confidently in the direction of your dreams. Live the life you have imagined.","Henry David Thoreau"],
+  ["The question is not what you look at, but what you see.","Henry David Thoreau"],
+  ["Nothing makes the earth seem so spacious as to have friends at a distance; they make the latitudes and longitudes.","Henry David Thoreau"],
+  ["The world is but a canvas to the imagination.","Henry David Thoreau"],
+  ["Heaven is under our feet as well as over our heads.","Henry David Thoreau"],
+  ["There is no remedy for love but to love more.","Henry David Thoreau"],
+  ["Pursue some path, however narrow and crooked, in which you can walk with love and reverence.","Henry David Thoreau"],
+  ["Success usually comes to those who are too busy to be looking for it.","Henry David Thoreau"],
+  ["The price of anything is the amount of life you exchange for it.","Henry David Thoreau"],
+  ["What is called genius is the abundance of life and health.","Henry David Thoreau"],
+  ["I know of no more encouraging fact than the unquestionable ability of man to elevate his life by a conscious endeavor.","Henry David Thoreau"],
+  ["We are born as though on a ship that is always moving, and we never get off. We are always in transit. The truth is that life is a journey, not a destination. We are always becoming.","Jean-Paul Sartre"],
+  ["Freedom is what you do with what's been done to you.","Jean-Paul Sartre"],
+  ["We are our choices.","Jean-Paul Sartre"],
+  ["Existence precedes essence.","Jean-Paul Sartre"],
+  ["Hell is other people.","Jean-Paul Sartre"],
+  ["Every word has consequences. Every silence, too.","Jean-Paul Sartre"],
+  ["The best way to conceive the fundamental project of human reality is to say that man is the being whose project is to be God.","Jean-Paul Sartre"],
+  ["We do not judge the people we love.","Jean-Paul Sartre"],
+  ["The existentialist says at once that man is anguish.","Jean-Paul Sartre"],
+  ["In life, man commits himself and draws his own portrait, outside of which there is nothing.","Jean-Paul Sartre"],
+  ["One cannot become a saint when one works sixteen hours a day.","Jean-Paul Sartre"],
+  ["Everything has been figured out, except how to live.","Jean-Paul Sartre"],
+  ["Man is condemned to be free.","Jean-Paul Sartre"],
+  ["To know the road ahead, ask those coming back.","Chinese Proverb"],
+  ["If you want happiness for a lifetime, help someone else.","Chinese Proverb"],
+  ["A book is like a garden carried in the pocket.","Chinese Proverb"],
+  ["Learning is a treasure that will follow its owner everywhere.","Chinese Proverb"],
+  ["A gem is not polished without rubbing, nor a man perfected without trials.","Chinese Proverb"],
+  ["Talk doesn't cook rice.","Chinese Proverb"],
+  ["Being happy is better than being king.","Chinese Proverb"],
+  ["One generation plants the trees; another gets the shade.","Chinese Proverb"],
+  ["A child's life is like a piece of paper on which every person leaves a mark.","Chinese Proverb"],
+  ["To attract good fortune, spend a new coin on an old friend, share an old pleasure with a new friend, and plant a new flower in an old garden.","Chinese Proverb"],
+  ["I slept and dreamt that life was joy. I awoke and saw that life was service. I acted and behold, service was joy.","Rabindranath Tagore"],
+  ["The butterfly counts not months but moments, and has time enough.","Rabindranath Tagore"],
+  ["Let your life lightly dance on the edges of Time like dew on the tip of a leaf.","Rabindranath Tagore"],
+  ["Reach high, for stars lie hidden in you. Dream deep, for every dream precedes the goal.","Rabindranath Tagore"],
+  ["Where the mind is without fear and the head is held high, where knowledge is free.","Rabindranath Tagore"],
+  ["The small wisdom is like water in a glass: clear, transparent, pure. The great wisdom is like the water in the sea: dark, mysterious, impenetrable.","Rabindranath Tagore"],
+  ["Depth of friendship does not depend on length of acquaintance.","Rabindranath Tagore"],
+  ["You cannot cross the sea merely by standing and staring at the water.","Rabindranath Tagore"],
+  ["Faith is the bird that feels the light when the dawn is still dark.","Rabindranath Tagore"],
+  ["The world speaks to me in colors, my soul answers in music.","Rabindranath Tagore"],
+  ["Love is the only reality and it is not a mere sentiment. It is the ultimate truth that lies at the heart of creation.","Rabindranath Tagore"],
+  ["Let us not pray to be sheltered from dangers but to be fearless when facing them.","Rabindranath Tagore"],
+  ["If you cry because the sun has gone out of your life, your tears will prevent you from seeing the stars.","Rabindranath Tagore"],
+  ["In the mountain, strength. In the adversity, endurance. In the river, provision. In the stillness, peace.","Native American Proverb"],
+  ["The soul would have no rainbow if the eyes had no tears.","Native American Proverb"],
+  ["Those who have one foot in the canoe and one foot in the boat are going to fall into the river.","Native American Proverb"],
+  ["Tell me and I'll forget. Show me and I may not remember. Involve me and I'll understand.","Native American Proverb"],
+  ["The bird who eats a berry does not know the color of the sky.","Native American Proverb"],
+  ["The most important thing you will ever wear is your smile.","Native American Proverb"],
+  ["It takes a thousand voices to tell a single story.","Native American Proverb"],
+  ["Don't be afraid to cry. It will free your mind of sorrowful thoughts.","Native American Proverb"],
+  ["Listen to the wind, it talks. Listen to the silence, it speaks. Listen to your heart, it knows.","Native American Proverb"],
+  ["Seek wisdom, not knowledge. Knowledge is of the past; wisdom is of the future.","Native American Proverb"],
+  ["Cherish your own emotions and never undervalue them.","Robert Henri"],
+  ["The object of art is not to reproduce reality, but to create a reality of the same intensity.","Alberto Giacometti"],
+  ["Art is not what you see, but what you make others see.","Edgar Degas"],
+  ["I dream of painting and then I paint my dream.","Vincent van Gogh"],
+  ["If you hear a voice within you say 'you cannot paint,' then by all means paint, and that voice will be silenced.","Vincent van Gogh"],
+  ["What would life be if we had no courage to attempt anything?","Vincent van Gogh"],
+  ["Great things are done by a series of small things brought together.","Vincent van Gogh"],
+  ["I am seeking. I am striving. I am in it with all my heart.","Vincent van Gogh"],
+  ["How wonderful it is that nobody need wait a single moment before starting to improve the world.","Anne Frank"],
+  ["In spite of everything, I still believe that people are really good at heart.","Anne Frank"],
+  ["Think of all the beauty still left around you and be happy.","Anne Frank"],
+  ["How noble and good everyone could be if, every evening, they were to recall to mind the events of the day and consider what has been good and bad.","Anne Frank"],
+  ["The best remedy for those who are afraid, lonely, or unhappy is to go outside, somewhere where they can be quiet, alone with the heavens, nature, and God.","Anne Frank"],
+  ["I can shake off everything as I write; my sorrows disappear, my courage is reborn.","Anne Frank"],
+  ["Whoever is happy will make others happy too.","Anne Frank"],
+  ["No one has ever become poor by giving.","Anne Frank"],
+  ["We all live with the objective of being happy; our lives are all different and yet the same.","Anne Frank"],
+  ["We cannot control the wind, but we can adjust the sails.","Dolly Parton"],
+  ["Find out who you are and do it on purpose.","Dolly Parton"],
+  ["The way I see it, if you want the rainbow, you gotta put up with the rain.","Dolly Parton"],
+  ["Storms make trees take deeper roots.","Dolly Parton"],
+  ["If you don't like the road you're walking, start paving another one.","Dolly Parton"],
+  ["It's hard to be a diamond in a rhinestone world.","Dolly Parton"],
+  ["You'll never do a whole lot unless you're brave enough to try.","Dolly Parton"],
+  ["Don't get so busy making a living that you forget to make a life.","Dolly Parton"],
+  ["We cannot become what we want by remaining what we are.","Max Depree"],
+  ["The first responsibility of a leader is to define reality. The last is to say thank you. In between, the leader is a servant.","Max Depree"],
+  ["In the end, it's not the years in your life that count. It's the life in your years.","Abraham Lincoln"],
+  ["Whatever you are, be a good one.","Abraham Lincoln"],
+  ["Give me six hours to chop down a tree and I will spend the first four sharpening the axe.","Abraham Lincoln"],
+  ["The best way to predict your future is to create it.","Abraham Lincoln"],
+  ["Most folks are as happy as they make up their minds to be.","Abraham Lincoln"],
+  ["And in the end, it's not the years in your life that count. It's the life in your years.","Abraham Lincoln"],
+  ["I am a slow walker, but I never walk back.","Abraham Lincoln"],
+  ["Those who deny freedom to others do not deserve it for themselves.","Abraham Lincoln"],
+  ["The philosophy of the schoolroom in one generation will be the philosophy of government in the next.","Abraham Lincoln"],
+  ["No man has a good enough memory to make a successful liar.","Abraham Lincoln"],
+  ["Things may come to those who wait, but only the things left by those who hustle.","Abraham Lincoln"],
+  ["My concern is not whether God is on our side; my greatest concern is to be on God's side.","Abraham Lincoln"],
+  ["Tact is the knack of making a point without making an enemy.","Isaac Newton"],
+  ["What we know is a drop, what we don't know is an ocean.","Isaac Newton"],
+  ["I can calculate the motion of heavenly bodies, but not the madness of people.","Isaac Newton"],
+  ["If I have seen further it is by standing on the shoulders of Giants.","Isaac Newton"],
+  ["No great discovery was ever made without a bold guess.","Isaac Newton"],
+  ["Truth is ever to be found in simplicity, and not in the multiplicity and confusion of things.","Isaac Newton"],
+  ["To explain all nature is too difficult a task for any one man or even for any one age.","Isaac Newton"],
+  ["Trials are medicines which our gracious and wise Physician gives because we need them.","Isaac Newton"],
+  ["We build too many walls and not enough bridges.","Isaac Newton"],
+  ["A man may imagine things that are false, but he can only understand things that are true.","Isaac Newton"],
+  ["Gravity explains the motions of the planets, but it cannot explain who set the planets in motion.","Isaac Newton"],
+  ["Plato is my friend, Aristotle is my friend, but my greatest friend is truth.","Isaac Newton"],
+  ["If I have done the public any service, it is due to my patient thought.","Isaac Newton"],
+  ["Live your life while you have it. Life is a splendid gift. There is nothing small in it.","Florence Nightingale"],
+  ["I attribute my success to this: I never gave or took any excuse.","Florence Nightingale"],
+  ["Were there none who were discontented with what they have, the world would never reach anything better.","Florence Nightingale"],
+  ["The very first requirement in a hospital is that it should do the sick no harm.","Florence Nightingale"],
+  ["How very little can be done under the spirit of fear.","Florence Nightingale"],
+  ["Let us never consider ourselves as finished nurses. We must be learning all of our lives.","Florence Nightingale"],
+  ["I think one's feelings waste themselves in words; they ought all to be distilled into actions which bring results.","Florence Nightingale"],
+  ["Rather than suppose that mankind has gradually improved, I have to suppose that good and evil occasions happen alike to all.","Florence Nightingale"],
+  ["The most healthy and beautiful, as well as the most sagacious children have been born of mothers who during pregnancy had lived on vegetable diet and in calm and quiet, so far as regards the weather.","Florence Nightingale"],
+  ["Women never have a half-hour in all their lives that they can call their own.","Florence Nightingale"],
+  ["Life is a moderate proposal. It asks for commitment, daily.","Florence Nightingale"],
+  ["Happiness is the only good. The time to be happy is now. The place to be happy is here. The way to be happy is to make others so.","Robert G. Ingersoll"],
+  ["The smallest deed is better than the grandest intention.","Robert G. Ingersoll"],
+  ["We rise by lifting others.","Robert G. Ingersoll"],
+  ["In nature there are no rewards or punishments; there are consequences.","Robert G. Ingersoll"],
+  ["The time to be happy is now. The place to be happy is here.","Robert G. Ingersoll"],
+  ["Every great discovery I ever made, I made by being stubborn and patient.","John Bardeen"],
+  ["Science is not only a disciple of reason but also one of romance and passion.","Stephen Hawking"],
+  ["We are just an advanced breed of monkeys on a minor planet of a very average star. But we can understand the universe. That makes us something very special.","Stephen Hawking"],
+  ["Across the sea of space, the stars are other suns.","Carl Sagan"],
+  ["For small creatures such as we the vastness is bearable only through love.","Carl Sagan"],
+  ["The nitrogen in our DNA, the calcium in our teeth, the iron in our blood, the carbon in our apple pies were made in the interiors of collapsing stars. We are made of starstuff.","Carl Sagan"],
+  ["Absence of evidence is not evidence of absence.","Carl Sagan"],
+  ["We are a way for the cosmos to know itself.","Carl Sagan"],
+  ["I don't want to believe. I want to know.","Carl Sagan"],
+  ["Some infinities are bigger than other infinities.","John Green"],
+  ["Most of the fundamental ideas of science are essentially simple, and may, as a rule, be expressed in a language comprehensible to everyone.","Albert Einstein"],
+  ["Science is a beautiful gift to humanity; we should not distort it.","A. P. J. Abdul Kalam"],
+  ["Dream, dream, dream. Dreams transform into thoughts and thoughts result in action.","A. P. J. Abdul Kalam"],
+  ["If you want to shine like a sun, first burn like a sun.","A. P. J. Abdul Kalam"],
+  ["Teaching is a very noble profession that shapes the character, caliber, and future of an individual.","A. P. J. Abdul Kalam"],
+  ["Let us sacrifice our today so that our children can have a better tomorrow.","A. P. J. Abdul Kalam"],
+  ["Look at the sky. We are not alone. The whole universe is friendly to us and conspires only to give the best to those who dream and work.","A. P. J. Abdul Kalam"],
+  ["All of us do not have equal talent. But all of us have an equal opportunity to develop our talents.","A. P. J. Abdul Kalam"],
+  ["Don't take rest after your first victory because if you fail in second, more lips are waiting to say that your first victory was just luck.","A. P. J. Abdul Kalam"],
+  ["Thinking is the capital, Enterprise is the way, Hard Work is the solution.","A. P. J. Abdul Kalam"],
+  ["Great dreams of great dreamers are always transcended.","A. P. J. Abdul Kalam"],
+  ["For great men, the nation is the first priority.","A. P. J. Abdul Kalam"],
+  ["Climbing to the top demands strength, whether it is to the top of Mount Everest or to the top of your career.","A. P. J. Abdul Kalam"],
+  ["One best book is equal to a hundred good friends, but one good friend is equal to a library.","A. P. J. Abdul Kalam"],
+  ["If you fail, never give up because F.A.I.L. means 'First Attempt In Learning'.","A. P. J. Abdul Kalam"],
+  ["End is not the end; in fact E.N.D. means 'Effort Never Dies'.","A. P. J. Abdul Kalam"],
+  ["Failure will never overtake me if my determination to succeed is strong enough.","A. P. J. Abdul Kalam"],
+  ["Be more dedicated to making solid achievements than to running after swift but synthetic happiness.","A. P. J. Abdul Kalam"],
+  ["Only through hard work and perseverance can we achieve excellence.","A. P. J. Abdul Kalam"],
+  ["If four things are followed — having a great aim, acquiring knowledge, hard work, and perseverance — then anything can be achieved.","A. P. J. Abdul Kalam"],
+  ["Knowledge is the most powerful weapon in the world.","A. P. J. Abdul Kalam"],
+  ["Black holes are where God divided by zero.","Steven Wright"],
+  ["The world was made so that we could practice being alive.","Steven Wright"],
+  ["Curiosity is the wick in the candle of learning.","William Arthur Ward"],
+  ["The mediocre teacher tells. The good teacher explains. The superior teacher demonstrates. The great teacher inspires.","William Arthur Ward"],
+  ["Learning is the beginning of wealth. Learning is the beginning of health. Learning is the beginning of spirituality. Searching and learning is where the miracle process all begins.","Jim Rohn"],
+  ["Formal education will make you a living; self-education will make you a fortune.","Jim Rohn"],
+  ["If you are not willing to learn, no one can help you. If you are determined to learn, no one can stop you.","Zig Ziglar"],
+  ["The mind is not a vessel to be filled, but a fire to be kindled.","Plutarch"],
+  ["Education is not the filling of a pail, but the lighting of a fire.","William Butler Yeats"],
+  ["Think like a proton. Always positive.","Unknown"],
+  ["The important thing is to never stop questioning.","Albert Einstein"],
+  ["It's a magical world, Hobbes, ol' buddy. Let's go exploring!","Bill Watterson"],
+  ["Life is pleasant. Death is peaceful. It's the transition that's troublesome.","Isaac Asimov"],
+  ["I write for the same reason I breathe — because if I didn't, I would die.","Isaac Asimov"],
+  ["I don't believe in collective guilt.","Isaac Asimov"],
+  ["The laws of nature are but the mathematical thoughts of God.","Euclid"],
+  ["There is no royal road to geometry.","Euclid"],
+  ["The whole is greater than the sum of its parts.","Aristotle"],
+  ["Nature abhors a vacuum.","Aristotle"],
+  ["It is during our darkest moments that we must focus to see the light.","Aristotle"],
+  ["What is a friend? A single soul dwelling in two bodies.","Aristotle"],
+  ["Hope is a waking dream.","Aristotle"],
+  ["In all things of nature there is something of the marvellous.","Aristotle"],
+  ["Quality is not an act, it is a habit.","Aristotle"],
+  ["Pleasure in the job puts perfection in the work.","Aristotle"],
+  ["No great mind has ever existed without a touch of madness.","Aristotle"],
+  ["A friend to all is a friend to none.","Aristotle"],
+  ["It is the mark of an educated mind to be able to entertain a thought without accepting it.","Aristotle"],
+  ["The energy of the mind is the essence of life.","Aristotle"],
+  ["The soul never thinks without a picture.","Aristotle"],
+  ["Love is composed of a single soul inhabiting two bodies.","Aristotle"],
+  ["You will never do anything in this world without courage. It is the greatest quality of the mind next to honor.","Aristotle"],
+  ["The ultimate value of life depends upon awareness and the power of contemplation rather than upon mere survival.","Aristotle"],
+  ["I count him braver who overcomes his desires than him who conquers his enemies; for the hardest victory is over self.","Aristotle"],
+  ["It is not once nor twice but times without number that the same ideas make their appearance in the world.","Aristotle"],
+  ["The energy of the mind is the essence of life.","Aristotle"],
+  ["A true friend is one soul in two bodies.","Aristotle"],
+  ["The greatest virtues are those which are most useful to other persons.","Aristotle"],
+  ["The most perfect political community is one in which the middle class is in control, and outnumbers both of the other classes.","Aristotle"],
+  ["Democracy is the form of government where the free are rulers.","Aristotle"],
+  ["Man is a political animal.","Aristotle"],
+  ["We are what we repeatedly do. Excellence, then, is not an act, but a habit.","Aristotle"],
+  ["Knowing yourself is the beginning of all wisdom.","Aristotle"],
+  ["The educated differ from the uneducated as much as the living from the dead.","Aristotle"],
+  ["He who has never learned to obey cannot be a good commander.","Aristotle"],
+  ["The aim of art is to represent not the outward appearance of things, but their inward significance.","Aristotle"],
+  ["Personal beauty is a greater recommendation than any letter of reference.","Aristotle"],
+  ["Character may be manifested in the great moments, but it is made in the small ones.","Phillip Brooks"],
+  ["The best time to plant a tree was 20 years ago. The second best time is now.","Chinese Proverb"],
+  ["Don't watch the clock; do what it does. Keep going.","Sam Levenson"],
+  ["I've learned that people will forget what you said, people will forget what you did, but people will never forget how you made them feel.","Maya Angelou"],
+  ["You may not control all the events that happen to you, but you can decide not to be reduced by them.","Maya Angelou"],
+  ["Try to be a rainbow in someone's cloud.","Maya Angelou"],
+  ["Nothing will work unless you do.","Maya Angelou"],
+  ["The desire to reach for the stars is ambitious. The desire to reach hearts is wise.","Maya Angelou"],
+  ["We delight in the beauty of the butterfly, but rarely admit the changes it has gone through to achieve that beauty.","Maya Angelou"],
+  ["If you don't like something, change it. If you can't change it, change your attitude.","Maya Angelou"],
+  ["A bird doesn't sing because it has an answer, it sings because it has a song.","Maya Angelou"],
+  ["I've learned that making a 'living' is not the same thing as making a 'life'.","Maya Angelou"],
+  ["Stepping onto a brand-new path is difficult, but not more difficult than remaining in a situation that is not nurturing, loving, or supportive.","Maya Angelou"],
+  ["We may encounter many defeats but we must not be defeated.","Maya Angelou"],
+  ["There is no greater agony than bearing an untold story inside you.","Maya Angelou"],
+  ["First best is falling in love. Second best is being a writer. Third best is being a musician.","Maya Angelou"],
+  ["Love recognizes no barriers. It jumps hurdles, leaps fences, penetrates walls to arrive at its destination full of hope.","Maya Angelou"],
+  ["I am a woman phenomenally. Phenomenal woman, that's me.","Maya Angelou"],
+  ["Courage is the most important of all the virtues because without courage, you can't practice any other virtue consistently.","Maya Angelou"],
+  ["History, despite its wrenching pain, cannot be unlived, but if faced with courage, need not be lived again.","Maya Angelou"],
+  ["Any book that helps a child to form a habit of reading, to make reading one of his deep and continuing needs, is good for him.","Maya Angelou"],
+  ["Success is liking yourself, liking what you do, and liking how you do it.","Maya Angelou"],
+  ["Since time is the only immaterial commodity which cannot be accumulated, the only thing that matters is how we spend it.","Maya Angelou"],
+  ["Science knows no country, because knowledge belongs to humanity, and is the torch which illuminates the world.","Louis Pasteur"],
+  ["I am prepared to go anywhere, provided it be forward.","David Livingstone"],
+  ["The most important scientific revolutions all include, as their only common feature, the dethronement of human arrogance from one pedestal after another.","Sigmund Freud"],
+  ["The mind is like an iceberg, it floats with one-seventh of its bulk above water.","Sigmund Freud"],
+  ["One day, in retrospect, the years of struggle will strike you as the most beautiful.","Sigmund Freud"],
+  ["From error to error, one discovers the entire truth.","Sigmund Freud"],
+  ["Time spent with cats is never wasted.","Sigmund Freud"],
+  ["We are never so defenseless against suffering as when we love.","Sigmund Freud"],
+  ["The ego is not master in its own house.","Sigmund Freud"],
+  ["The voice of the intellect is a soft one, but it does not rest until it has gained a hearing.","Sigmund Freud"],
+  ["Being entirely honest with oneself is a good exercise.","Sigmund Freud"],
+  ["Most people do not really want freedom, because freedom involves responsibility, and most people are frightened of responsibility.","Sigmund Freud"],
+  ["Sometimes a cigar is just a cigar.","Sigmund Freud"],
+  ["Memory is the diary that we all carry about with us.","Oscar Wilde"],
+  ["The imagination is a secret door to the infinite.","Salvador Dalí"],
+  ["Have no fear of perfection — you'll never reach it.","Salvador Dalí"],
+  ["Surrealism is destructive, but it destroys only what it considers to be shackles limiting our vision.","Salvador Dalí"],
+  ["Intelligence without ambition is a bird without wings.","Salvador Dalí"],
+  ["At the age of six I wanted to be a cook. At seven I wanted to be Napoleon. And my ambition has been growing steadily ever since.","Salvador Dalí"],
+  ["The difference between a madman and me is that I am not mad.","Salvador Dalí"],
+  ["There is only one difference between a madman and me. The madman thinks he is sane. I know I am mad.","Salvador Dalí"],
+  ["I don't do drugs. I am drugs.","Salvador Dalí"],
+  ["A true artist is not one who is inspired, but one who inspires others.","Salvador Dalí"],
+  ["So little of what could happen does happen.","Salvador Dalí"],
+  ["We are all born mad. Some remain so.","Samuel Beckett"],
+  ["Ever tried. Ever failed. No matter. Try again. Fail again. Fail better.","Samuel Beckett"],
+  ["Dance first. Think later. It's the natural order.","Samuel Beckett"],
+  ["The sun shone, having no alternative, on the nothing new.","Samuel Beckett"],
+  ["All of old. Nothing else ever. Ever tried. Ever failed. No matter. Try again. Fail again. Fail better.","Samuel Beckett"],
+  ["I can't go on. I'll go on.","Samuel Beckett"],
+  ["The tears of the world are a constant quantity. For each one who begins to weep, somewhere else another stops.","Samuel Beckett"],
+  ["Nothing matters but the quality of the attention.","Susan Sontag"],
+  ["The only interesting answers are those that destroy the questions.","Susan Sontag"],
+  ["I was not looking for dreams to interpret, but to remake the world.","Susan Sontag"],
+  ["Time is not made of lines but of moments.","Susan Sontag"],
+  ["Do stuff. Be clenched, curious. Not waiting for inspiration's shove or society's kiss on your forehead. Pay attention. It's all about paying attention. It's all about taking in as much of what's out there as you can.","Susan Sontag"],
+  ["The writer is someone who is born with a talent for being able to fall into a state of wonder.","Susan Sontag"],
+  ["I have not been able to find any through-line in my life except the commitment to thinking.","Susan Sontag"],
+  ["My heart is like a singing bird.","Christina Rossetti"],
+  ["Better by far you should forget and smile than that you should remember and be sad.","Christina Rossetti"],
+  ["Who has seen the wind? Neither you nor I: but when the trees bow down their heads, the wind is passing by.","Christina Rossetti"],
+  ["Love is one aspect of infinity.","Christina Rossetti"],
+  ["Seek knowledge from cradle to the grave.","Prophet Muhammad"],
+  ["The ink of the scholar is more sacred than the blood of the martyr.","Prophet Muhammad"],
+  ["A good man treats women with honor.","Prophet Muhammad"],
+  ["The strongest person is not the one who can wrestle, but the one who can control himself in times of anger.","Prophet Muhammad"],
+  ["The best of you are those who are best to their families.","Prophet Muhammad"],
+  ["Whoever believes in God and the Last Day should speak good or remain silent.","Prophet Muhammad"],
+  ["Riches are not from an abundance of worldly goods, but from a contented mind.","Prophet Muhammad"],
+  ["The best among you is the one who learns the Quran and teaches it.","Prophet Muhammad"],
+  ["Make things easy, not difficult.","Prophet Muhammad"],
+  ["The best gift to a person is to be content with what he has.","Prophet Muhammad"],
+  ["The most perfect in faith are those with the best character.","Prophet Muhammad"],
+  ["The key to life is knowledge.","Prophet Muhammad"],
+  ["In the garden of knowledge, every flower blooms at its own pace.","Rumi"],
+  ["Do not feel lonely, the entire universe is inside you.","Rumi"],
+  ["The wound is the place where the Light enters you.","Rumi"],
+  ["Don't be satisfied with stories, how things have gone with others. Unfold your own myth.","Rumi"],
+  ["You are not a drop in the ocean. You are the entire ocean in a drop.","Rumi"],
+  ["Let yourself be silently drawn by the strange pull of what you really love. It will not lead you astray.","Rumi"],
+  ["What you seek is seeking you.","Rumi"],
+  ["The art of knowing is knowing what to ignore.","Rumi"],
+  ["The only lasting beauty is the beauty of the heart.","Rumi"],
+  ["Where there is ruin, there is hope for a treasure.","Rumi"],
+  ["Sell your cleverness and buy bewilderment.","Rumi"],
+  ["Don't grieve. Anything you lose comes round in another form.","Rumi"],
+  ["Raise your words, not voice. It is rain that grows flowers, not thunder.","Rumi"],
+  ["Life is a balance of holding on and letting go.","Rumi"],
+  ["Everything that is made beautiful and fair and lovely is made for the eye of one who sees.","Rumi"],
+  ["You were born with wings, why prefer to crawl through life?","Rumi"],
+  ["Why do you stay in prison when the door is so wide open?","Rumi"],
+  ["Silence is the language of god, all else is poor translation.","Rumi"],
+  ["Let the beauty of what you love be what you do.","Rumi"],
+  ["Gratitude is the wine of the soul. Go on. Get drunk.","Rumi"],
+  ["Travel brings power and love back into your life.","Rumi"],
+  ["The moon stays bright when it doesn't avoid the night.","Rumi"],
+  ["Beauty surrounds us, but usually we need to be walking in a garden to know it.","Rumi"],
+  ["I want to sing like the birds sing, not worrying about who hears or what they think.","Rumi"],
+  ["Lovers don't finally meet somewhere. They're in each other all along.","Rumi"],
+  ["Respond to every call that excites your spirit.","Rumi"],
+  ["Set your life on fire. Seek those who fan your flames.","Rumi"],
+  ["When the soul sits in silence, it is worthy of being seen.","Rumi"],
+  ["Knowledge is not enough; we must apply. Willing is not enough; we must do.","Johann Wolfgang von Goethe"],
+  ["Everything is hard before it is easy.","Johann Wolfgang von Goethe"],
+  ["Knowing is not enough; we must apply. Willing is not enough; we must do.","Johann Wolfgang von Goethe"],
+  ["Nothing is worth more than this day.","Johann Wolfgang von Goethe"],
+  ["There is nothing more frightful than ignorance in action.","Johann Wolfgang von Goethe"],
+  ["The world is so empty if one thinks only of mountains, rivers and cities; but to know someone who thinks and feels with us, and who, though distant, is close to us in spirit, this makes the earth for us an inhabited garden.","Johann Wolfgang von Goethe"],
+  ["What is not started today is never finished tomorrow.","Johann Wolfgang von Goethe"],
+  ["Let everyone sweep in front of his own door, and the whole world will be clean.","Johann Wolfgang von Goethe"],
+  ["One cannot always be a hero, but one can always be a human.","Johann Wolfgang von Goethe"],
+  ["The mountains are silent, and the valleys echo.","Johann Wolfgang von Goethe"],
+  ["Be bold and mighty forces will come to your aid.","Johann Wolfgang von Goethe"],
+  ["Trust yourself, then you will know how to live.","Johann Wolfgang von Goethe"],
+  ["Art is long, life short, judgment difficult, opportunity transient.","Johann Wolfgang von Goethe"],
+  ["We do not have to visit a madhouse to find disordered minds; our planet is the mental institution of the universe.","Johann Wolfgang von Goethe"],
+  ["We know accurately only when we know little; with knowledge doubt increases.","Johann Wolfgang von Goethe"],
+  ["Who is the happiest of men? He who values the merits of others, and in their pleasure takes joy, even as though it were his own.","Johann Wolfgang von Goethe"],
+  ["Age does not make us childish, as people say. It finds us true children still.","Johann Wolfgang von Goethe"],
+  ["Only those who have the patience to do simple things perfectly will acquire the skill to do difficult things easily.","Johann Wolfgang von Goethe"],
+  ["Nothing is more terrible than to see ignorance in action.","Johann Wolfgang von Goethe"],
+  ["The soul that sees beauty may sometimes walk alone.","Johann Wolfgang von Goethe"],
+  ["An investment in knowledge pays the best interest.","Benjamin Franklin"],
+  ["Well done is better than well said.","Benjamin Franklin"],
+  ["Tell me and I forget, teach me and I may remember, involve me and I learn.","Benjamin Franklin"],
+  ["Never confuse motion with action.","Benjamin Franklin"],
+  ["Energy and persistence conquer all things.","Benjamin Franklin"],
+  ["Diligence is the mother of good luck.","Benjamin Franklin"],
+  ["Lost time is never found again.","Benjamin Franklin"],
+  ["He that can have patience can have what he will.","Benjamin Franklin"],
+  ["There are three things extremely hard: steel, a diamond, and to know one's self.","Benjamin Franklin"],
+  ["Without continual growth and progress, such words as improvement, achievement, and success have no meaning.","Benjamin Franklin"],
+  ["By failing to prepare, you are preparing to fail.","Benjamin Franklin"],
+  ["Never leave that till tomorrow which you can do today.","Benjamin Franklin"],
+  ["Be at war with your vices, at peace with your neighbors, and let every new year find you a better man.","Benjamin Franklin"],
+  ["Hide not your talents, they for use were made. What's a sundial in the shade?","Benjamin Franklin"],
+  ["The doors of wisdom are never shut.","Benjamin Franklin"],
+  ["Having once decided to achieve a certain task, I was never satisfied until it was done.","Benjamin Franklin"],
+  ["A small leak will sink a great ship.","Benjamin Franklin"],
+  ["Take time for all things: great haste makes great waste.","Benjamin Franklin"],
+  ["It is the first of all problems for a man to find what kind of work he is to do in this universe.","Thomas Carlyle"],
+  ["Genius is an infinite capacity for taking pains.","Thomas Carlyle"],
+  ["No pressure, no diamonds.","Thomas Carlyle"],
+  ["A man lives by believing something; not by debating and arguing about many things.","Thomas Carlyle"],
+  ["Silence is as deep as eternity, speech a shallow as time.","Thomas Carlyle"],
+  ["Go as far as you can see; when you get there you'll be able to see farther.","J. P. Morgan"],
+  ["The first step is to establish that something is possible; then probability will occur.","Elon Musk"],
+  ["When something is important enough, you do it even if the odds are not in your favor.","Elon Musk"],
+  ["Great companies are built on great products.","Elon Musk"],
+  ["I would like to die on Mars. Just not on impact.","Elon Musk"],
+  ["The first step is to establish that something is possible; then probability will occur.","Elon Musk"],
+  ["Persistence is very important. You should not give up unless you are forced to give up.","Elon Musk"],
+  ["Failure is an option here. If things are not failing, you are not innovating enough.","Elon Musk"],
+  ["Science is magic that works.","Kurt Vonnegut"],
+  ["We are who we pretend to be, so we must be careful about who we pretend to be.","Kurt Vonnegut"],
+  ["Live and let live.","Kurt Vonnegut"],
+  ["Everything was beautiful and nothing hurt.","Kurt Vonnegut"],
+  ["There's only one rule that I know of, babies — God damn it, you've got to be kind.","Kurt Vonnegut"],
+  ["Tiger got to hunt, bird got to fly; man got to sit and wonder 'why, why, why?' Tiger got to sleep, bird got to land; man got to tell himself he understand.","Kurt Vonnegut"],
+  ["We have to continually be jumping off cliffs and developing our wings on the way down.","Kurt Vonnegut"],
+  ["Of all the words of mice and men, the saddest are, 'It might have been.'","Kurt Vonnegut"],
+  ["Here we are, trapped in the amber of the moment. There is no why.","Kurt Vonnegut"],
+  ["Beware of the man who works hard to learn something, learns it, and finds himself no wiser than before.","Kurt Vonnegut"],
+  ["Science is a differential equation. Religion is a boundary condition.","Alan Turing"],
+  ["A human is a system for converting dust into consciousness.","Alan Turing"],
+  ["Science is simply common sense at its best.","Thomas Henry Huxley"],
+  ["In much of society, research means to investigate something you do not know or understand.","Neil deGrasse Tyson"],
+  ["If you are not scientifically literate, the world becomes a mysterious place. And a mysterious place is a vulnerable place.","Neil deGrasse Tyson"],
+  ["I know of no time in human history where ignorance was better than knowledge.","Neil deGrasse Tyson"],
+  ["The problem is not that we have problems. The problem is expecting otherwise and thinking that having problems is a problem.","Theodore Rubin"],
+  ["In all chaos there is a cosmos, in all disorder a secret order.","Carl Jung"],
+  ["A teacher who is indeed wise does not bid you to enter the house of his wisdom but rather leads you to the threshold of your mind.","Kahlil Gibran"],
+  ["You give but little when you give of your possessions. It is when you give of yourself that you truly give.","Kahlil Gibran"],
+  ["Work is love made visible.","Kahlil Gibran"],
+  ["The timeless in you is aware of life's timelessness. And knows that yesterday is but today's memory and tomorrow is today's dream.","Kahlil Gibran"],
+  ["Your children are not your children. They are the sons and daughters of Life's longing for itself.","Kahlil Gibran"],
+  ["Beauty is not in the face; beauty is a light in the heart.","Kahlil Gibran"],
+  ["The smallest act of kindness is worth more than the greatest intention.","Kahlil Gibran"],
+  ["Out of suffering have emerged the strongest souls; the most massive characters are seared with scars.","Kahlil Gibran"],
+  ["Trust in dreams, for in them is hidden the gate to eternity.","Kahlil Gibran"],
+  ["I have learned silence from the talkative, toleration from the intolerant, and kindness from the unkind; yet strange, I am ungrateful to those teachers.","Kahlil Gibran"],
+  ["Your living is determined not so much by what life brings to you as by the attitude you bring to life.","Kahlil Gibran"],
+  ["Knowledge of the self is the mother of all knowledge.","Kahlil Gibran"],
+  ["The day is not far when you shall see me, and I am a traveler and a dreamer who shall not be a stranger.","Kahlil Gibran"],
+  ["Science without religion is lame, religion without science is blind.","Albert Einstein"],
+  ["Look deep into nature, and then you will understand everything better.","Albert Einstein"],
+  ["The secret to creativity is knowing how to hide your sources.","Albert Einstein"],
+  ["If you can't explain it to a six year old, you don't understand it yourself.","Albert Einstein"],
+  ["You have to learn the rules of the game. And then you have to play better than anyone else.","Albert Einstein"],
+  ["A person starts to live when he can live outside himself.","Albert Einstein"],
+  ["The monotony and solitude of a quiet life stimulates the creative mind.","Albert Einstein"],
+  ["Never give up on what you really want to do. The person with big dreams is more powerful than one with all the facts.","Albert Einstein"],
+  ["Strive not to be a success, but rather to be of value.","Albert Einstein"],
+  ["I must be willing to give up what I am in order to become what I will be.","Albert Einstein"],
+  ["Only a life lived for others is a life worthwhile.","Albert Einstein"],
+  ["The intuitive mind is a sacred gift and the rational mind is a faithful servant. We have created a society that honors the servant and has forgotten the gift.","Albert Einstein"],
+  ["Information is not knowledge.","Albert Einstein"],
+  ["We cannot despair of humanity, since we ourselves are human beings.","Albert Einstein"],
+  ["The true sign of intelligence is not knowledge but imagination.","Albert Einstein"],
+  ["Any intelligent fool can make things bigger, more complex, and more violent. It takes a touch of genius — and a lot of courage — to move in the opposite direction.","Albert Einstein"],
+  ["Life is a mystery; we are all part of it.","Albert Einstein"],
+  ["Reality is merely an illusion, albeit a very persistent one.","Albert Einstein"],
+  ["The most incomprehensible thing about the universe is that it is comprehensible.","Albert Einstein"],
+  ["When you are courting a nice girl an hour seems like a second. When you sit on a red-hot cinder a second seems like an hour. That's relativity.","Albert Einstein"],
+  ["Everything should be as simple as it is, but not simpler.","Albert Einstein"],
+  ["I never think of the future. It comes soon enough.","Albert Einstein"],
+  ["A happy man is too satisfied with the present to dwell too much on the future.","Albert Einstein"],
+  ["The only reason for time is so that everything doesn't happen at once.","Albert Einstein"],
+  ["Quantum mechanics is certainly imposing. But an inner voice tells me that it is not yet the real thing.","Albert Einstein"],
+  ["God does not play dice with the universe.","Albert Einstein"],
+  ["Science without religion is lame. Religion without science is blind.","Albert Einstein"],
+  ["If the facts don't fit the theory, change the facts.","Albert Einstein"],
+  ["The hardest thing in the world to understand is the income tax.","Albert Einstein"],
+  ["I want to go when I want. It is tasteless to prolong life artificially. I have done my share; it is time to go. I will do it elegantly.","Albert Einstein"],
+  ["A clever person solves a problem. A wise person avoids it.","Albert Einstein"],
+  ["The world is in danger of a bad illness when the soul becomes aware of its own existence.","Albert Einstein"],
+  ["I believe in standardizing automobiles. I do not believe in standardizing human beings.","Albert Einstein"],
+  ["I never made one of my discoveries through the process of rational thinking.","Albert Einstein"],
+  ["Logic will get you from A to B. Imagination will take you everywhere.","Albert Einstein"],
+  ["The important thing is not to stop questioning.","Albert Einstein"],
+  ["I think the most important question facing humanity is, 'Is the universe a friendly place?'","Albert Einstein"],
+  ["Try not to become a man of success, but rather try to become a man of value.","Albert Einstein"],
+  ["There are two ways to live your life. One is as though nothing is a miracle. The other is as though everything is a miracle.","Albert Einstein"],
+  ["We cannot solve our problems with the same thinking we used when we created them.","Albert Einstein"],
+  ["Peace cannot be kept by force; it can only be achieved by understanding.","Albert Einstein"],
+  ["The true value of a human being can be found in the degree to which he has attained liberation from the self.","Albert Einstein"],
+  ["The most important thing is to never stop questioning.","Albert Einstein"]
+];
+
+function getDayOfYear(){
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,0);
+  return Math.floor((now-start)/86400000);
+}
+
+function renderDailyQuote(){
+  const idx=getDayOfYear()%QUOTES.length;
+  const q=QUOTES[idx];
+  document.getElementById('quote-text').textContent=`"${q[0]}"`;
+  document.getElementById('quote-author').textContent=`— ${q[1]}`;
+  document.getElementById('quote-day').textContent=`Day ${idx+1} of ${QUOTES.length}`;
+}
+
+function refreshQuote(){
+  const idx=Math.floor(Math.random()*QUOTES.length);
+  const q=QUOTES[idx];
+  document.getElementById('quote-text').textContent=`"${q[0]}"`;
+  document.getElementById('quote-author').textContent=`— ${q[1]}`;
+  document.getElementById('quote-day').textContent=`Random #${idx+1} of ${QUOTES.length}`;
 }
 
 // ─── Plugins ──────────────────────────────────────────────────────────────────
