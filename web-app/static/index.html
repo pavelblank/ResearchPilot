@@ -1716,52 +1716,56 @@ async function loadKB(){
 
 // ─── Dashboard stats ──────────────────────────────────────────────────────────
 function updateDash(){
-  document.getElementById('s-p').textContent=projects.length;
-  document.getElementById('s-f').textContent=library.length;
-  document.getElementById('s-e').textContent=memory.length;
-  document.getElementById('s-c').textContent=sessions.length;
+  try{
+    document.getElementById('s-p').textContent=projects.length;
+    document.getElementById('s-f').textContent=library.length;
+    document.getElementById('s-e').textContent=memory.length;
+    document.getElementById('s-c').textContent=sessions.length;
+  }catch(e){}
   renderSysGraph();
   renderDailyQuote();
 }
 
 // ─── System Graph ─────────────────────────────────────────────────────────────
 function renderSysGraph(){
-  const el=document.getElementById('sys-graph');
-  if(!el)return;
-  const W=el.clientWidth||400, H=el.clientHeight||200;
-  const cx=W/2, cy=H/2;
-  const nodes=[
-    {id:'brain',label:'ResearchPilot',icon:'🧠',x:cx,y:cy,size:48,center:true},
-    {id:'ai',label:'AI Engine',icon:'🤖',status:'ok',desc:settings?.ai_engines?.find(e=>e.enabled)?.name||'None'},
-    {id:'lib',label:'Library',icon:'📚',status:'ok',desc:library.length+' files'},
-    {id:'chat',label:'Chat',icon:'💬',status:settings?.ai_engines?.some(e=>e.enabled)?'ok':'off',desc:sessions.length+' sessions'},
-    {id:'ext',label:'Extractions',icon:'📋',status:'ok',desc:memory.length+' entries'},
-    {id:'graph',label:'Knowledge Graph',icon:'🕸',status:'ok',desc:'Connected'},
-  ];
-  const radius=Math.min(W,H)*0.3;
-  const angles=[-Math.PI/2, -Math.PI/2+Math.PI/3, -Math.PI/2+2*Math.PI/3, -Math.PI/2+Math.PI, -Math.PI/2+4*Math.PI/3, -Math.PI/2+5*Math.PI/3];
-  nodes.slice(1).forEach((n,i)=>{n.x=cx+radius*Math.cos(angles[i]);n.y=cy+radius*Math.sin(angles[i]);});
+  try{
+    const el=document.getElementById('sys-graph');
+    if(!el)return;
+    const W=el.clientWidth||400, H=el.clientHeight||200;
+    const cx=W/2, cy=H/2;
+    const eng=settings?.ai_engines;
+    const activeEng=Array.isArray(eng)?eng.find(e=>e.enabled):null;
+    const anyEnabled=Array.isArray(eng)&&eng.some(e=>e.enabled);
+    const nodes=[
+      {id:'brain',label:'ResearchPilot',icon:'🧠',x:cx,y:cy,size:48,center:true},
+      {id:'ai',label:'AI Engine',icon:'🤖',status:'ok',desc:activeEng?.name||'None'},
+      {id:'lib',label:'Library',icon:'📚',status:'ok',desc:library.length+' files'},
+      {id:'chat',label:'Chat',icon:'💬',status:anyEnabled?'ok':'off',desc:sessions.length+' sessions'},
+      {id:'ext',label:'Extractions',icon:'📋',status:'ok',desc:memory.length+' entries'},
+      {id:'graph',label:'Knowledge Graph',icon:'🕸',status:'ok',desc:'Connected'},
+    ];
+    const radius=Math.min(W,H)*0.3;
+    const angles=[-Math.PI/2, -Math.PI/2+Math.PI/3, -Math.PI/2+2*Math.PI/3, -Math.PI/2+Math.PI, -Math.PI/2+4*Math.PI/3, -Math.PI/2+5*Math.PI/3];
+    nodes.slice(1).forEach((n,i)=>{n.x=cx+radius*Math.cos(angles[i]);n.y=cy+radius*Math.sin(angles[i]);});
 
-  let html='';
-  // lines from center to each node
-  nodes.slice(1).forEach(n=>{
-    const dx=n.x-cx, dy=n.y-cy;
-    const len=Math.sqrt(dx*dx+dy*dy);
-    const active=n.status!=='off';
-    html+=`<div class="sys-line" style="width:${len-28}px;left:${cx+24}px;top:${cy-1}px;transform:rotate(${Math.atan2(dy,dx)}rad);background:${active?'linear-gradient(90deg,var(--accent),rgba(108,99,255,.15))':'var(--border)'}"></div>`;
-  });
-  // center node
-  html+=`<div class="sys-center-dot" style="left:${cx-24}px;top:${cy-24}px">🧠</div>`;
-  html+=`<div class="sys-center-label" style="left:${cx-40}px;top:${cy+28}px">ResearchPilot</div>`;
-  // outer nodes
-  nodes.slice(1).forEach(n=>{
-    const dotClass='sys-dot '+(n.status==='ok'?'ok pulse':n.status==='warn'?'warn pulse':'off');
-    html+=`<div class="sys-node" style="left:${n.x-16}px;top:${n.y-16}px" title="${n.desc||''}">
-      <div class="${dotClass}">${n.icon}</div>
-      <div class="sys-label">${n.label}<span class="stat">${n.desc||''}</span></div>
-    </div>`;
-  });
-  el.innerHTML=html;
+    let html='';
+    nodes.slice(1).forEach(n=>{
+      const dx=n.x-cx, dy=n.y-cy;
+      const len=Math.sqrt(dx*dx+dy*dy)||1;
+      const active=n.status!=='off';
+      html+=`<div class="sys-line" style="width:${Math.max(0,len-28)}px;left:${cx+24}px;top:${cy-1}px;transform:rotate(${Math.atan2(dy,dx)}rad);background:${active?'linear-gradient(90deg,var(--accent),rgba(108,99,255,.15))':'var(--border)'}"></div>`;
+    });
+    html+=`<div class="sys-center-dot" style="left:${cx-24}px;top:${cy-24}px">🧠</div>`;
+    html+=`<div class="sys-center-label" style="left:${cx-40}px;top:${cy+28}px">ResearchPilot</div>`;
+    nodes.slice(1).forEach(n=>{
+      const dotClass='sys-dot '+(n.status==='ok'?'ok pulse':n.status==='warn'?'warn pulse':'off');
+      html+=`<div class="sys-node" style="left:${n.x-16}px;top:${n.y-16}px" title="${n.desc||''}">
+        <div class="${dotClass}">${n.icon}</div>
+        <div class="sys-label">${n.label}<span class="stat">${n.desc||''}</span></div>
+      </div>`;
+    });
+    el.innerHTML=html;
+  }catch(e){console.error('graph err',e)}
 }
 
 // ─── Daily Quotes ─────────────────────────────────────────────────────────────
@@ -2724,19 +2728,33 @@ function getDayOfYear(){
 }
 
 function renderDailyQuote(){
-  const idx=getDayOfYear()%QUOTES.length;
-  const q=QUOTES[idx];
-  document.getElementById('quote-text').textContent=`"${q[0]}"`;
-  document.getElementById('quote-author').textContent=`— ${q[1]}`;
-  document.getElementById('quote-day').textContent=`Day ${idx+1} of ${QUOTES.length}`;
+  try{
+    if(typeof QUOTES==='undefined'||!QUOTES.length)return;
+    const idx=getDayOfYear()%QUOTES.length;
+    const q=QUOTES[idx];
+    if(!q)return;
+    const t=document.getElementById('quote-text');
+    const a=document.getElementById('quote-author');
+    const d=document.getElementById('quote-day');
+    if(t)t.textContent=`"${q[0]}"`;
+    if(a)a.textContent=`— ${q[1]}`;
+    if(d)d.textContent=`Day ${idx+1} of ${QUOTES.length}`;
+  }catch(e){console.error('quote err',e)}
 }
 
 function refreshQuote(){
-  const idx=Math.floor(Math.random()*QUOTES.length);
-  const q=QUOTES[idx];
-  document.getElementById('quote-text').textContent=`"${q[0]}"`;
-  document.getElementById('quote-author').textContent=`— ${q[1]}`;
-  document.getElementById('quote-day').textContent=`Random #${idx+1} of ${QUOTES.length}`;
+  try{
+    if(typeof QUOTES==='undefined'||!QUOTES.length)return;
+    const idx=Math.floor(Math.random()*QUOTES.length);
+    const q=QUOTES[idx];
+    if(!q)return;
+    const t=document.getElementById('quote-text');
+    const a=document.getElementById('quote-author');
+    const d=document.getElementById('quote-day');
+    if(t)t.textContent=`"${q[0]}"`;
+    if(a)a.textContent=`— ${q[1]}`;
+    if(d)d.textContent=`Random #${idx+1} of ${QUOTES.length}`;
+  }catch(e){console.error('quote err',e)}
 }
 
 // ─── Plugins ──────────────────────────────────────────────────────────────────
