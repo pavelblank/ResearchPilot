@@ -5,11 +5,26 @@ echo ============================================================
 echo   ResearchPilot System Starting...
 echo ============================================================
 echo.
-echo  Starting web server...
+echo  Starting web server (this may take 30-60s on first run)...
 start /b python main.py
-timeout /t 4 /nobreak >nul
-echo  Opening browser...
-start "" chrome --new-window "http://192.168.68.103:8000"
+
+echo  Waiting for server to become ready...
+setlocal enabledelayedexpansion
+set "READY="
+for /l %%i in (1,1,60) do (
+    timeout /t 1 /nobreak >nul
+    >nul 2>&1 curl -s http://127.0.0.1:8000/api/status && set "READY=1" && goto :ready
+)
+:ready
+if defined READY (
+    echo  Server is ready!
+    echo  Opening browser...
+    start "" http://127.0.0.1:8000
+) else (
+    echo  WARNING: Could not verify server started.
+    echo  Try manually opening: http://127.0.0.1:8000
+    start "" http://127.0.0.1:8000
+)
 echo.
-echo  ResearchPilot running at: http://192.168.68.103:8000
+echo  ResearchPilot running at: http://127.0.0.1:8000
 echo  Close this window to stop the server.

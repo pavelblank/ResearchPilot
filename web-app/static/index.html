@@ -230,6 +230,22 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <button class="btn btn-s" style="padding:2px 8px;font-size:10px" onclick="openNewProject()">+ New</button>
   </div>
   <div class="sb-list" id="proj-list"></div>
+
+  <!-- ── Calendar ── -->
+  <div id="sb-calendar" style="border-top:1px solid var(--border);padding:8px 10px;flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+      <span id="cal-title" style="font-size:11px;font-weight:600"></span>
+      <div style="display:flex;gap:2px">
+        <button class="btn btn-s" onclick="calPrev()" style="padding:1px 5px;font-size:10px;background:transparent;border:none;color:var(--muted);cursor:pointer">◀</button>
+        <button class="btn btn-s" onclick="calNext()" style="padding:1px 5px;font-size:10px;background:transparent;border:none;color:var(--muted);cursor:pointer">▶</button>
+      </div>
+    </div>
+    <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;font-size:10px;text-align:center"></div>
+    <div id="cal-tz" style="margin-top:4px;display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)">
+      <span id="cal-tz-label">UTC</span>
+      <button class="btn btn-s" onclick="cycleTimezone()" style="padding:1px 5px;font-size:9px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;border-radius:3px">🔄</button>
+    </div>
+  </div>
 </div>
 
 <div class="main">
@@ -775,6 +791,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
             <span class="text-sm text-m">Start ResearchPilot automatically when you log in (creates Windows scheduled task)</span>
           </div>
         </div>
+        <div class="form-row"><label>Timezone</label>
+          <select id="gen-tz" class="w100" style="max-width:300px"></select>
+        </div>
         <hr class="separator">
         <div class="section-title">🪨 Obsidian Integration</div>
         <div class="card">
@@ -868,7 +887,69 @@ function toggleSidebar(){
 
 function clock(){
   const el=document.getElementById('clock');
-  setInterval(()=>{el.textContent=new Date().toLocaleTimeString();},1000);
+  function tick(){
+    const tz=settings?.timezone||'UTC';
+    try{
+      el.textContent=new Date().toLocaleString('en-US',{timeZone:tz,timeStyle:'medium',dateStyle:'medium'});
+    }catch(e){
+      el.textContent=new Date().toLocaleString();
+    }
+  }
+  tick();
+  setInterval(tick,1000);
+}
+
+// ─── Calendar ──────────────────────────────────────────────────────────────
+let calDate=new Date();
+
+function initTimezoneSelect(){
+  const sel=document.getElementById('gen-tz');
+  if(sel.options.length>1)return;
+  const common=['UTC','Asia/Dhaka','Asia/Kolkata','America/New_York','America/Chicago','America/Denver','America/Los_Angeles','Europe/London','Europe/Paris','Europe/Berlin','Asia/Tokyo','Asia/Shanghai','Asia/Singapore','Asia/Dubai','Australia/Sydney','Pacific/Auckland','Africa/Cairo','Africa/Johannesburg','America/Sao_Paulo','America/Argentina/Buenos_Aires'];
+  try{
+    const all=Intl.supportedValuesOf('timeZone');
+    common.forEach(tz=>{if(!all.includes(tz))common=common.filter(c=>c!==tz);});
+  }catch(e){}
+  sel.innerHTML=common.map(tz=>`<option value="${tz}">${tz.replace(/_/g,' ')}</option>`).join('');
+}
+
+function calRender(){
+  const tz=settings?.timezone||'UTC';
+  const title=document.getElementById('cal-title');
+  const grid=document.getElementById('cal-grid');
+  const tzLabel=document.getElementById('cal-tz-label');
+  tzLabel.textContent=tz;
+  const y=calDate.getFullYear(),m=calDate.getMonth();
+  title.textContent=new Date(y,m).toLocaleString('en-US',{timeZone:'UTC',month:'long',year:'numeric'});
+  const today=new Date();
+  let td;
+  try{td=today.toLocaleString('en-US',{timeZone:tz,year:'numeric',month:'numeric',day:'numeric'}).split('/').map(Number);}catch(e){td=[today.getFullYear(),today.getMonth()+1,today.getDate()];}
+  const ty=td[2]?td[2]:td[0], tm=td[0], dd=td[1];
+  const firstDow=new Date(Date.UTC(y,m,1)).getUTCDay();
+  const daysInMonth=new Date(Date.UTC(y,m+1,0)).getUTCDate();
+  const days=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html=days.map(d=>`<span style="color:var(--muted);font-weight:600;padding:2px 0">${d}</span>`).join('');
+  for(let i=0;i<firstDow;i++)html+='<span></span>';
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=(ty===y&&tm===m+1&&dd===d);
+    html+=`<span style="padding:2px 0;border-radius:3px;${isToday?'background:var(--accent);color:#fff;font-weight:700':'color:var(--text)'}">${d}</span>`;
+  }
+  grid.innerHTML=html;
+}
+
+function calPrev(){calDate.setMonth(calDate.getMonth()-1);calRender();}
+function calNext(){calDate.setMonth(calDate.getMonth()+1);calRender();}
+
+const COMMON_TZS=['UTC','Asia/Dhaka','Asia/Kolkata','America/New_York','Europe/London','Asia/Tokyo','Australia/Sydney','Europe/Paris','America/Los_Angeles','Asia/Dubai','Asia/Shanghai','Asia/Singapore'];
+function cycleTimezone(){
+  const cur=settings.timezone||'UTC';
+  let idx=COMMON_TZS.indexOf(cur);
+  if(idx===-1||idx===COMMON_TZS.length-1)idx=0;else idx++;
+  settings.timezone=COMMON_TZS[idx];
+  document.getElementById('gen-tz').value=COMMON_TZS[idx];
+  calRender();
+  // Persist
+  fetch(`${API}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)});
 }
 
 async function pollStatus(){
@@ -888,6 +969,9 @@ async function loadSettings(){
   document.getElementById('gen-ctx').value=settings.max_context_chars||40000;
   if(!settings.auto_extract_on_upload)document.getElementById('tog-auto').classList.remove('on');
   if(settings.auto_start)document.getElementById('tog-autostart').classList.add('on');
+  initTimezoneSelect();
+  document.getElementById('gen-tz').value=settings.timezone||'UTC';
+  calRender();
 }
 
 function renderEngines(){
@@ -932,8 +1016,10 @@ async function saveGeneral(){
     settings.auto_start=autoStart;
     await fetch(`${API}/api/auto-start`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({enabled:autoStart})});
   }
+  settings.timezone=document.getElementById('gen-tz').value;
   await fetch(`${API}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)});
   toast('Settings saved','ok');
+  calRender();
 }
 
 function showSettingsSection(id){
@@ -1794,9 +1880,13 @@ function getEnabledSources(){
 }
 
 async function searchWebResearch(){
+  // Reset button state so it always works — no matter previous state
+  const btn = document.getElementById('wr-search-btn');
+  btn.disabled = false; btn.textContent = '🔍 Search';
+  wrSearching = false;
+
   const q = document.getElementById('wr-q').value.trim();
   if (!q) return toast('Enter a research query','err');
-  if (wrSearching) return;
   wrSearching = true;
 
   const yearFrom = document.getElementById('wr-year-from').value;
@@ -1805,9 +1895,8 @@ async function searchWebResearch(){
   const sort = document.getElementById('wr-sort').value || 'citations';
   const sources = getEnabledSources();
 
-  if (!sources.length) return toast('Enable at least one source','err');
+  if (!sources.length) { wrSearching = false; return toast('Enable at least one source','err'); }
 
-  const btn = document.getElementById('wr-search-btn');
   btn.disabled = true; btn.textContent = '⏳ Searching…';
 
   const resultsEl = document.getElementById('wr-results');
@@ -1919,6 +2008,9 @@ function clearResearchResults(){
   document.getElementById('wr-results-body').innerHTML = '';
   document.getElementById('wr-results-header').innerHTML = '';
   wrResultsCache = [];
+  wrSearching = false;
+  const btn = document.getElementById('wr-search-btn');
+  if (btn) { btn.disabled = false; btn.textContent = '🔍 Search'; }
 }
 
 // 👁 READ — show full details in modal
@@ -2165,20 +2257,47 @@ async function loadGraphFilterData(){
   } catch(e) { console.error('Graph filter load error:', e); }
 }
 
-function updateGraphLayer(layer){
+function buildPartialFilterQueryString(upTo) {
+  const layers = [];
+  for(let i=1; i<=upTo; i++){
+    const dim = document.getElementById('gf-dim'+i)?.value;
+    const val = document.getElementById('gf-val'+i)?.value;
+    const op = (i>1) ? (document.getElementById('gf-op'+i)?.value||'AND') : '';
+    if(dim && val) layers.push({dim, val, op});
+  }
+  if(!layers.length) return '';
+  return layers.map((l, idx) => idx===0 ? `${l.dim}:${l.val}` : `${l.op}:${l.dim}:${l.val}`).join('|');
+}
+
+async function refreshLayerDropdown(layer) {
+  const dim = document.getElementById('gf-dim'+layer)?.value;
+  const valSel = document.getElementById('gf-val'+layer);
+  if (!dim || !valSel) return;
+  const context = buildPartialFilterQueryString(layer - 1);
+  let vals;
+  if (context) {
+    try {
+      const d = await fetch(`${API}/api/graph/filters?context=${encodeURIComponent(context)}`).then(r => r.json());
+      const dimData = (d.dimensions||[]).find(d => d.id === dim);
+      vals = dimData ? dimData.values : [];
+    } catch(e) { vals = []; }
+  } else {
+    const dimData = (graphFilterData||[]).find(d => d.id === dim);
+    vals = dimData ? dimData.values : [];
+  }
+  const cur = valSel.value;
+  valSel.innerHTML = '<option value="">— Value —</option>' + vals.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  if (cur && vals.includes(cur)) valSel.value = cur;
+  else valSel.value = '';
+}
+
+async function updateGraphLayer(layer){
   const dim = document.getElementById('gf-dim'+layer)?.value;
   const valSel = document.getElementById('gf-val'+layer);
   if(!valSel) return;
-  if(!dim){
-    valSel.style.display='none';
-    return;
-  }
+  if(!dim){ valSel.style.display='none'; return; }
   valSel.style.display='inline-block';
-  // Populate values from filter data
-  const dimData = (graphFilterData||[]).find(d => d.id === dim);
-  const vals = dimData ? dimData.values : [];
-  valSel.innerHTML = '<option value="">— Value —</option>' +
-    vals.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  await refreshLayerDropdown(layer);
   loadGraph();
 }
 
@@ -2242,6 +2361,12 @@ function buildFilterQueryString(){
 async function loadGraph(){
   const el = document.getElementById('graph-container');
   const st = document.getElementById('graph-stats');
+  // Cascade context-aware dropdowns to downstream layers
+  for(let i=2; i<=graphLayerCount; i++){
+    const dim = document.getElementById('gf-dim'+i)?.value;
+    const valSel = document.getElementById('gf-val'+i);
+    if(dim && valSel) await refreshLayerDropdown(i);
+  }
   const filter = buildFilterQueryString();
   el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">Loading graph data…</div>';
   try {
@@ -2272,6 +2397,13 @@ async function loadGraph(){
   }
 }
 
+function kwColor(cnt){
+  const pal=['#e0eaff','#99c2ff','#66a3ff','#3385ff','#0066ff','#0044cc'];
+  return pal[Math.min(Math.max(cnt-1,0),pal.length-1)];
+}
+function kwWidth(cnt){
+  if(cnt<2)return 0.8;if(cnt<3)return 1.2;if(cnt<4)return 1.8;if(cnt<5)return 2.2;return 2.8;
+}
 function renderGraph(){
   const el = document.getElementById('graph-container');
   if (!graphDataCache) return;
@@ -2304,18 +2436,42 @@ function renderGraph(){
   const edgeMap = {};
   (d.edges||[]).forEach(e => {
     if (!nodeIds.has(e.source) || !nodeIds.has(e.target)) return;
-    const key = `${e.source}|${e.target}|${e.relation}`;
-    if (!edgeMap[key]) edgeMap[key] = { ...e, weight: 1 };
-    else edgeMap[key].weight += 0.5;
+    const key = `${e.source}|${e.target}`;
+    if (!edgeMap[key]) {
+      edgeMap[key] = { ...e, weight: 1, relations: [e.relation],
+        shared_keywords: e.shared_keywords || '',
+        shared_kw_count: e.shared_kw_count || 0,
+        project_label: e.relation === 'same_project' ? e.label : '' };
+    } else {
+      edgeMap[key].weight += 0.5;
+      edgeMap[key].relations.push(e.relation);
+      if (e.shared_keywords) {
+        edgeMap[key].shared_keywords = edgeMap[key].shared_keywords
+          ? edgeMap[key].shared_keywords + ', ' + e.shared_keywords
+          : e.shared_keywords;
+        edgeMap[key].shared_kw_count = (edgeMap[key].shared_kw_count || 0) + (e.shared_kw_count || 0);
+      }
+      if (e.relation === 'same_project' && e.label) edgeMap[key].project_label = e.label;
+    }
   });
-  const edgeColors = { keyword:'#ff6b00', imports:'#6c63ff', calls:'#00d4aa', contains:'#2a2f45', same_project:'#8892a4', rationale_for:'#f5c518', extends:'#ff6b9d', inherits:'#ff6b9d', references:'#b388ff', imports_from:'#6c63ff', shared_keywords:'#ff9f43' };
-  const edges = Object.values(edgeMap).map(e => ({
-    from: e.source, to: e.target,
-    label: e.relation, arrows: 'to',
-    color: { color: edgeColors[e.relation]||'#2a2f45', opacity: e.relation==='same_project'?0.3:0.7 },
-    width: Math.min(Math.max(e.weight||1, 0.3), 3),
-    dashes: e.relation==='same_project' || e.relation==='shared_keywords'
-  }));
+  const edgeColors = { keyword:'#3385ff', imports:'#6c63ff', calls:'#00d4aa', contains:'#2a2f45', same_project:'#8892a4', rationale_for:'#f5c518', extends:'#ff6b9d', inherits:'#ff6b9d', references:'#b388ff', imports_from:'#6c63ff', shared_keywords:'#ff9f43' };
+  const edges = Object.values(edgeMap).map(e => {
+    const isProj = e.relations.includes('same_project');
+    const isKw = e.relations.includes('keyword');
+    const cnt = e.shared_kw_count || 0;
+    let rel = 'keyword';
+    if (isProj && !isKw) rel = 'same_project';
+    else if (isProj && isKw) rel = 'keyword+project';
+    return {
+      from: e.source, to: e.target,
+      label: rel === 'keyword' ? '' : (e.project_label || e.label || e.relation), arrows: '',
+      relation: rel, source_file: e.source_file || '', shared_keywords: e.shared_keywords || '', shared_kw_count: cnt,
+      project_label: e.project_label || e.label || '',
+      color: { color: rel==='same_project' ? edgeColors.same_project : kwColor(cnt||1), opacity: rel==='same_project'?0.3:0.9 },
+      width: rel==='same_project' ? 0.5 : kwWidth(cnt||1),
+      dashes: rel==='same_project' ? true : (isKw ? [3,6] : false)
+    };
+  });
   if (!nodes.length) {
     el.innerHTML = '<div style="text-align:center;padding:60px;color:var(--muted)">No nodes match active filters.</div>';
     return;
@@ -2323,7 +2479,7 @@ function renderGraph(){
   const data = { nodes: new vis.DataSet(nodes), edges: new vis.DataSet(edges) };
   const opts = {
     nodes: { font: { face:'Inter,system-ui,sans-serif' }, borderWidth: 2 },
-    edges: { font: { color:'#8892a4', size:7, strokeWidth:0 }, smooth: { type:'curvedCW', roundness:0.12 } },
+    edges: { font: { color:'#8892a4', size:7, strokeWidth:0 }, smooth: { type:'continuous' } },
     physics: { solver:'forceAtlas2Based', forceAtlas2Based:{ gravitationalConstant:-30, centralGravity:0.003, springLength:200, springConstant:0.015, damping:0.45 }, stabilization:{ iterations:150 } },
     interaction: { hover:true, tooltipDelay:150, navigationButtons:true, keyboard:true },
     groups: Object.fromEntries(Object.entries(CAT_COLORS).map(([k,v]) => [k, { shape:v.shape, color:{ background:v.bg, border:v.bd } }]))
@@ -2331,27 +2487,74 @@ function renderGraph(){
   if (graphNetwork) graphNetwork.destroy();
   graphNetwork = new vis.Network(el, data, opts);
   graphNetwork.on('click', p => {
-    if (!p.nodes.length) return;
-    const n = nodes.find(x => x.id === p.nodes[0]);
-    if (!n) return;
-    const rp = n.relPath;
-    if (rp) {
-      // Extract project from relPath (e.g. "01-PROJECTS/P1-HEI-CULTURE/02-EXTRACTIONS/P001 - ...")
-      const parts = rp.split(/[\\\/]/);
-      let project = '';
-      let filename = parts[parts.length-1] || '';
-      // Look for project folder pattern
-      const projIdx = parts.findIndex(p => p.startsWith('P') && p.includes('-'));
-      if (projIdx >= 0) project = parts[projIdx];
-      else if (parts[0] === 'INCOMING') project = 'INCOMING';
-      else project = parts[0] || '';
-      // Try to open the .md file
-      fetch(`${API}/api/graph/file?rel_path=${encodeURIComponent(rp)}`).then(r => r.json()).then(d2 => {
-        if (d2.content) openModal(n.label, d2.content, project, filename);
-        else toast('Cannot open file','err');
-      }).catch(() => toast('Error loading file','err'));
-    } else {
-      toast(n.title || n.label, 'ok');
+    // Node click first (paper details + go to library)
+    if (p.nodes.length) {
+      const n = nodes.find(x => x.id === p.nodes[0]);
+      if (!n) return;
+      const rp = n.relPath;
+      if (rp) {
+        const parts = rp.split(/[\\\/]/);
+        let project = '';
+        let filename = parts[parts.length-1] || '';
+        const projIdx = parts.findIndex(p => p.startsWith('P') && p.includes('-'));
+        if (projIdx >= 0) project = parts[projIdx];
+        else if (parts[0] === 'INCOMING') project = 'INCOMING';
+        else project = parts[0] || '';
+        fetch(`${API}/api/graph/file?rel_path=${encodeURIComponent(rp)}`).then(r => r.json()).then(d2 => {
+          if (d2.content) openModal(n.label, d2.content, project, filename);
+          else toast('Cannot open file','err');
+        }).catch(() => toast('Error loading file','err'));
+      } else {
+        toast(n.title || n.label, 'ok');
+      }
+      return;
+    }
+    // Edge click → show connection info
+    if (p.edges.length) {
+      const edge = graphNetwork.body.data.edges.get(p.edges[0]);
+      if (!edge) return;
+      const fn = graphNetwork.body.data.nodes.get(edge.from);
+      const tn = graphNetwork.body.data.nodes.get(edge.to);
+      let dimLabel = '', paper1 = '', paper2 = '';
+      if ((fn?.id||'').startsWith('filter:')) {
+        dimLabel = fn.label || edge.label || edge.relation || '';
+        paper1 = tn?.label || '';
+        const all = [];
+        graphNetwork.body.data.edges.get().forEach(e => {
+          if (e.from === edge.from) {
+            const n = graphNetwork.body.data.nodes.get(e.to);
+            if (n && n.label) all.push(n.label);
+          }
+        });
+        paper2 = all.filter(x => x !== paper1).join('\n- ');
+      } else if ((tn?.id||'').startsWith('filter:')) {
+        dimLabel = tn.label || edge.label || edge.relation || '';
+        paper1 = fn?.label || '';
+        const all = [];
+        graphNetwork.body.data.edges.get().forEach(e => {
+          if (e.to === edge.to) {
+            const n = graphNetwork.body.data.nodes.get(e.from);
+            if (n && n.label) all.push(n.label);
+          }
+        });
+        paper2 = all.filter(x => x !== paper1).join('\n- ');
+      } else {
+        paper1 = fn?.label || '';
+        paper2 = tn?.label || '';
+        if (edge.relation === 'keyword') {
+          const cnt = edge.shared_kw_count || edge.shared_keywords?.split(',').length || 1;
+          dimLabel = '🔑 ' + cnt + ' shared keyword' + (cnt>1?'s':'');
+        } else if (edge.relation === 'same_project') {
+          dimLabel = '📁 ' + (edge.label || 'Same Project');
+        } else if (edge.relation === 'keyword+project') {
+          const cnt = edge.shared_kw_count || edge.shared_keywords?.split(',').length || 1;
+          dimLabel = '📁 ' + (edge.project_label || edge.label || 'Project') + ' · 🔑 ' + cnt + ' shared keyword' + (cnt>1?'s':'');
+        }
+      }
+      const kwLine = edge.shared_keywords ? `\n\n**Shared keywords:** ${edge.shared_keywords}` : '';
+      const content = `**${dimLabel}**\n\n**Papers:**\n- ${paper1}${paper2 ? '\n- ' + paper2 : ''}${kwLine}`;
+      openModal(dimLabel, content, '', '');
+      return;
     }
   });
   graphNetwork.on('hoverNode', p => {

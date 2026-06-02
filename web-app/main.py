@@ -103,7 +103,8 @@ DEFAULT_SETTINGS = {
     "system_name": "ResearchPilot",
     "chats_folder": "99-SYSTEM-BACKEND/chats",
     "skills_folder": "00-SYSTEM-CORE/skills",
-    "auto_start": False
+    "auto_start": False,
+    "timezone": "UTC"
 }
 
 def load_settings() -> dict:
@@ -1384,7 +1385,8 @@ async def library(project: str = None):
             continue
         if project and proj.name != project:
             continue
-        scan(proj / "01-LIBRARY", proj.name)
+        for subdir in ["01-LIBRARY", "02-EXTRACTIONS", "99-META"]:
+            scan(proj / subdir, proj.name)
     scan(INCOMING, "INCOMING")
     return result
 
@@ -1859,6 +1861,8 @@ async def get_file(project: str, filename: str):
 # ── Graph: Multi-Dimension Knowledge Graph ──
 GRAPHIFY_DIR = BASE / "graphify-out" / "cache" / "ast"
 
+EXCLUDED_FILENAMES = {"readme.md", "session-summary.md", "connection.md", "project-manifest.md", "pdf-workflow.md", "reference-library.md", "project-changelog.md"}
+
 def _cat(filepath: Path) -> str:
     p = str(filepath.resolve()).lower()
     if "99-system-backend" in p and "chats" in p: return "chat"
@@ -1867,6 +1871,8 @@ def _cat(filepath: Path) -> str:
     if "00-system-core" in p: return "system"
     if "99-system-backend" in p: return "system"
     if "graphify-out" in p: return "system"
+    if "99-meta" in p: return "system"
+    if filepath.name.lower() in EXCLUDED_FILENAMES: return "system"
     if filepath.suffix in (".py", ".js", ".json", ".bat", ".ps1"): return "code"
     if filepath.suffix == ".md": return "research"
     return "other"
@@ -1896,9 +1902,7 @@ def _parse_metadata(text: str) -> dict:
 def _scan_md_files() -> tuple:
     """Scan all .md research files, returning nodes + edges."""
     nodes, edges, seen = [], [], set()
-    proj_files, file_meta, file_keywords = {}, {}, {}
-    STOP = {"the","a","an","and","or","but","in","on","at","to","for","of","with","by","from","as","is","was","are","were","be","been","being","have","has","had","do","does","did","will","would","can","could","may","might","shall","should","not","no","nor","this","that","these","those","it","its","they","them","their","we","us","our","you","your","he","him","his","she","her","all","each","every","both","few","many","much","some","any","research","paper","study","analysis","using","based","also","between","under","over","after","before","when","while","during","through","about","into","within","without","across","among","against"}
-    def xkw(t): return {w for w in re.findall(r'[a-zA-Z][a-zA-Z]{3,}', t.lower()) if w not in STOP}
+    proj_files, file_meta = {}, {}
 
     for root in [CORE, BACKEND, INCOMING]:
         if root.exists():
@@ -1922,28 +1926,32 @@ def _scan_md_files() -> tuple:
                         proj_files.setdefault(root_dir.name, []).append(nid)
                     # Parse metadata + keywords for extraction/research files
                     if cat in ("research", "extraction"):
-                        try:
-                            txt = f.read_text(encoding="utf-8", errors="ignore")
-                            file_meta[nid] = _parse_metadata(txt)
-                            kw = xkw(txt)
-                            if kw: file_keywords[nid] = kw
-                        except: pass
+                            try:
+                                txt = f.read_text(encoding="utf-8", errors="ignore")
+                                file_meta[nid] = _parse_metadata(txt)
+                            except: pass
 
     # Project cluster edges
     for pkey, flist in proj_files.items():
         for i in range(1, min(len(flist), 30)):
-            edges.append({"source": flist[0], "target": flist[i], "relation": "same_project", "weight": 0.3, "source_file": pkey, "source_location": ""})
-    # Shared-keyword edges between research/extraction files
-    kwl = list(file_keywords.items())
-    for i in range(len(kwl)):
-        a, ka = kwl[i]
-        for j in range(i + 1, len(kwl)):
-            b, kb = kwl[j]
-            common = ka & kb
-            if len(common) >= 5:
-                score = len(common) / max(len(ka | kb), 1)
-                if score >= 0.05:
-                    edges.append({"source": a, "target": b, "relation": "shared_keywords", "weight": round(score * 5, 1), "source_file": ", ".join(sorted(common)[:5]), "source_location": ""})
+            edges.append({"source": flist[0], "target": flist[i], "relation": "same_project", "weight": 0.3, "source_file": pkey, "label": pkey, "source_location": ""})
+    # Keyword edges: one edge per paper pair listing all shared keywords
+    kw_data = _load_keywords()
+    kw_to_files = {}
+    for word, v in kw_data.items():
+        for fp in v.get("files", []):
+            nid = f"file:{fp}"
+            if nid in file_meta:
+                kw_to_files.setdefault(word, []).append(nid)
+    pair_kws = {}
+    for word, nids in kw_to_files.items():
+        for i in range(len(nids)):
+            for j in range(i + 1, len(nids)):
+                pair = tuple(sorted([nids[i], nids[j]]))
+                pair_kws.setdefault(pair, []).append(word)
+    for (a, b), kws in pair_kws.items():
+        cnt = len(kws)
+        edges.append({"source": a, "target": b, "relation": "keyword", "weight": min(cnt / 10, 1.0), "label": "", "shared_keywords": ", ".join(sorted(kws)[:15]), "shared_kw_count": cnt, "source_file": ", ".join(sorted(kws)[:5]), "source_location": ""})
     return nodes, edges, file_meta
 
 def _build_filter_edges(file_meta: dict, filter_by: str) -> list:
@@ -1968,9 +1976,45 @@ def _build_filter_edges(file_meta: dict, filter_by: str) -> list:
     return edges
 
 @app.get("/api/graph/filters")
-async def get_graph_filters():
-    """Return available filter dimensions and their values from metadata."""
+async def get_graph_filters(context: str = ""):
+    """Return available filter dimensions and their values from metadata.
+    If context is provided (e.g. "year:2025"), only return values present
+    in files matching that context filter.
+    """
     _, _, file_meta = _scan_md_files()
+
+    # Apply context filter if provided
+    if context and context != "all":
+        multi_layers = _parse_multi_layer_filter(context)
+        matched_files = None
+        for layer in multi_layers:
+            dim = layer["dim"]
+            val = layer["val"].lower().strip()
+            op = layer.get("op", "AND")
+            layer_matched = set()
+            if dim == "keyword":
+                kw_data = _load_keywords()
+                for word, v in kw_data.items():
+                    if word.lower().strip() == val:
+                        for fp in v.get("files", []):
+                            nid = f"file:{fp}"
+                            if nid in file_meta:
+                                layer_matched.add(nid)
+                        break
+            else:
+                for nid, m in file_meta.items():
+                    mv = m.get(dim, "").strip().lower()
+                    if mv and val in mv:
+                        layer_matched.add(nid)
+            if matched_files is None:
+                matched_files = layer_matched
+            elif op == "AND":
+                matched_files &= layer_matched
+            else:
+                matched_files |= layer_matched
+        if matched_files is not None:
+            file_meta = {nid: m for nid, m in file_meta.items() if nid in matched_files}
+
     dims = {"author": set(), "year": set(), "journal": set(), "quartile": set(), "method": set(), "framework": set()}
     for nid, m in file_meta.items():
         for d in dims:
@@ -2000,15 +2044,11 @@ def _parse_multi_layer_filter(filter_str: str):
             continue
         segs = p.split(":", 1)
         if len(segs) == 2:
-            # First layer: dim:val
-            layers.append({"dim": segs[0], "val": segs[1], "op": ""})
-        elif len(segs) == 1 and ":" in p:
-            # Might be op:dim:val
-            segs3 = p.split(":", 2)
-            if len(segs3) == 3 and segs3[0] in ("AND", "OR"):
-                layers.append({"dim": segs3[1], "val": segs3[2], "op": segs3[0]})
+            if segs[0] in ("AND", "OR"):
+                sub = segs[1].split(":", 1)
+                layers.append({"dim": sub[0], "val": sub[1] if len(sub) > 1 else "", "op": segs[0]})
             else:
-                layers.append({"dim": segs3[0] if len(segs3) > 0 else "", "val": segs3[1] if len(segs3) > 1 else "", "op": ""})
+                layers.append({"dim": segs[0], "val": segs[1], "op": ""})
     return layers
 
 @app.get("/api/graph")
@@ -2039,17 +2079,16 @@ async def get_graph_data(filter: str = "all"):
 
     # If no multi-layer filter, use old single-filter logic
     if not is_multi:
-        # Old filter logic
-        if filter != "all":
-            keep_types = {"research", "extraction", "chat", "keyword"}
-            code_nodes = [n for n in code_nodes if n.get("file_type") in keep_types]
-            md_nodes = [n for n in md_nodes if n.get("file_type") in keep_types]
+        # Always exclude system/code/other from base node set — only show research papers
+        keep_types = {"research", "extraction", "chat"}
+        if filter == "keyword":
+            keep_types.add("keyword")
+        code_nodes = [n for n in code_nodes if n.get("file_type") in keep_types]
+        md_nodes = [n for n in md_nodes if n.get("file_type") in keep_types]
         all_nodes = code_nodes + md_nodes
         filter_edges = []
         if filter == "all":
             filter_edges = list(md_edges)
-        elif filter == "shared_keywords":
-            filter_edges = [e for e in md_edges if e["relation"] == "shared_keywords"]
         elif filter == "keyword":
             kw_data = _load_keywords()
             for word, v in kw_data.items():
@@ -2057,6 +2096,11 @@ async def get_graph_data(filter: str = "all"):
                 all_nodes.append({"id": nid, "label": word, "file_type": "keyword", "source_file": str(KEYWORDS_FILE), "source_location": "L1", "rel_path": ""})
                 for fp in v.get("files", [])[:20]:
                     t = f"file:{fp}"
+                    fpath = BASE / fp
+                    if fpath.exists():
+                        fcat = _cat(fpath)
+                        if fcat not in ("research", "extraction"):
+                            continue
                     filter_edges.append({"source": nid, "target": t, "relation": "keyword", "weight": 0.8, "source_file": str(KEYWORDS_FILE), "source_location": ""})
         elif filter in ("author", "year", "journal", "quartile", "method", "framework"):
             filter_edges = _build_filter_edges(file_meta, filter)
@@ -2085,16 +2129,21 @@ async def get_graph_data(filter: str = "all"):
             val = layer["val"].lower().strip()
             op = layer.get("op", "AND")
 
-            # Get files matching this dimension=value from file_meta
+            # Get files matching this dimension=value
             layer_matched = set()
-            for nid, m in file_meta.items():
-                mv = m.get(dim, "").strip().lower()
-                if dim == "keyword":
-                    # Keywords are comma-separated
-                    kws = [x.strip().lower() for x in mv.split(",")]
-                    if val in kws:
-                        layer_matched.add(nid)
-                else:
+            if dim == "keyword":
+                # Use keywords.json for keyword matching
+                kw_data = _load_keywords()
+                for word, v in kw_data.items():
+                    if word.lower().strip() == val:
+                        for fp in v.get("files", []):
+                            nid = f"file:{fp}"
+                            if nid in file_meta:
+                                layer_matched.add(nid)
+                        break
+            else:
+                for nid, m in file_meta.items():
+                    mv = m.get(dim, "").strip().lower()
                     if mv and val in mv:
                         layer_matched.add(nid)
 
@@ -2111,10 +2160,13 @@ async def get_graph_data(filter: str = "all"):
         # Build filtered node/edge sets
         keep_nids = set()
         for n in md_nodes:
-            if n.get("id") and n["id"].replace("file:", "") in matched_files:
+            if n.get("id") and n["id"] in matched_files:
                 keep_nids.add(n["id"])
         md_nodes_filtered = [n for n in md_nodes if n["id"] in keep_nids]
         md_edges_filtered = [e for e in md_edges if e.get("source") in keep_nids and e.get("target") in keep_nids]
+        # When keyword filter is active, hide project edges (only show keyword connections)
+        if any(l["dim"] == "keyword" for l in multi_layers):
+            md_edges_filtered = [e for e in md_edges_filtered if e.get("relation") != "same_project"]
 
         # Also add filter-value nodes for each layer
         filter_val_nodes = []
@@ -2130,8 +2182,9 @@ async def get_graph_data(filter: str = "all"):
                     md_edges_filtered.append({"source": vnid, "target": n["id"], "relation": dim,
                         "weight": 0.5, "source_file": vnid, "source_location": ""})
 
-        # Strip non-research nodes from code_nodes for cleaner view
+        # Strip non-research nodes from code_nodes and md_nodes for cleaner view
         code_nodes_filtered = [n for n in code_nodes if n.get("file_type") in {"research", "extraction", "chat", "keyword"}]
+        md_nodes_filtered = [n for n in md_nodes_filtered if n.get("file_type") in {"research", "extraction", "chat"}]
 
         all_nodes = code_nodes_filtered + md_nodes_filtered + filter_val_nodes
         filter_edges = md_edges_filtered
@@ -2144,6 +2197,15 @@ async def get_graph_data(filter: str = "all"):
         if k not in edge_keys:
             edge_keys.add(k)
             all_edges.append(e)
+
+    # Strip edges touching system/code/other nodes (only research/extraction/chat edges)
+    sys_types = {"system", "code", "other"}
+    ntypes = {}
+    for n in all_nodes:
+        ntypes[n["id"]] = n.get("file_type", "other")
+    all_edges = [e for e in all_edges
+        if ntypes.get(e.get("source", ""), "other") not in sys_types
+        and ntypes.get(e.get("target", ""), "other") not in sys_types]
 
     cats = {}
     for n in all_nodes:
@@ -2259,6 +2321,9 @@ async def scan_keywords():
     special_terms = {"q1","q2","q3","q4","scopus","wos","researchpilot","heis","p1","p2","ai","nlp","rag","llm","lstm","cnn","rnn","bert","gpt","tfidf","svm","kmeans","pca","hei","culture","publication","extraction","methodology","qualitative","quantitative","mixed","theoretical","framework","limitations","contribution"}
     for f in BASE.rglob("*.md"):
         try:
+            cat = _cat(f)
+            if cat in ("system", "code", "chat", "other"):
+                continue
             txt = f.read_text(encoding="utf-8", errors="ignore").lower()
             rel = str(f.relative_to(BASE))
             # Extract words (3+ chars)
@@ -2283,12 +2348,13 @@ async def scan_keywords():
             existing = set(kw[w].get("files", []))
             existing.update(file_words.get(w, set()))
             kw[w]["files"] = sorted(existing)
+    # Purge any system/chat/code file references from existing keywords
+    for word, v in kw.items():
+        files = v.get("files", [])
+        clean = [fp for fp in files if _cat(BASE / fp) in ("research", "extraction")]
+        if len(clean) != len(files):
+            kw[word]["files"] = clean
     _save_keywords(kw)
-    # Clean up note prefixes for display
-    for v in kw.values():
-        n = v.get("note", "")
-        if n.startswith("auto") and "score:" in n:
-            pass  # keep for auto-scanned
     return {"ok": True, "added": added, "total": len(kw)}
 
 @app.get("/api/keywords/search")
@@ -2408,6 +2474,52 @@ def _clean_authors(authors_list: list, source: str) -> list:
             names.append(n)
     return names
 
+
+_STOPWORDS = set("the a an of in to and for is on that this with by as are be was were at from or but not have has had its their our your his her its all each which what who when where why how do does did will would can could may might shall should about into over after before between under above below up down out off only just also very too so some any such more most many much other than then them these those".split())
+
+
+def _extract_keywords(query: str) -> list:
+    """Extract meaningful keywords from a search query."""
+    import re
+    words = re.findall(r"[a-zA-Z]+(?:[-&][a-zA-Z]+)*", query.lower())
+    keywords = [w for w in words if len(w) > 2 and w not in _STOPWORDS]
+    seen = set()
+    unique = []
+    for k in keywords:
+        if k not in seen:
+            seen.add(k)
+            unique.append(k)
+    multi_word = re.findall(r'"([^"]+)"', query)
+    for mw in multi_word:
+        mw_clean = mw.strip().lower()
+        if mw_clean and mw_clean not in seen:
+            seen.add(mw_clean)
+            unique.append(mw_clean)
+    return unique
+
+
+def _score_keyword_match(keywords: list, title: str, abstract: str) -> int:
+    """Score a result by how many query keywords appear in its title/abstract."""
+    title_lower = (title or "").lower()
+    abstract_lower = (abstract or "").lower()
+    combined = title_lower + " " + abstract_lower
+    score = 0
+    for kw in keywords:
+        if kw in title_lower:
+            score += 3
+        elif kw in abstract_lower:
+            score += 1
+    return score
+
+
+def _build_optimized_query(keywords: list, raw_query: str) -> str:
+    """Build an optimized query string from extracted keywords."""
+    if not keywords:
+        return raw_query
+    quoted = [f'"{k}"' for k in keywords[:5]]
+    return " ".join(quoted)
+
+
 async def _search_openalex(q: str, year_from: str, year_to: str, max_results: int) -> list:
     try:
         params = {"search": q, "per_page": max_results}
@@ -2500,9 +2612,23 @@ async def _search_semantic_scholar(q: str, year_from: str, year_to: str, max_res
         params = {"query": q, "limit": max_results, "fields": fields}
         if year_from or year_to:
             params["year"] = f"{year_from or '1900'}-{year_to or '2030'}"
+        headers = {"User-Agent": "ResearchPilot-ResearchAssistant/2.0"}
+        # Use API key if available (via env or settings — loaded from .env)
+        api_key = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "")
+        if api_key:
+            headers["x-api-key"] = api_key
         async with httpx.AsyncClient(timeout=15.0) as c:
-            r = await c.get("https://api.semanticscholar.org/graph/v1/paper/search", params=params)
+            r = await c.get("https://api.semanticscholar.org/graph/v1/paper/search", params=params, headers=headers)
+            # Exponential backoff for rate limiting (up to 3 retries)
+            retries = 0
+            while r.status_code == 429 and retries < 3:
+                wait = 1.5 * (retries + 1)
+                print(f"[Research] Semantic Scholar rate limited, retrying in {wait}s...")
+                await asyncio.sleep(wait)
+                r = await c.get("https://api.semanticscholar.org/graph/v1/paper/search", params=params, headers=headers)
+                retries += 1
             if r.status_code != 200:
+                print(f"[Research] Semantic Scholar returned {r.status_code}")
                 return []
             data = r.json()
         results = []
@@ -2539,20 +2665,31 @@ async def _search_google_scholar(q: str, year_from: str, year_to: str, max_resul
         search_query = _scholarly.scholarly.search_pubs(q)
         results = []
         count = 0
-        while count < max_results:
+        # Limit to 5 max to avoid long timeouts (Google Scholar is inherently slow)
+        limit = min(max_results, 5)
+        max_attempts = limit * 8  # prevent infinite loop when year filter skips all results
+        attempts = 0
+        while count < limit and attempts < max_attempts:
+            attempts += 1
             try:
                 pub = await asyncio.wait_for(
                     loop.run_in_executor(None, lambda: next(search_query)),
-                    timeout=10.0
+                    timeout=5.0
                 )
             except StopIteration:
                 break
+            except asyncio.TimeoutError:
+                continue  # skip slow paper, try next
             except Exception:
-                break
+                continue  # skip error, try next
             if not pub or not pub.get("bib"):
                 continue
             bib = pub["bib"]
-            year = str(bib.get("pub_year", ""))
+            raw_year = bib.get("pub_year", "")
+            try:
+                year = str(int(raw_year))
+            except (ValueError, TypeError):
+                year = ""
             # Year filter
             if year_from and year and int(year) < int(year_from):
                 continue
@@ -2587,13 +2724,20 @@ async def _search_google_scholar(q: str, year_from: str, year_to: str, max_resul
 
 async def _search_pubmed(q: str, year_from: str, year_to: str, max_results: int) -> list:
     try:
-        # Step 1: Search for IDs
-        query_parts = [f'({q})']
+        # Step 1: Search for IDs — build clean keyword query for PubMed
+        keywords = _extract_keywords(q)
+        if keywords:
+            term_parts = [f'({kw}[Title/Abstract])' for kw in keywords[:8]]
+        else:
+            term_parts = [f'({q})']
+        query_parts = ["+AND+".join(term_parts)]
         if year_from:
             query_parts.append(f'("{year_from}"[Date - Publication] : "{year_to or "2030"}"[Date - Publication])')
         elif year_to:
             query_parts.append(f'("1900"[Date - Publication] : "{year_to}"[Date - Publication])')
         query_str = "+AND+".join(query_parts).replace(' ', '+')
+        import urllib.parse
+        query_str = urllib.parse.quote(query_str, safe='+()[]":,-')
         search_url = f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term={query_str}&retmax={max_results}&retmode=json"
         headers = {"User-Agent": "ResearchPilot-ResearchAssistant/2.0"}
         async with httpx.AsyncClient(timeout=15.0) as c:
@@ -2693,25 +2837,46 @@ async def research_web_search(
     if not q:
         return {"results": [], "total": 0}
     max_results = min(max_results, 50)
+
+    # Normalize year range — auto-swap if inverted (from > to)
+    try:
+        yf = int(year_from) if year_from else None
+        yt = int(year_to) if year_to else None
+        if yf is not None and yt is not None and yf > yt:
+            year_from, year_to = str(yt), str(yf)
+    except (ValueError, TypeError):
+        pass
+
+    # Extract keywords from query for smarter matching
+    keywords = _extract_keywords(q)
+    opt_query = _build_optimized_query(keywords, q)
+
     source_list = [s.strip().lower() for s in sources.split(",") if s.strip()]
     tasks = {}
+
+    # Use optimized query for better keyword matching
     if "openalex" in source_list:
-        tasks["openalex"] = _search_openalex(q, year_from, year_to, max_results)
+        tasks["openalex"] = _search_openalex(opt_query, year_from, year_to, min(max_results * 2, 50))
     if "crossref" in source_list:
-        tasks["crossref"] = _search_crossref(q, year_from, year_to, max_results)
+        tasks["crossref"] = _search_crossref(opt_query, year_from, year_to, min(max_results * 2, 50))
     if "semantic" in source_list:
         tasks["semantic"] = _search_semantic_scholar(q, year_from, year_to, max_results)
     if "pubmed" in source_list:
         tasks["pubmed"] = _search_pubmed(q, year_from, year_to, max_results)
     if "google_scholar" in source_list:
-        tasks["google_scholar"] = _search_google_scholar(q, year_from, year_to, max_results)
+        tasks["google_scholar"] = _search_google_scholar(q, year_from, year_to, min(max_results, 5))
 
     t0 = datetime.datetime.now()
     results_map = {}
+    source_errors = {}
     if tasks:
-        gathered = await asyncio.gather(*tasks.values())
+        gathered = await asyncio.gather(*tasks.values(), return_exceptions=True)
         for (sk, sr), res in zip(tasks.items(), gathered):
-            results_map[sk] = res
+            if isinstance(res, Exception):
+                source_errors[sk] = str(res)
+                results_map[sk] = []
+            else:
+                results_map[sk] = res
 
     combined = []
     for sk, sr in results_map.items():
@@ -2729,13 +2894,17 @@ async def research_web_search(
             clean.append(r)
     deduped = clean
 
+    # Score each result by keyword match in title + abstract
+    for r in deduped:
+        r["kw_score"] = _score_keyword_match(keywords, r.get("title", ""), r.get("abstract", ""))
+
     # Apply sorting
     if sort == "date":
-        deduped.sort(key=lambda x: x.get("year", "") or "0", reverse=True)
+        deduped.sort(key=lambda x: (x.get("year", "") or "0"), reverse=True)
     elif sort == "citations":
-        deduped.sort(key=lambda x: x.get("citations", 0) or 0, reverse=True)
-    else:  # relevance — keep original order (API returns relevance-sorted)
-        pass
+        deduped.sort(key=lambda x: (x.get("kw_score", 0) * 100 + x.get("citations", 0) or 0), reverse=True)
+    else:  # relevance — keyword match score first, then citations
+        deduped.sort(key=lambda x: (x.get("kw_score", 0), x.get("citations", 0) or 0), reverse=True)
 
     t1 = datetime.datetime.now()
     elapsed = f"{(t1 - t0).total_seconds():.1f}s"
@@ -2744,7 +2913,9 @@ async def research_web_search(
         "results": deduped[:max_results],
         "total": len(deduped),
         "sources": {k: len(v) for k, v in results_map.items()},
-        "query_time": elapsed
+        "source_errors": source_errors,
+        "query_time": elapsed,
+        "keywords": keywords
     }
 
 @app.post("/api/research/import")
