@@ -146,16 +146,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 /* System Graph */
 .sys-node{position:absolute;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;transition:.3s;z-index:3}
 .sys-node:hover{transform:scale(1.1)}
-.sys-dot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;position:relative}
-.sys-dot.pulse::after{content:'';position:absolute;inset:-3px;border-radius:50%;animation:sysPulse 2s ease-in-out infinite;border:2px solid}
+.sys-dot{width:41px;height:41px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;position:relative}
+.sys-dot.pulse::after{content:'';position:absolute;inset:-5px;border-radius:50%;animation:sysPulse 2s ease-in-out infinite;border:3px solid}
 .sys-dot.ok{background:rgba(0,212,170,.2);border:2px solid var(--a2);color:var(--a2)}
 .sys-dot.ok.pulse::after{border-color:var(--a2)}
 .sys-dot.warn{background:rgba(245,197,24,.2);border:2px solid var(--gold);color:var(--gold)}
 .sys-dot.warn.pulse::after{border-color:var(--gold)}
 .sys-dot.off{background:rgba(255,77,109,.15);border:2px solid var(--red);color:var(--red)}
-.sys-label{font-size:9px;font-weight:600;color:var(--muted);white-space:nowrap;text-align:center;line-height:1.2}
-.sys-label .stat{font-size:8px;color:var(--a2);display:block;font-weight:400}
+.sys-label{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;text-align:center;line-height:1.3}
+.sys-label .stat{font-size:10px;color:var(--a2);display:block;font-weight:400}
 .sys-line{position:absolute;height:2px;border-radius:2px;transform-origin:0 50%;opacity:.4;pointer-events:none;z-index:1}
+.sys-connector{width:20px;height:2px;border-top:2px dashed rgba(108,99,255,.4);flex-shrink:0}
 @keyframes sysPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:0;transform:scale(1.6)}}
 /* skills */
 .skill-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
@@ -230,13 +231,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 <nav>
   <div class="tab on" onclick="go('dashboard')">🏠 Home</div>
   <div class="tab" onclick="go('chat')">💬 Chat</div>
-  <div class="tab" onclick="go('upload')">📤 Upload</div>
   <div class="tab" onclick="go('research')">🔍 Web Research</div>
+  <div class="tab" onclick="go('projects')">📁 Projects</div>
+  <div class="tab" onclick="go('upload')">📤 Upload</div>
   <div class="tab" onclick="go('library')">📚 Library</div>
-  <div class="tab" onclick="go('memory')">🧠 Memory</div>
-  <div class="tab" onclick="go('plugins')">🔌 Plugins</div>
   <div class="tab" onclick="go('graph')">🕸 Graph</div>
-  <div class="tab" onclick="go('obsidian')">🪨 Obsidian</div>
+  <div class="tab" onclick="go('memory')">🧠 Memory</div>
   <div class="tab" onclick="go('settings')">⚙️ Settings</div>
 </nav>
 
@@ -296,20 +296,22 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="stat-c d"><div class="lbl">Extractions</div><div class="val" id="s-e">—</div></div>
       <div class="stat-c"><div class="lbl">Chats</div><div class="val" id="s-c">—</div></div>
     </div>
-    <!-- System Graph -->
-    <div class="card" style="flex:1;overflow:hidden;position:relative;min-height:180px">
-      <div class="card-t" style="padding:10px 14px 4px;margin:0">⚡ System Pulse</div>
-      <div id="sys-graph" style="width:100%;height:calc(100% - 32px);position:relative;overflow:hidden"></div>
+    <!-- System Graph + Placeholder -->
+    <div style="display:flex;gap:12px;flex:1;min-height:180px;overflow:hidden">
+      <div class="card" style="flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column">
+        <div class="card-t" style="padding:10px 14px 4px;margin:0">⚡ System Pulse</div>
+        <div id="sys-graph" style="flex:1;position:relative;overflow:hidden"></div>
+      </div>
+      <div class="card" style="flex:1;overflow:hidden;position:relative;display:flex;flex-direction:column">
+        <div class="card-t" style="padding:10px 14px 4px;margin:0">💡 Something</div>
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:16px;color:var(--muted);font-size:13px">Coming soon…</div>
+      </div>
     </div>
     <!-- Quote of the Day -->
-    <div class="card" style="flex-shrink:0;padding:12px 16px;text-align:center">
-      <div id="quote-text" style="font-size:14px;font-style:italic;line-height:1.6;color:var(--text);margin-bottom:4px">Loading…</div>
-      <div id="quote-author" style="font-size:12px;color:var(--a2);font-weight:500"></div>
-      <div style="margin-top:6px;display:flex;gap:8px;justify-content:center;align-items:center">
-        <span id="quote-day" class="text-xs text-m" style="font-size:10px"></span>
-        <button class="btn btn-g btn-s" onclick="refreshQuote()" style="font-size:10px;padding:3px 10px">⟳ New Quote</button>
-      </div>
-      <div id="dash-debug" style="font-size:9px;color:var(--muted);margin-top:4px;opacity:.5"></div>
+    <div class="card" style="flex-shrink:0;padding:8px 16px;text-align:center;margin-top:auto;display:flex;align-items:center;gap:6px;justify-content:center;flex-wrap:wrap">
+      <div id="quote-text" style="font-size:12px;font-style:italic;line-height:1.4;color:var(--text)">Loading…</div>
+      <div id="quote-author" style="font-size:11px;color:var(--a2);font-weight:500"></div>
+      <button class="btn btn-g btn-s" onclick="refreshQuote()" style="font-size:9px;padding:2px 8px">⟳</button>
     </div>
   </div>
 </div>
@@ -493,6 +495,21 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
   </div>
 </div>
 
+<!-- PROJECTS -->
+<div class="page" id="page-projects">
+  <div class="ph"><h2>📁 Project Management</h2></div>
+  <div class="pb" style="max-width:640px">
+    <div class="card" style="padding:16px;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:600;margin-bottom:10px">+ Create New Project</div>
+      <div class="form-row"><label>Project Name (no spaces)</label><input type="text" id="np-name" class="w100" placeholder="e.g. P3-CYBERSECURITY"></div>
+      <div class="form-row"><label>Focus</label><input type="text" id="np-focus" class="w100" placeholder="Short description of research focus"></div>
+      <div class="form-row"><label>Goal</label><input type="text" id="np-goal" class="w100" placeholder="Publication target or outcome"></div>
+      <button class="btn btn-p" onclick="createProject()">📁 Create Project</button>
+    </div>
+    <div id="proj-list-page"></div>
+  </div>
+</div>
+
 <!-- LIBRARY -->
 <div class="page" id="page-library">
   <div class="ph">
@@ -522,81 +539,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <thead><tr><th>Source</th><th>Project</th><th>File</th><th>Size</th><th>Modified</th><th>Actions</th></tr></thead>
       <tbody id="mem-body"></tbody>
     </table>
-  </div>
-</div>
-
-<!-- PLUGINS -->
-<div class="page" id="page-plugins">
-  <div class="ph"><h2>🔌 AI Plugin Engine</h2></div>
-  <div class="pb" style="max-width:640px">
-    <div class="section-title">Available Engine Types</div>
-    <div class="text-sm text-m mb12">ResearchPilot supports these AI engine types. Add new ones by installing Python plugins into <code>00-SYSTEM-CORE/plugins/</code>.</div>
-    <div id="plugins-list"></div>
-    <hr class="separator">
-    <div class="section-title">➡️ How to Add Claude</div>
-    <div class="card">
-      <div class="card-t">🤖 Option 1: Claude API (Recommended)</div>
-      <div class="card-s">Get an API key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a> → Add it in Settings → AI Engines → Enable "Claude API".</div>
-    </div>
-    <div class="card">
-      <div class="card-t">🔐 Option 2: Claude Login (Plugin)</div>
-      <div class="card-s">If you have a paid Claude account, install the CLI: <code>pip install claude-cli</code> then run <code>claude login</code>. ResearchPilot will auto-detect it.</div>
-    </div>
-    <div class="card">
-      <div class="card-t">📦 Option 3: Custom OpenAI-Compatible</div>
-      <div class="card-s">Any OpenAI-compatible API (OpenRouter, Jan, LocalAI) can be added in Settings → AI Engines with type "Custom API".</div>
-    </div>
-  </div>
-</div>
-
-<!-- OBSIDIAN -->
-<div class="page" id="page-obsidian">
-  <div class="ph"><h2>🪨 Obsidian Graph View</h2></div>
-  <div class="pb" style="max-width:800px">
-    <div class="card">
-      <div class="card-t">📂 This folder IS your Obsidian vault</div>
-      <div class="card-s" style="margin-top:4px">
-        Open this folder in Obsidian to see all your research connected in a graph.<br>
-        <code style="color:var(--a2);font-size:12px">C:\F- Drive\MYWORK-Research1</code>
-      </div>
-    </div>
-    <div class="grid2" style="grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-      <div class="card" style="text-align:center;padding:20px">
-        <div style="font-size:32px;margin-bottom:8px">📂</div>
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px">Open in Obsidian</div>
-        <div class="card-s">Launches Obsidian with this vault loaded</div>
-        <button class="btn btn-p mt12" onclick="openObsidian()" style="width:100%">🚀 Open Vault</button>
-      </div>
-      <div class="card" style="text-align:center;padding:20px">
-        <div style="font-size:32px;margin-bottom:8px">🔗</div>
-        <div style="font-size:13px;font-weight:600;margin-bottom:8px">Graph View</div>
-        <div class="card-s">Open Obsidian's local graph for the entire vault</div>
-        <button class="btn btn-p mt12" onclick="openObsidianGraph()" style="width:100%">🕸 Open Graph</button>
-      </div>
-    </div>
-    <div class="card" id="obsidian-stats">
-      <div class="card-t">📊 Vault Statistics</div>
-      <div id="obsidian-stats-body" style="margin-top:8px">
-        <div class="flex gap8 items-c" style="flex-wrap:wrap;gap:12px">
-          <span class="badge" id="obs-md-count">.md files: —</span>
-          <span class="badge" id="obs-proj-count">Projects: —</span>
-          <span class="badge" id="obs-chat-count">Chats: —</span>
-        </div>
-        <div class="card-s mt12">Every file is a node. Every link between files creates an edge in the graph. Tags like <code>#ResearchPilot</code> <code>#research</code> <code>#chat</code> cluster related nodes.</div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-t">💡 How Obsidian Graph Helps</div>
-      <div class="card-s">
-        <ul style="margin:8px 0;padding-left:16px;line-height:1.8">
-          <li><strong>Connections:</strong> Papers linked to their extractions show as connected nodes</li>
-          <li><strong>Clusters:</strong> Related projects form natural clusters</li>
-          <li><strong>Chats:</strong> Every chat session is a searchable .md node</li>
-          <li><strong>Search:</strong> Obsidian's built-in search across all research</li>
-          <li><strong>Plugins:</strong> Use Dataview, Graph Analysis, Excalidraw for deeper insights</li>
-        </ul>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -728,13 +670,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <div class="settings-nav">
       <div class="sn-item on" onclick="showSettingsSection('general')">⚙️ General</div>
       <div class="sn-item" onclick="showSettingsSection('ai')">🤖 AI Engines</div>
-      <div class="sn-item" onclick="showSettingsSection('models')">🧠 Model Selection</div>
       <div class="sn-item" onclick="showSettingsSection('skills')">🎓 Skills</div>
-      <div class="sn-item" onclick="showSettingsSection('projects')">📁 Projects</div>
       <div class="sn-item" onclick="showSettingsSection('kb')">🌐 Knowledge Base</div>
       <div class="sn-item" onclick="showSettingsSection('keywords')">🔑 Keywords</div>
       <div class="sn-item" onclick="showSettingsSection('predatory')">🚫 Predatory Journals</div>
       <div class="sn-item" onclick="showSettingsSection('author')">👤 Author</div>
+      <div class="sn-item" onclick="showSettingsSection('plugins')">🔌 Plugins</div>
+      <div class="sn-item" onclick="showSettingsSection('obsidian')">🪨 Obsidian</div>
       <div class="sn-item" onclick="showSettingsSection('versions')">📋 Changelog</div>
     </div>
     <div class="settings-body">
@@ -773,19 +715,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <!-- AI Engines -->
       <div id="ss-ai" style="display:none">
         <div class="section-title">🤖 AI Engines — Configure &amp; Enable</div>
-        <div class="text-sm text-m mb12">ResearchPilot tries engines top-to-bottom (by priority). First working one wins. You can have multiple enabled — it never stops.</div>
+        <div class="text-sm text-m mb12">Custom engines auto-join the fallback chain. Just enable them — if one fails, the next takes over automatically.</div>
         <div id="engines-list"></div>
-        <button class="btn btn-p" onclick="saveEngines()">💾 Save AI Settings</button>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn btn-p" onclick="addEngine()">+ Add Engine</button>
+          <button class="btn btn-p" onclick="saveEngines()">💾 Save AI Settings</button>
+        </div>
       </div>
 
       <!-- Model Selection -->
-      <div id="ss-models" style="display:none">
-        <div class="section-title">🧠 Model Selection — Choose Your Fallback Chain</div>
-        <div class="text-sm text-m mb12">All enabled engines are tried in priority order. Disabled ones are skipped. Click any card to expand and configure.</div>
-        <div id="models-list"></div>
-        <button class="btn btn-p" onclick="saveModels()">💾 Save Model Settings</button>
-      </div>
-
       <!-- Skills -->
       <div id="ss-skills" style="display:none">
         <div class="section-title">🎓 Skills — Teach ResearchPilot how to work</div>
@@ -878,16 +816,80 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         </div>
       </div>
 
+      <!-- Plugins -->
+      <div id="ss-plugins" style="display:none">
+        <div class="section-title">🔌 AI Plugin Engine</div>
+        <div class="text-sm text-m mb12">ResearchPilot supports these AI engine types. Add new ones by installing Python plugins into <code>00-SYSTEM-CORE/plugins/</code>.</div>
+        <div id="plugins-list"></div>
+        <hr class="separator">
+        <div class="section-title">➡️ How to Add Claude</div>
+        <div class="card">
+          <div class="card-t">🤖 Option 1: Claude API (Recommended)</div>
+          <div class="card-s">Get an API key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a> → Add it in Settings → AI Engines → Enable "Claude API".</div>
+        </div>
+        <div class="card">
+          <div class="card-t">🔐 Option 2: Claude Login (Plugin)</div>
+          <div class="card-s">If you have a paid Claude account, install the CLI: <code>pip install claude-cli</code> then run <code>claude login</code>. ResearchPilot will auto-detect it.</div>
+        </div>
+        <div class="card">
+          <div class="card-t">📦 Option 3: Custom OpenAI-Compatible</div>
+          <div class="card-s">Any OpenAI-compatible API (OpenRouter, Jan, LocalAI) can be added in Settings → AI Engines with type "Custom API".</div>
+        </div>
+      </div>
+
+      <!-- Obsidian -->
+      <div id="ss-obsidian" style="display:none">
+        <div class="section-title">🪨 Obsidian Integration</div>
+        <div class="card">
+          <div class="card-t">📂 This folder IS your Obsidian vault</div>
+          <div class="card-s" style="margin-top:4px">
+            Open this folder in Obsidian to see all your research connected in a graph.<br>
+            <code style="color:var(--a2);font-size:12px">C:\F- Drive\MYWORK-Research1</code>
+          </div>
+        </div>
+        <div class="grid2" style="grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="card" style="text-align:center;padding:20px">
+            <div style="font-size:32px;margin-bottom:8px">📂</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:8px">Open in Obsidian</div>
+            <div class="card-s">Launches Obsidian with this vault loaded</div>
+            <button class="btn btn-p mt12" onclick="openObsidian()" style="width:100%">🚀 Open Vault</button>
+          </div>
+          <div class="card" style="text-align:center;padding:20px">
+            <div style="font-size:32px;margin-bottom:8px">🔗</div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:8px">Graph View</div>
+            <div class="card-s">Open Obsidian's local graph for the entire vault</div>
+            <button class="btn btn-p mt12" onclick="openObsidianGraph()" style="width:100%">🕸 Open Graph</button>
+          </div>
+        </div>
+        <div class="card" id="obsidian-stats">
+          <div class="card-t">📊 Vault Statistics</div>
+          <div id="obsidian-stats-body" style="margin-top:8px">
+            <div class="flex gap8 items-c" style="flex-wrap:wrap;gap:12px">
+              <span class="badge" id="obs-md-count">.md files: —</span>
+              <span class="badge" id="obs-proj-count">Projects: —</span>
+              <span class="badge" id="obs-chat-count">Chats: —</span>
+            </div>
+            <div class="card-s mt12">Every file is a node. Every link between files creates an edge in the graph. Tags like <code>#ResearchPilot</code> <code>#research</code> <code>#chat</code> cluster related nodes.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-t">💡 How Obsidian Graph Helps</div>
+          <div class="card-s">
+            <ul style="margin:8px 0;padding-left:16px;line-height:1.8">
+              <li><strong>Connections:</strong> Papers linked to their extractions show as connected nodes</li>
+              <li><strong>Clusters:</strong> Related projects form natural clusters</li>
+              <li><strong>Chats:</strong> Every chat session is a searchable .md node</li>
+              <li><strong>Search:</strong> Obsidian's built-in search across all research</li>
+              <li><strong>Plugins:</strong> Use Dataview, Graph Analysis, Excalidraw for deeper insights</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
       <!-- Changelog -->
       <div id="ss-versions" style="display:none">
         <div class="section-title">📋 Version Changelog</div>
-        <div class="text-sm text-m mb12">Record every update or change to the system. Add new entries when you deploy changes.</div>
-        <div class="flex gap8 items-c mb12" style="flex-wrap:wrap">
-          <input type="date" id="vl-date" class="" style="width:140px;padding:5px 8px;font-size:11px">
-          <input type="text" id="vl-version" class="" style="width:100px;padding:5px 8px;font-size:11px" placeholder="v1.0.0">
-          <input type="text" id="vl-desc" class="" style="width:240px;padding:5px 8px;font-size:11px" placeholder="What changed?">
-          <button class="btn btn-p btn-s" onclick="addVersionEntry()">+ Record</button>
-        </div>
+        <div class="text-sm text-m mb12">Auto-detected from updates. No manual entry needed.</div>
         <div id="versions-list" style="max-height:60vh;overflow-y:auto">
           <div class="text-sm text-m" style="padding:20px;text-align:center">Loading…</div>
         </div>
@@ -1129,7 +1131,7 @@ async function loadSettings(){
   const setVal=(id,val)=>{const e=_(id);if(e)e.value=val;};
   const setClass=(id,cls,add)=>{const e=_(id);if(e)e.classList.toggle(cls,add);};
   setVal('gen-ctx',settings.max_context_chars||40000);
-  setClass('tog-auto','on',!settings.auto_extract_on_upload);
+  setClass('tog-auto','on',settings.auto_extract_on_upload !== false);
   setClass('tog-autostart','on',!!settings.auto_start);
   initTimezoneSelect();
   setVal('gen-tz',settings.timezone||'UTC');
@@ -1147,6 +1149,7 @@ function renderEngines(){
         <div class="engine-note">${e.note||''}</div>
       </div>
       <div class="badge" style="margin-left:auto">P${e.priority}</div>
+      <button class="btn btn-d btn-s" onclick="deleteEngine(${i})" style="margin-left:6px;padding:2px 6px;font-size:10px">✕</button>
     </div>
     <div class="engine-fields">
       ${e.type==='ollama'||e.type==='openai_compat'?`<div class="form-row"><label>URL</label><input class="w100" id="eu-${i}" value="${e.url||''}"></div>`:'<div></div>'}
@@ -1156,69 +1159,45 @@ function renderEngines(){
   </div>`).join('');
 }
 
-async function saveEngines(){
-  const engines=[...(settings.ai_engines||[])].map((e,i)=>({
-    ...e,
-    enabled:document.getElementById(`tog-${i}`)?.classList.contains('on')??e.enabled,
-    url:document.getElementById(`eu-${i}`)?.value??e.url,
-    model:document.getElementById(`em-${i}`)?.value??e.model,
-    api_key:document.getElementById(`ek-${i}`)?.value??e.api_key,
-  }));
-  settings.ai_engines=engines;
-  await fetch(`${API}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)});
-  toast('AI engines saved!','ok');
-  pollStatus();
-}
-
-function renderModels(){
-  const el=document.getElementById('models-list');
-  if(!el)return;
-  let html='<div style="display:flex;flex-direction:column;gap:6px">';
-  (settings.ai_engines||[]).forEach((e,i)=>{
-    const prov=e.url.includes('openrouter')?'OR':e.url.includes('nvidia')?'NV':'Local';
-    const provColor=prov==='OR'?'var(--a2)':prov==='NV'?'#76b900':'var(--muted)';
-    html+=`<div class="engine-card" id="mc-${i}" style="margin-bottom:0">
-      <div class="engine-head">
-        <div class="toggle ${e.enabled?'on':''}" id="mtog-${i}" onclick="this.classList.toggle('on')"></div>
-        <div style="flex:1;min-width:0">
-          <div class="engine-name" style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:9px;font-weight:700;color:${provColor};background:${provColor}15;padding:1px 5px;border-radius:3px">${prov}</span>
-            ${e.name.replace(/\(P\d+\)/,'').trim()}
-          </div>
-          <div class="engine-note">${e.note||''}</div>
-        </div>
-        <div class="badge" style="margin-left:8px;font-size:9px">P${e.priority}</div>
-        <div style="margin-left:4px;display:flex;gap:4px">
-          <span class="text-xs" style="background:var(--bg2);padding:2px 5px;border-radius:3px;font-family:monospace;font-size:9px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${e.model||'—'}</span>
-        </div>
-      </div>
-      <div class="engine-fields" style="display:none" id="mfields-${i}">
-        <div class="form-row"><label>URL</label><input class="w100" id="meu-${i}" value="${e.url||''}"></div>
-        <div class="form-row"><label>Model</label><input class="w100" id="mem-${i}" value="${e.model||''}"></div>
-        ${e.type!=='ollama'?`<div class="form-row" style="grid-column:1/-1"><label>API Key</label><input class="w100" type="password" id="mek-${i}" value="${e.api_key||''}"></div>`:''}
-      </div>
-      <div class="engine-expand" onclick="const f=document.getElementById('mfields-${i}');f.style.display=f.style.display==='none'?'grid':'none'">⚙️ Edit</div>
-    </div>`;
+function addEngine(){
+  settings.ai_engines = settings.ai_engines || [];
+  settings.ai_engines.push({
+    name: 'New Engine',
+    type: 'openai_compat',
+    url: '',
+    model: '',
+    api_key: '',
+    enabled: false,
+    priority: (settings.ai_engines.length + 1),
+    note: 'Custom engine'
   });
-  html+='</div>';
-  el.innerHTML=html;
+  renderEngines();
+  toast('New engine added — configure and save','ok');
 }
 
-async function saveModels(){
+function deleteEngine(i){
+  if(!confirm('Remove this engine?'))return;
+  settings.ai_engines.splice(i, 1);
+  renderEngines();
+}
+
+async function saveEngines(){
   const engines=[...(settings.ai_engines||[])].map((e,i)=>{
-    const ec=document.getElementById(`mc-${i}`);
-    if(!ec)return e;
+    const tog=document.getElementById(`tog-${i}`);
+    const eu=document.getElementById(`eu-${i}`);
+    const em=document.getElementById(`em-${i}`);
+    const ek=document.getElementById(`ek-${i}`);
     return {
       ...e,
-      enabled:document.getElementById(`mtog-${i}`)?.classList.contains('on')??e.enabled,
-      url:document.getElementById(`meu-${i}`)?.value??e.url,
-      model:document.getElementById(`mem-${i}`)?.value??e.model,
-      api_key:document.getElementById(`mek-${i}`)?.value??e.api_key,
+      enabled: tog?tog.classList.contains('on'):e.enabled,
+      url: eu?eu.value:e.url,
+      model: em?em.value:e.model,
+      api_key: ek?ek.value:e.api_key,
     };
   });
   settings.ai_engines=engines;
   await fetch(`${API}/api/settings`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)});
-  toast('Model settings saved!','ok');
+  toast('AI engines saved!','ok');
   pollStatus();
 }
 
@@ -1237,22 +1216,21 @@ async function saveGeneral(){
 }
 
 function showSettingsSection(id){
-  ['general','ai','models','skills','projects','kb','keywords','predatory','author','versions'].forEach(s=>{
+  ['general','ai','skills','kb','keywords','predatory','author','plugins','obsidian','versions'].forEach(s=>{
     const el=document.getElementById('ss-'+s);
     if(el)el.style.display=s===id?'block':'none';
   });
   document.querySelectorAll('.sn-item').forEach((el,i)=>{
-    el.classList.toggle('on',['general','ai','models','skills','projects','kb','keywords','predatory','author','versions'][i]===id);
+    el.classList.toggle('on',['general','ai','skills','kb','keywords','predatory','author','plugins','obsidian','versions'][i]===id);
   });
   if(id==='ai'){renderEngines();}
-  if(id==='models'){renderModels();}
   if(id==='skills')renderSkills();
-  if(id==='projects')renderSettingsProjects();
   if(id==='kb')loadKB();
   if(id==='keywords')loadKeywords();
   if(id==='predatory')loadPredatory();
+  if(id==='plugins')loadPlugins();
   if(id==='author'){};
-  if(id==='versions'){loadVersions();initVersionDate();}
+  if(id==='versions'){loadVersions();}
 }
 
 // ─── Projects ─────────────────────────────────────────────────────────────────
@@ -1260,6 +1238,7 @@ async function loadProjects(){
   projects=await fetch(`${API}/api/projects`).then(r=>r.json());
   renderSidebar();
   renderDashProjects();
+  renderProjectsPage();
   populateProjectDropdowns();
 }
 
@@ -1273,7 +1252,9 @@ function renderSidebar(){
 }
 
 function renderDashProjects(){
-  document.getElementById('proj-cards').innerHTML=
+  const el = document.getElementById('proj-cards');
+  if (!el) return;
+  el.innerHTML=
     projects.map(p=>`<div class="card">
       <div class="card-t">📁 ${p.name}</div>
       <div class="flex gap12" style="margin-top:8px">
@@ -1306,7 +1287,7 @@ async function createProject(){
   updateDash();
 }
 
-function openNewProject(){showSettingsSection('projects');go('settings');}
+function openNewProject(){go('projects');}
 
 function renderSettingsProjects(){
   document.getElementById('settings-proj-list').innerHTML=
@@ -1326,12 +1307,37 @@ function renderSettingsProjects(){
     </div>`).join('');
 }
 
+function renderProjectsPage(){
+  const el=document.getElementById('proj-list-page');
+  if(!el)return;
+  el.innerHTML=projects.map(p=>`<div class="card flex items-c gap8" style="margin-bottom:8px" id="pp-card-${p.id}">
+    <span style="font-size:13px;font-weight:600">📁 ${p.name}</span>
+    <span class="badge">${p.papers} files</span>
+    <span class="badge">${p.extractions} ext</span>
+    <div class="ml-a flex gap4">
+      <button class="btn btn-g btn-s" onclick="editProject('${p.id}')" style="font-size:10px;padding:3px 8px">✏️</button>
+      <button class="btn btn-d btn-s" onclick="deleteProject('${p.id}')" style="font-size:10px;padding:3px 8px">🗑</button>
+    </div>
+  </div>
+  <div id="proj-edit-${p.id}" style="display:none;padding:6px 0 10px 0" class="flex gap8 items-c">
+    <input type="text" id="pe-name-${p.id}" class="" style="width:200px;padding:4px 8px;font-size:11px" value="${esc(p.name)}" placeholder="New name">
+    <button class="btn btn-p btn-s" onclick="renameProject('${p.id}')">💾 Rename</button>
+    <button class="btn btn-g btn-s" onclick="cancelEditProject('${p.id}')">✕ Cancel</button>
+  </div>`).join('')||'<div class="text-sm text-m" style="padding:20px;text-align:center">No projects yet. Create one below.</div>';
+}
+
 function editProject(id){
-  document.getElementById('proj-card-'+id).style.display='none';
+  const card=document.getElementById('proj-card-'+id);
+  const pcard=document.getElementById('pp-card-'+id);
+  if(card)card.style.display='none';
+  if(pcard)pcard.style.display='none';
   document.getElementById('proj-edit-'+id).style.display='flex';
 }
 function cancelEditProject(id){
-  document.getElementById('proj-card-'+id).style.display='flex';
+  const card=document.getElementById('proj-card-'+id);
+  const pcard=document.getElementById('pp-card-'+id);
+  if(card)card.style.display='flex';
+  if(pcard)pcard.style.display='flex';
   document.getElementById('proj-edit-'+id).style.display='none';
 }
 
@@ -1733,9 +1739,7 @@ function updateDash(){
   }catch(e){}
   renderSysGraph();
   renderDailyQuote();
-  // debug: mark loaded
-  const dbg=document.getElementById('dash-debug');
-  if(dbg)dbg.textContent='✓ dash loaded | q='+(typeof QUOTES!=='undefined'?QUOTES.length:'undef')+' | p='+projects.length+' l='+library.length+' m='+memory.length+' s='+sessions.length;
+
 }
 
 // ─── System Graph ─────────────────────────────────────────────────────────────
@@ -1743,40 +1747,23 @@ function renderSysGraph(){
   try{
     const el=document.getElementById('sys-graph');
     if(!el)return;
-    const W=el.clientWidth||400, H=el.clientHeight||200;
-    const cx=W/2, cy=H/2;
     const eng=settings?.ai_engines;
     const activeEng=Array.isArray(eng)?eng.find(e=>e.enabled):null;
     const anyEnabled=Array.isArray(eng)&&eng.some(e=>e.enabled);
     const nodes=[
-      {id:'brain',label:'ResearchPilot',icon:'🧠',x:cx,y:cy,size:48,center:true},
-      {id:'ai',label:'AI Engine',icon:'🤖',status:'ok',desc:activeEng?.name||'None'},
-      {id:'lib',label:'Library',icon:'📚',status:'ok',desc:library.length+' files'},
-      {id:'chat',label:'Chat',icon:'💬',status:anyEnabled?'ok':'off',desc:sessions.length+' sessions'},
-      {id:'ext',label:'Extractions',icon:'📋',status:'ok',desc:memory.length+' entries'},
-      {id:'graph',label:'Knowledge Graph',icon:'🕸',status:'ok',desc:'Connected'},
+      {id:'ai',label:'AI Engine',icon:'🤖',status:anyEnabled?'ok':'off',desc:anyEnabled?'● Live':'○ Offline'},
+      {id:'chat',label:'Chat',icon:'💬',status:anyEnabled?'ok':'off',desc:anyEnabled?'● Active':'○ Idle'},
+      {id:'graph',label:'Graph',icon:'🕸',status:'ok',desc:'● Ready'},
     ];
-    const radius=Math.min(W,H)*0.3;
-    const angles=[-Math.PI/2, -Math.PI/2+Math.PI/3, -Math.PI/2+2*Math.PI/3, -Math.PI/2+Math.PI, -Math.PI/2+4*Math.PI/3, -Math.PI/2+5*Math.PI/3];
-    nodes.slice(1).forEach((n,i)=>{n.x=cx+radius*Math.cos(angles[i]);n.y=cy+radius*Math.sin(angles[i]);});
-
-    let html='';
-    nodes.slice(1).forEach(n=>{
-      const dx=n.x-cx, dy=n.y-cy;
-      const len=Math.sqrt(dx*dx+dy*dy)||1;
-      const active=n.status!=='off';
-      html+=`<div class="sys-line" style="width:${Math.max(0,len-28)}px;left:${cx+24}px;top:${cy-1}px;transform:rotate(${Math.atan2(dy,dx)}rad);background:${active?'linear-gradient(90deg,var(--accent),rgba(108,99,255,.15))':'var(--border)'}"></div>`;
-    });
-    html+=`<div class="sys-center-dot" style="left:${cx-24}px;top:${cy-24}px">🧠</div>`;
-    html+=`<div class="sys-center-label" style="left:${cx-40}px;top:${cy+28}px">ResearchPilot</div>`;
-    nodes.slice(1).forEach(n=>{
-      const dotClass='sys-dot '+(n.status==='ok'?'ok pulse':n.status==='warn'?'warn pulse':'off');
-      html+=`<div class="sys-node" style="left:${n.x-16}px;top:${n.y-16}px" title="${n.desc||''}">
-        <div class="${dotClass}">${n.icon}</div>
-        <div class="sys-label">${n.label}<span class="stat">${n.desc||''}</span></div>
-      </div>`;
-    });
-    el.innerHTML=html;
+    el.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:20px 48px;justify-content:center;align-items:center;height:100%;padding:12px 16px;align-content:center">
+      ${nodes.map(n=>{
+        const dotClass='sys-dot '+(n.status==='ok'?'ok pulse':n.status==='warn'?'warn pulse':'off');
+        return `<div class="sys-node" style="position:relative;left:auto;top:auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding:4px 4px" title="${n.desc||''}">
+          <div class="${dotClass}">${n.icon}</div>
+          <div class="sys-label" style="text-align:center;white-space:normal;max-width:90px">${n.label}<span class="stat">${n.desc||''}</span></div>
+        </div>`;
+      }).join('')}
+    </div>`;
   }catch(e){console.error('graph err',e)}
 }
 
@@ -2747,10 +2734,8 @@ function renderDailyQuote(){
     if(!q)return;
     const t=document.getElementById('quote-text');
     const a=document.getElementById('quote-author');
-    const d=document.getElementById('quote-day');
     if(t)t.textContent=`"${q[0]}"`;
     if(a)a.textContent=`— ${q[1]}`;
-    if(d)d.textContent=`Day ${idx+1} of ${QUOTES.length}`;
   }catch(e){console.error('quote err',e)}
 }
 
@@ -2762,10 +2747,8 @@ function refreshQuote(){
     if(!q)return;
     const t=document.getElementById('quote-text');
     const a=document.getElementById('quote-author');
-    const d=document.getElementById('quote-day');
     if(t)t.textContent=`"${q[0]}"`;
     if(a)a.textContent=`— ${q[1]}`;
-    if(d)d.textContent=`Random #${idx+1} of ${QUOTES.length}`;
   }catch(e){console.error('quote err',e)}
 }
 
@@ -3428,25 +3411,6 @@ async function deleteWebPaper(filename){
 // ─── Author Settings ────────────────────────────────────────────────
 
 // ─── Version Changelog ──────────────────────────────────────────────
-function initVersionDate(){
-  const inp = document.getElementById('vl-date');
-  if(inp && !inp.value) inp.value = new Date().toISOString().slice(0,10);
-}
-async function addVersionEntry(){
-  const date = document.getElementById('vl-date').value;
-  const ver = document.getElementById('vl-version').value.trim();
-  const desc = document.getElementById('vl-desc').value.trim();
-  if (!desc) return toast('Enter a description','err');
-  await fetch(`${API}/api/settings/versions`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'add', date: date || new Date().toISOString().slice(0,10), version: ver || 'v' + new Date().toISOString().slice(0,10), description: desc})
-  });
-  document.getElementById('vl-desc').value = '';
-  document.getElementById('vl-version').value = '';
-  toast('Version entry added','ok');
-  loadVersions();
-  loadVersion();
-}
 async function loadVersion(){
   try {
     const d = await fetch(`${API}/api/settings/versions`).then(r => r.json());
@@ -3460,7 +3424,7 @@ async function loadVersions(){
     const d = await fetch(`${API}/api/settings/versions`).then(r => r.json());
     const el = document.getElementById('versions-list');
     if (!d.versions || !d.versions.length) {
-      el.innerHTML = '<div class="text-sm text-m" style="padding:20px;text-align:center">No version entries yet. Record the first update above.</div>';
+      el.innerHTML = '<div class="text-sm text-m" style="padding:20px;text-align:center">No version entries yet.</div>';
       return;
     }
     el.innerHTML = d.versions.slice().reverse().map(v => `
@@ -3468,19 +3432,9 @@ async function loadVersions(){
         <span class="badge" style="flex-shrink:0;background:rgba(108,99,255,.15);color:var(--accent);min-width:90px">${esc(v.date)}</span>
         <span class="badge" style="flex-shrink:0;background:rgba(0,212,170,.12);color:var(--a2);min-width:60px">${esc(v.version||'—')}</span>
         <span style="flex:1;color:var(--text)">${esc(v.description)}</span>
-        <button class="btn btn-d btn-s" onclick="deleteVersionEntry('${esc(v.date)}','${esc(v.description.slice(0,50))}')" style="padding:1px 5px;font-size:9px;flex-shrink:0">✕</button>
       </div>
     `).join('');
   } catch(e) { console.error('Load versions error:', e); }
-}
-async function deleteVersionEntry(date, descPreview){
-  if (!confirm(`Delete entry "${descPreview}…"?`)) return;
-  await fetch(`${API}/api/settings/versions`, {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'remove', date, description: descPreview})
-  });
-  toast('Entry removed','ok');
-  loadVersions();
 }
 
 boot();

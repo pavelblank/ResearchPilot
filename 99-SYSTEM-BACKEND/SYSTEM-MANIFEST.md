@@ -1,7 +1,7 @@
 # SYSTEM MANIFEST - PORTABILITY GUIDE
 Project Root: /mnt/c/F- Drive/MYWORK-Research1
 Owner: ResearchPilot
-System: ResearchPilot V5.2
+System: ResearchPilot V5.3
 
 ## ARCHITECTURE
 - INPUT_ZONE/: All new data enters here. Use DOCLING to convert PDFs to .md.
@@ -24,5 +24,5 @@ This system is designed to be AI-agnostic. Any LLM with filesystem access can re
 ---
 
 ## Metadata
-**System**: ResearchPilot V5.2
+**System**: ResearchPilot V5.3
 **Copyright**: 2026 Mr. Blank Research. All rights reserved.

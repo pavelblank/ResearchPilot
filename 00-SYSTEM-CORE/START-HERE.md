@@ -4,7 +4,7 @@
 1. **Type "RA START"** in any conversation.
 2. I will automatically read your **Researcher Profile** and align with your **System Protocols**.
 
-## System Hubs (V5.2)
+## System Hubs (V5.3)
 
 ### 1. [00-SYSTEM-CORE](file:///c:/F-%20Drive/MYWORK-Research1/00-SYSTEM-CORE)
 **The Main Brain**: Access your Master Knowledge Base, Global Connections, and Publishing Roadmap.

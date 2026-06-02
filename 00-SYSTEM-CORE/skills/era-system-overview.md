@@ -1,6 +1,6 @@
 # Skill: ResearchPilot System Overview
 
-The ResearchPilot V5.2 is structured as follows:
+The ResearchPilot V5.3 is structured as follows:
 
 ## Folder Structure
 - **00-SYSTEM-CORE/**: System brain — protocols, knowledge base, researcher profile

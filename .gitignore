@@ -20,6 +20,11 @@ Desktop.ini
 
 # Research content (papers, extractions, projects)
 01-PROJECTS/
+INCOMING/
+*.pdf
+*.epub
+*.caj
+*.ps
 99-SYSTEM-BACKEND/MASTER_LIBRARY_BACKUP.csv
 00-SYSTEM-CORE/MASTER-KNOWLEDGE-BASE.md
 00-SYSTEM-CORE/GLOBAL-CONNECTIONS.md
@@ -32,10 +37,16 @@ Desktop.ini
 # Temp / logs
 *.tmp
 *.log
+stderr.txt
+stdout.txt
 99-SYSTEM-BACKEND/chats/*.md
 graphify-out/
 web-app/stdout.txt
 web-app/stderr.txt
+.tmp.drivedownload/
+
+# Test files
+web-app/test_*.py
 
 # Obsidian canvas
 *.canvas

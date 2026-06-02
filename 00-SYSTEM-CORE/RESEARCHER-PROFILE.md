@@ -1,4 +1,4 @@
-# User Profile - ResearchPilot V5.2
+# User Profile - ResearchPilot V5.3
 
 ## The Leadership Hierarchy
 - **Head Researcher**: The User (Strategic oversight, decision-maker, domain expert).
@@ -40,6 +40,6 @@
 ---
 
 ## Metadata
-**System**: ResearchPilot V5.2
+**System**: ResearchPilot V5.3
 **Copyright**: 2026 Mr. Blank Research. All rights reserved.
 **Owner**: ResearchPilot

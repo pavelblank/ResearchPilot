@@ -1,4 +1,4 @@
-# ResearchPilot: System Specification V5.2
+# ResearchPilot: System Specification V5.3
 
 ## Purpose & Vision
 The ResearchPilot is a structured, semi-autonomous research operating system designed to synthesize academic literature into Q1-indexed publications. It minimizes clutter and maximizes the "Signal-to-Noise" ratio for the Head Researcher.
@@ -42,7 +42,7 @@ Any external AI or future software reading this system should treat `00-SYSTEM-C
 ---
 
 ## Metadata
-**System**: ResearchPilot V5.2
+**System**: ResearchPilot V5.3
 **Copyright**: 2026 Mr. Blank Research. All rights reserved.
 **Owner**: ResearchPilot
 **Created**: May 2026

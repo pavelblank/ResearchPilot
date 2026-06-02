@@ -1,5 +1,8 @@
 # Changelog
 
+## v5.3 — System enhancement, version bump, gitignore hardening
+ResearchPilot version bumped to V5.3. Gitignore updated to exclude all research paper files (*.pdf, *.epub, INCOMING/). System files version-synced across all modules.
+
 ## v5.2 — Graph overhaul, multi-layer filters, calendar, timezone
 Graph edges: keyword (blue dotted) + project (gray dashed) merged into one line per paper pair, color-coded by shared keyword count. Multi-layer filter parser fixed for AND/OR. Context-aware sub-filter dropdowns (year → author shows only authors of that year). Calendar widget, timezone selector, timezone-aware clock. Google Scholar year filter infinite loop fixed.
 
