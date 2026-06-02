@@ -1,4 +1,4 @@
-# ResearchPilot
+# ResearchPilot <sub>V5.3</sub>
 
 > **AI-native research infrastructure for academics or students.**  
 > Ingest papers, extract insights via AI, search across 5 academic databases, visualise knowledge graphs, and write with RAG-powered chat — all self-hosted, all local-first.
@@ -19,13 +19,13 @@ ResearchPilot is a self-hosted research assistant that connects to multiple AI b
 - **Track** keywords, predatory journals, and version changelog
 - **Dashboard** — live System Pulse graph with animated nodes, Quote of the Day (365 quotes)
 - **Quick Notes** — persistent CRUD notes stored server-side in `99-SYSTEM-BACKEND/notes.json`
-- **12 AI Engines** — interleaved OpenRouter / NVIDIA / local, auto-failover on empty response
+- **Multi-AI Engine Router** — unlimited engines with priority-based failover
 
 ---
 
-*Screenshots coming soon*
-
 ---
+
+
 
 ##  Prerequisites
 
@@ -90,12 +90,12 @@ Open **http://127.0.0.1:8000** in your browser.
 | HTML / HTM | ✅ |
 | TXT / CSV / JSON | ✅ |
 
-###  Multi-AI Engine Router (12 Engines)
-Tries enabled engines in priority order. First one that responds wins — **your AI never stops**. Engines interleaved across OpenRouter, NVIDIA, and local for maximum uptime.
+###  Multi-AI Engine Router
+Tries enabled engines in priority order. First one that responds wins — **your AI never stops**. Supports any number of engines with auto-failover, per-engine enable/disable, and dynamic priority ordering.
 
-Supported: `OpenRouter` · `NVIDIA (build.nvidia.com)` · `Ollama` · `Gemini` · `Claude (API)` · `Claude (CLI)` · `Custom OpenAI-compatible`
+Supported types: `OpenAI-compatible (OpenRouter, Jan, LocalAI)` · `Ollama (local)` · `Gemini` · `Claude API` · `Claude CLI (login)` · `Custom Plugin`
 
-Includes auto-failover on empty content (reasoning models), tool calling on NVIDIA backend, and per-engine enable/disable.
+Includes auto-failover on empty content, tool calling, and model-level configuration per engine.
 
 ###  Academic Web Search
 Search across 5 sources simultaneously:
@@ -117,21 +117,21 @@ Multi-layer filtering with AND/OR logic. Built-in Obsidian vault integration.
 
 **Graphify** — built-in code-level AST graph engine. Annotates every source file, class, and function with semantic metadata. Renders an interactive visual code-map alongside your paper graph, powered by `graphify-out/cache/`.
 
-###  12-Point Extraction Protocol
+###  12-Point Elite Extraction Protocol
 Every paper is analyzed through:
 
-1. The Problem
-2. The Gap
-3. Research Question(s)
-4. Purpose / Objective
-5. Theory / Framework
-6. Methodology
-7. Key Findings
-8. Contribution
-9. Limitations
-10. Implications
-11. Key Citations
-12. Critical Position
+1. **APA Reference** — Full academic citation
+2. **DOI** — Digital Object Identifier
+3. **Journal Name** — Full name and ranking
+4. **Quartile Ranking** — Q1/Q2 verified via Scopus/SJR
+5. **Indexing** — Scopus, Web of Science confirmation
+6. **Research Method** — Quantitative, Qualitative, Mixed, or Review
+7. **Theoretical Framework** — Primary theories used
+8. **Exact Relevance** — Specific utility for the PhD project
+9. **Section Support** — Which chapter or section it informs
+10. **Key Contribution** — The "One Big Insight"
+11. **Limitations** — Critical gaps identified by authors
+12. **Classification** — Behaviour, Governance, Technical, or Essential
 
 ###  Chat with RAG
 Chat with any enabled AI engine. Automatically injects relevant context from your research library — no manual file selection needed.
@@ -173,19 +173,19 @@ ResearchPilot/
 
 ##  Settings
 
-Accessible from the UI: **Settings →**  
+Accessible from the UI: **⚙️ Settings →**  
 
 | Section | Purpose |
 |---------|---------|
-| General | Context size, auto-extract, auto-start |
-| AI Engines | Configure and enable/disable AI backends |
-| Model Selection | View all 12 engines in priority order with provider badges |
-| Skills | Custom markdown instructions loaded with every chat |
-| Projects | Create, rename, delete research projects |
+| General | Context size, auto-extract, auto-start, timezone |
+| AI Engines | Add, configure, enable/disable, and reorder AI backends |
+| Skills | Custom markdown instructions injected with every chat |
 | Knowledge Base | Read-only view of the master synthesis |
 | Keywords | Auto-scan and track research keywords |
 | Predatory Journals | Manage filtered journal list |
 | Author | Display information |
+| Plugins | View and manage installed Python plugins |
+| Obsidian | Connect to Obsidian vault for bidirectional sync |
 | Changelog | Record version history |
 
 ---
