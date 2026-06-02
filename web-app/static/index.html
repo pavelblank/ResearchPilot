@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>ResearchPilot</title>
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
 <style>
@@ -306,6 +309,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         <span id="quote-day" class="text-xs text-m" style="font-size:10px"></span>
         <button class="btn btn-g btn-s" onclick="refreshQuote()" style="font-size:10px;padding:3px 10px">⟳ New Quote</button>
       </div>
+      <div id="dash-debug" style="font-size:9px;color:var(--muted);margin-top:4px;opacity:.5"></div>
     </div>
   </div>
 </div>
@@ -1117,13 +1121,18 @@ async function pollStatus(){
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
 async function loadSettings(){
-  settings=await fetch(`${API}/api/settings`).then(r=>r.json());
+  try{
+    settings=await fetch(`${API}/api/settings`).then(r=>r.json());
+  }catch(e){console.error('settings fetch err',e); settings={ai_engines:[]}; return;}
   renderEngines();
-  document.getElementById('gen-ctx').value=settings.max_context_chars||40000;
-  if(!settings.auto_extract_on_upload)document.getElementById('tog-auto').classList.remove('on');
-  if(settings.auto_start)document.getElementById('tog-autostart').classList.add('on');
+  const _=(id)=>document.getElementById(id);
+  const setVal=(id,val)=>{const e=_(id);if(e)e.value=val;};
+  const setClass=(id,cls,add)=>{const e=_(id);if(e)e.classList.toggle(cls,add);};
+  setVal('gen-ctx',settings.max_context_chars||40000);
+  setClass('tog-auto','on',!settings.auto_extract_on_upload);
+  setClass('tog-autostart','on',!!settings.auto_start);
   initTimezoneSelect();
-  document.getElementById('gen-tz').value=settings.timezone||'UTC';
+  setVal('gen-tz',settings.timezone||'UTC');
   calRender();
 }
 
@@ -1724,6 +1733,9 @@ function updateDash(){
   }catch(e){}
   renderSysGraph();
   renderDailyQuote();
+  // debug: mark loaded
+  const dbg=document.getElementById('dash-debug');
+  if(dbg)dbg.textContent='✓ dash loaded | q='+(typeof QUOTES!=='undefined'?QUOTES.length:'undef')+' | p='+projects.length+' l='+library.length+' m='+memory.length+' s='+sessions.length;
 }
 
 // ─── System Graph ─────────────────────────────────────────────────────────────
