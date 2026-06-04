@@ -1,24 +1,31 @@
 # Environment / secrets
 .env
 web-app/.env
+.token
+
+# Encrypted settings + key
 99-SYSTEM-BACKEND/settings.json
 99-SYSTEM-BACKEND/.settings_key
 99-SYSTEM-BACKEND/plugins/*.json
 99-SYSTEM-BACKEND/notes.json
+99-SYSTEM-BACKEND/.settings_key
+99-SYSTEM-BACKEND/SYSTEM-MANIFEST.md
+99-SYSTEM-BACKEND/SYSTEM-OVERVIEW.md
+99-SYSTEM-BACKEND/AUTOMATION-REPORT.md
+99-SYSTEM-BACKEND/RA START.md
+99-SYSTEM-BACKEND/server.log
+99-SYSTEM-BACKEND/audit.log
+
+# Author + researcher (personal)
 00-SYSTEM-CORE/author.json
 00-SYSTEM-CORE/keywords.json
 00-SYSTEM-CORE/discarded_keywords.json
-00-SYSTEM-CORE/predatory_journals.json
 00-SYSTEM-CORE/RESEARCHER-PROFILE.md
+00-SYSTEM-CORE/PUBLISHING-ROADMAP.md
 00-SYSTEM-CORE/MASTER-KNOWLEDGE-BASE.md
 00-SYSTEM-CORE/GLOBAL-CONNECTIONS.md
-00-SYSTEM-CORE/PUBLISHING-ROADMAP.md
-.token
-*.bak
-*.tmp
-*.swp
-.DS_Store
-Thumbs.db
+00-SYSTEM-CORE/mdblank-research002.md
+00-SYSTEM-CORE/skills/mdblank-*.md
 
 # Python
 __pycache__/
@@ -32,6 +39,9 @@ build/
 Thumbs.db
 .DS_Store
 Desktop.ini
+*.bak
+*.tmp
+*.swp
 
 # Research content (papers, extractions, projects)
 01-PROJECTS/
@@ -41,33 +51,29 @@ INCOMING/
 *.caj
 *.ps
 99-SYSTEM-BACKEND/MASTER_LIBRARY_BACKUP.csv
-00-SYSTEM-CORE/MASTER-KNOWLEDGE-BASE.md
-00-SYSTEM-CORE/GLOBAL-CONNECTIONS.md
+99-SYSTEM-BACKEND/chats/*.md
 
 # Obsidian
 .obsidian/
 .claude/
 .tmp.driveupload/
+.tmp.drivedownload/
 
 # Local backups (keep locally, not on GitHub)
 Version 5.1/
+graphify-out/
 
 # Temp / logs
-*.tmp
 *.log
+*.tmp
 stderr.txt
 stdout.txt
-99-SYSTEM-BACKEND/chats/*.md
-graphify-out/
 web-app/stdout.txt
 web-app/stderr.txt
-.tmp.drivedownload/
 
-# Test files
-web-app/test_*.py
-
-# Obsidian canvas
-*.canvas
-
-# VS Code
+# IDE / debug
 .vscode/
+*.canvas
+web-app/_debug_*.py
+web-app/test_*.py
+!web-app/test_smoke.py

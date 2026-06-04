@@ -101,12 +101,15 @@ python web-app/migrate_encrypt_settings.py
 | Threat | Mitigated? | How |
 |---|---|---|
 | Local file inspection by another user | ✅ | API keys encrypted with Fernet |
-| Accidental `git push` to public repo | ✅ | All sensitive files gitignored |
+| Accidental `git push` to public repo | ✅ | All sensitive files gitignored (settings, .token, .settings_key, notes, keywords, researcher profile, papers, chats, logs) |
 | Network attacker reaching the server | ✅ (by default) | Server binds to `127.0.0.1` only |
-| Path traversal (`../../etc/passwd`) | ✅ | All file endpoints use `resolve_era_path()` |
+| Runaway frontend / accidental DoS | ✅ | In-memory rate limiter: 240 req / 60 s per IP, returns 429 |
+| Unhandled server error leaking stack trace | ✅ | Global FastAPI exception handler returns clean JSON 500 |
+| Path traversal (`../../etc/passwd`) | ✅ | All file endpoints use `safe_project_path()` |
 | Malicious file upload | ⚠️ partial | Filenames sanitized; size limit 500 MB; content not sandboxed |
 | Session hijacking | ⚠️ partial | Static auth token in `.token`; HTTPS not enabled |
 | Brute-force admin password | ⚠️ partial | SHA-256, not bcrypt — only safe with localhost binding |
+| Forensics / audit trail | ✅ | `audit()` helper writes to rotating `audit.log` — every settings save, project delete, file delete, and lit-review export is recorded with timestamp |
 
 ---
 
@@ -133,6 +136,8 @@ You can expect an initial response within 7 days. We follow responsible disclosu
 - [ ] Server bound to `127.0.0.1` (default)
 - [ ] Firewall blocks inbound 8000 from public networks (Windows default ✅)
 - [ ] Backups of `99-SYSTEM-BACKEND/` are stored encrypted (it now contains the encrypted keys + the .settings_key, so treat it as a single secret bundle)
+- [ ] `audit.log` is reviewed periodically for unexpected actions
+- [ ] Smoke test passes: `cd web-app && python test_smoke.py` → 13/13
 
 ---
 

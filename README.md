@@ -52,10 +52,16 @@ ResearchPilot is a complete research operating system that connects to multiple 
 - 🎓 **12-Point Elite Extraction** — every paper analysed via APA, DOI, Quartile, Method, Framework, Limitations, and more.
 - 🌍 **5-source academic search** — OpenAlex · Crossref · Semantic Scholar · PubMed · Google Scholar (with predatory-journal filtering).
 - 🕸 **Multi-dimensional knowledge graph** — filter by Author, Year, Journal, Quartile, Method, Framework, or Keyword (AND/OR logic).
-- 🔒 **Encrypted at rest** — API keys stored using Fernet symmetric encryption; the encryption key never leaves your machine.
-- 💬 **RAG-powered chat** — no vector DB, no embeddings, no GPU. Keyword-scored context retrieval across your entire library.
+- 🔒 **Encrypted at rest** — API keys stored using Fernet (AES-128-CBC + HMAC-SHA256); the encryption key never leaves your machine.
+- 🛡️ **Rate-limited + audit-logged** — 240 req/min/IP, every sensitive action (settings save, project delete, file delete) recorded in `audit.log`.
+- 💬 **RAG-powered chat** — no vector DB, no embeddings, no GPU. Keyword-scored context retrieval across your entire library, with 45 s result cache.
+- 📤 **Literature-review export** — `GET /api/export/lit-review?project=X` bundles all 12-point extractions into a single markdown file.
+- 🩺 **Built-in health check** — `GET /api/health` for uptime monitors, plus global exception handler that never leaks stack traces.
 - 📊 **System Pulse dashboard** — live animated graph with quote-of-the-day, stats, and quick notes.
+- ⌨️ **Keyboard shortcuts** — `1-9` switch tabs, `/` focus chat, `Esc` close modal.
 - 🪶 **Obsidian-compatible** — the entire folder is a valid Obsidian vault; open it and you get an instant knowledge graph.
+- 🧠 **Smart keyword system** — manual deletes are remembered forever; re-adding a deleted keyword restores it until you delete it again. Auto-scan skips your discard list.
+- 🧪 **Smoke-tested** — 13 automated tests cover encryption, RAG cache, audit log, rate limiter, health, exception handler, keyword rules, Graphify filter.
 - 🤖 **100% AI-built** — every line generated through [OpenCode](https://opencode.ai), a free local AI coding agent.
 
 ---
@@ -207,6 +213,7 @@ ResearchPilot/
 │   ├── static/
 │   │   └── index.html               # Single-page frontend
 │   ├── START-SERVER.bat             # Windows launcher
+│   ├── test_smoke.py                # 13-test smoke suite
 │   └── migrate_encrypt_settings.py  # One-time encryption migration
 ├── 00-SYSTEM-CORE/                   # Protocols, knowledge base (gitignored: personal)
 ├── 01-PROJECTS/                      # Research projects (gitignored: personal)
@@ -248,6 +255,8 @@ Accessible from the UI: **⚙️ Settings →**
 ResearchPilot is designed for **single-user, local-first** operation.
 
 - 🛡️ **API keys encrypted at rest** with Fernet (AES-128-CBC + HMAC-SHA256); the master key lives in `99-SYSTEM-BACKEND/.settings_key` and is gitignored
+- 🚦 **In-memory rate limiter** — 240 req/min/IP via sliding window; returns 429 if exceeded
+- 📜 **Audit log** — every sensitive action recorded in `99-SYSTEM-BACKEND/audit.log` (rotating, 2 MB × 2)
 - 🌐 **Localhost-only binding** by default (`127.0.0.1`)
 - 🧹 **File sanitization** — filenames stripped of `..`, `~`, `<>:"/\\|?*`
 - 🚧 **Path traversal protection** on every file endpoint
@@ -256,6 +265,45 @@ ResearchPilot is designed for **single-user, local-first** operation.
 - 🚫 **Zero telemetry** — no analytics, no phone-home, no remote calls except configured AI engines and academic APIs
 
 See [SECURITY.md](SECURITY.md) for the full security policy, key rotation procedure, and how to report vulnerabilities.
+
+---
+
+## 🧪 Testing
+
+Run the smoke test suite (no server required, no network calls):
+
+```bash
+cd web-app
+python test_smoke.py
+```
+
+Expected output:
+
+```
+[PASS] encryption roundtrip decrypts keys
+[PASS] RAG cache warms (warm < cold/5)
+[PASS] audit log writes correctly
+[PASS] rotating log file present
+[PASS] rate limiter configured (240 req / 60s)
+[PASS] health endpoint registered
+[PASS] global exception handler installed
+[PASS] scan_keywords has _SKIP_PARTS guard
+[PASS] audit() safe with edge-case input
+[PASS] discard list is a set and non-empty
+[PASS] manual add removes word from discard list
+[PASS] manual remove adds to discard list (cleaned up after)
+[PASS] Graphify filters to research/extraction/chat only
+13/13 passed
+```
+
+---
+
+## 📡 New API Endpoints (V5.3+)
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/api/health` | GET | Liveness probe with service name, version, engine count |
+| `/api/export/lit-review?project=X` | GET | Download all 12-point extractions as a single markdown bundle |
 
 ---
 
