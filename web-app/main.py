@@ -466,8 +466,18 @@ async def execute_tool(name: str, args: dict) -> dict:
 # Searches ALL project files for content relevant to the user's query,
 # then injects it into the prompt so any AI engine can use it.
 
+import time
+_rag_cache: dict = {}  # (query, project) -> (timestamp, result)
+
 def retrieve_relevant_context(query: str, project: str = None, max_chars: int = 25000) -> str:
     """Search all ResearchPilot files for content relevant to the query. Returns formatted context block."""
+    # ── Per-process cache: (query, project) → result, TTL 45s ──────────────
+    # Massive win for chat streams where the same question is re-scored.
+    cache_key = (query.strip().lower(), project or "")
+    cached = _rag_cache.get(cache_key)
+    if cached and (time.time() - cached[0]) < 45:
+        return cached[1]
+
     query_lower = query.lower()
     query_words = [w for w in query_lower.split() if len(w) > 3]
     if not query_words:
@@ -585,7 +595,9 @@ def retrieve_relevant_context(query: str, project: str = None, max_chars: int = 
     if not context_sections:
         return ""
 
-    return "\n\n---\n## RELEVANT RESEARCH CONTENT (from project files)\n\n" + "\n\n".join(context_sections) + "\n\n---\n"
+    result = "\n\n---\n## RELEVANT RESEARCH CONTENT (from project files)\n\n" + "\n\n".join(context_sections) + "\n\n---\n"
+    _rag_cache[cache_key] = (time.time(), result)  # cache for 45s
+    return result
 
 # ─── System prompt ────────────────────────────────────────────────────────────
 ResearchPilot_SYSTEM = """You are ResearchPilot — v2.0.
@@ -2505,24 +2517,33 @@ async def scan_keywords():
     file_words = {}
     stopwords = {"the","this","that","with","from","for","and","not","are","was","were","has","have","had","but","its","all","can","each","which","their","they","will","would","could","should","about","also","more","than","into","over","such","only","other","than","then","these","those","what","when","where","there","been","being","some","them","very","just","after","before","because","between","both","under","above","while","file","files","data","research","study","paper","analysis","based","using","used","also","well"}
     special_terms = {"q1","q2","q3","q4","scopus","wos","researchpilot","heis","p1","p2","ai","nlp","rag","llm","lstm","cnn","rnn","bert","gpt","tfidf","svm","kmeans","pca","hei","culture","publication","extraction","methodology","qualitative","quantitative","mixed","theoretical","framework","limitations","contribution"}
-    for f in BASE.rglob("*.md"):
-        try:
-            cat = _cat(f)
-            if cat in ("system", "code", "chat", "other"):
-                continue
-            txt = f.read_text(encoding="utf-8", errors="ignore").lower()
-            rel = str(f.relative_to(BASE))
-            # Extract words (3+ chars)
-            words = set(re.findall(r'\b[a-z]{3,}\b', txt))
-            # Score: special terms get higher weight
-            for w in words:
-                if w in stopwords: continue
-                if w in discarded: continue
-                weight = 5 if w in special_terms else 1
-                word_counter[w] += weight
-                file_words.setdefault(w, set()).add(rel)
-        except Exception:
+    # Skip system/cache dirs that contain .md but no research value
+    _SKIP_PARTS = {".obsidian", "graphify-out", ".claude", "__pycache__", ".git", "node_modules", ".vscode"}
+    # Scan only meaningful research roots: 01-PROJECTS + 00-SYSTEM-CORE + INCOMING
+    _scan_roots = [PROJECTS, CORE, INCOMING]
+    for root in _scan_roots:
+        if not root.exists():
             continue
+        for f in root.rglob("*.md"):
+            if any(part in _SKIP_PARTS for part in f.parts):
+                continue
+            try:
+                cat = _cat(f)
+                if cat in ("system", "code", "chat", "other"):
+                    continue
+                txt = f.read_text(encoding="utf-8", errors="ignore").lower()
+                rel = str(f.relative_to(BASE))
+                # Extract words (3+ chars)
+                words = set(re.findall(r'\b[a-z]{3,}\b', txt))
+                # Score: special terms get higher weight
+                for w in words:
+                    if w in stopwords: continue
+                    if w in discarded: continue
+                    weight = 5 if w in special_terms else 1
+                    word_counter[w] += weight
+                    file_words.setdefault(w, set()).add(rel)
+            except Exception:
+                continue
     # Add top 50 new words as suggestions (not replacing existing)
     added = 0
     for w, cnt in word_counter.most_common(200):
