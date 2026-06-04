@@ -114,14 +114,26 @@ def t9():
 total += 1; check("audit() safe with edge-case input", t9)
 
 def t10():
-    """Rule 1: scan_keywords skips discarded words."""
+    """Rule 1: scan_keywords skips discarded words. Self-primes so it works on fresh installs too."""
     import main
+    # Prime with a test word (idempotent)
+    test_word = "_smoke_test_discard_token_"
     discarded = main._load_discarded()
-    assert isinstance(discarded, set)
-    # The user has a non-empty discard list
-    assert len(discarded) > 0, "expected at least one discarded keyword"
+    if test_word not in discarded:
+        discarded.add(test_word)
+        main._save_discarded(discarded)
+    try:
+        discarded = main._load_discarded()
+        assert isinstance(discarded, set)
+        assert len(discarded) > 0, "expected at least one discarded keyword after priming"
+        assert test_word in discarded
+    finally:
+        # Clean up: remove our test token
+        d = main._load_discarded()
+        d.discard(test_word)
+        main._save_discarded(d)
     global passed; passed += 1
-total += 1; check("discard list is a set and non-empty", t10)
+total += 1; check("discard list is a set and self-priming for fresh installs", t10)
 
 def t11():
     """Rule 2: add action removes from discarded (so re-added manual keywords stay)."""

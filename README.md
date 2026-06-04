@@ -80,22 +80,28 @@ ResearchPilot is a complete research operating system that connects to multiple 
 
 ## 🚀 Quick Start
 
-**New here?** Read the full **[Setup Guide](SETUP.md)** — it covers Windows, macOS, Linux, troubleshooting, and auto-start in plain language.
+**For detailed walkthroughs, troubleshooting, and auto-start setup, see the full [Setup Guide](SETUP.md).**
 
-### 30-second version (developers comfortable with the command line)
+### Install (one time)
 
-```bash
-git clone https://github.com/pavelblank/ResearchPilot.git
-cd ResearchPilot/web-app
-pip install -r requirements.txt
-python main.py
-```
+| Step | What to do |
+|---|---|
+| **1. Get Python 3.10+** | Download from [python.org](https://www.python.org/downloads/). ⚠️ **Windows:** tick "Add Python to PATH" in the installer. |
+| **2. Get ResearchPilot** | Download ZIP from the green `<> Code` button above, OR run `git clone https://github.com/pavelblank/ResearchPilot.git` |
+| **3. Install dependencies** | Open a terminal in the `web-app` folder and run `pip install -r requirements.txt` |
 
-Open **<http://127.0.0.1:8000>** in your browser.
+### Run (every time)
 
-> 💡 **Windows users:** double-click `START-SERVER.bat` — it auto-installs dependencies on first run, no terminal needed.
->
-> 🍎 **macOS / Linux:** double-click `START-SERVER.sh` (or run `./START-SERVER.sh` from a terminal).
+| Platform | How to start |
+|---|---|
+| **🪟 Windows** | Double-click `web-app/START-SERVER.bat` — auto-installs deps on first run, browser opens automatically |
+| **🍎 macOS** | Double-click `web-app/START-SERVER.sh` (or run `./START-SERVER.sh` in Terminal) |
+| **🐧 Linux** | Run `./START-SERVER.sh` from the `web-app` folder |
+| **⌨️ Any platform** | `cd web-app && python main.py` |
+
+Then open **<http://127.0.0.1:8000>** in your browser.
+
+> 💡 The system auto-creates `99-SYSTEM-BACKEND/`, `INCOMING/`, `01-PROJECTS/`, and the encryption key on first run. **No data is on the server** — everything stays on your machine.
 
 ### Configure AI
 

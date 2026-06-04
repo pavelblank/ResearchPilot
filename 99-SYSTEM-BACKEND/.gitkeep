@@ -1,0 +1,4 @@
+# Keeps the 99-SYSTEM-BACKEND folder in version control.
+# This folder holds settings, audit log, chats, and the encryption key.
+# The system self-bootstraps everything else on first run.
+# See SECURITY.md for what is and is not committed here.

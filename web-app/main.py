@@ -78,6 +78,14 @@ SETTINGS_F = BACKEND / "settings.json"
 SETTINGS_KEY_FILE = BACKEND / ".settings_key"
 STATIC     = Path(__file__).parent / "static"
 
+# ─── Bootstrap folders (must happen BEFORE logging) ───────────────────────────
+# A fresh GitHub download does not include 99-SYSTEM-BACKEND/ or INCOMING/ —
+# they contain user-specific data (encrypted API keys, audit log, settings).
+# The system must create them on first run, BEFORE anything tries to write
+# into them (logging, audit, settings, chats).
+for d in [BASE, BACKEND, CHATS_DIR, INCOMING, SKILLS_DIR, PLUGINS_DIR, PROJECTS]:
+    d.mkdir(parents=True, exist_ok=True)
+
 # ─── Logging (rotating, max ~2 MB × 4 files) ──────────────────────────────────
 LOG_FILE = BACKEND / "server.log"
 logging.basicConfig(
@@ -146,9 +154,7 @@ if _plugins_dir.exists():
 
 UNREAD_WEB      = INCOMING / "UNREAD-WEB"
 PREDATORY_FILE  = CORE / "predatory_journals.json"
-
-for d in [CHATS_DIR, INCOMING, SKILLS_DIR, PLUGINS_DIR, PROJECTS, UNREAD_WEB]:
-    d.mkdir(parents=True, exist_ok=True)
+UNREAD_WEB.mkdir(parents=True, exist_ok=True)
 
 # ─── Settings ─────────────────────────────────────────────────────────────────
 DEFAULT_SETTINGS = {

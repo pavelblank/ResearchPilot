@@ -44,8 +44,17 @@ Desktop.ini
 *.swp
 
 # Research content (papers, extractions, projects)
-01-PROJECTS/
-INCOMING/
+# Allow the project template (blueprint) but ignore all real project data
+01-PROJECTS/*
+!01-PROJECTS/00-TEMPLATE/
+!01-PROJECTS/00-TEMPLATE/**
+# Allow INCOMING/ and UNREAD-WEB/ folders to exist on clone (.gitkeep only);
+# user papers placed there remain ignored.
+INCOMING/*
+!INCOMING/.gitkeep
+!INCOMING/UNREAD-WEB/
+!INCOMING/UNREAD-WEB/.gitkeep
+!INCOMING/UNREAD-WEB/**
 *.pdf
 *.epub
 *.caj

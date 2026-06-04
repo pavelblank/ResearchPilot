@@ -1,0 +1,3 @@
+# Keeps the INCOMING folder in version control. Drop PDFs here to be
+# sorted into a project via the UI (UNREAD-WEB tab → "Move to project").
+# The system auto-creates UNREAD-WEB/ on first run.
