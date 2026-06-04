@@ -1,4 +1,4 @@
-# ResearchPilot V5.3.1 — System Protocols
+# ResearchPilot V5.3.3 — System Protocols
 
 These are the standards every AI engine in the system must follow. They are enforced through the `00-SYSTEM-CORE/skills/` markdown files, which are automatically injected into every AI conversation.
 
@@ -75,6 +75,30 @@ This means:
 
 See [SECURITY.md](../SECURITY.md) for the full security policy.
 
+## Protocol 7: Filename Standardization
+
+Every paper artifact (extractions, library PDFs, web imports, summaries, details, any new notes) follows the canonical form:
+
+```
+{AuthorLastName}_{Year}[_{note}][_{disambiguator}].{ext}
+```
+
+- **Extractions** preserve the P-code prefix used in `[P001, 2024]` citations: `P001_Foshay_2015.md`
+- **Library PDFs** use the bare author-year form: `Foshay_2015.pdf`
+- **Web imports** (`.md` and `.pdf`) use the same author-year form
+- **Note suffix** is optional and only used for disambiguation (`_summary`, `_details`, `_notes`, etc.)
+- **Disambiguator** (`_2`, `_3`, ...) is appended only on collision with an existing file
+
+Sanitization rules (applied by `web-app/_filename_utils.py`):
+- Apostrophes → underscores (`O'Brien` → `O_Brien`)
+- Spaces and other unsafe characters → underscores
+- The first author only is kept (`Alyami et al. - 2023.pdf` → `Alyami_2023.pdf`; `Bansal and Axelton - 2024.pdf` → `Bansal_2024.pdf`)
+- Maximum name length is 100 characters
+
+The 12-Point prompt (Protocol 1) requires the AI to emit the APA reference as the first line of every extraction, so the filename builder can always recover the canonical name.
+
+A one-shot migration script (`web-app/migrate_filename_format.py`) renames existing legacy files. It is **opt-in** — defaults to dry-run — and writes a full plan to `99-SYSTEM-BACKEND/migration_plan_YYYYMMDD_HHMMSS.json` before any rename. Backups go to `99-SYSTEM-BACKEND/filename_migration_backup/`. Re-run with `--apply` to commit, `--backup` to copy originals first.
+
 ---
 
-**Version:** V5.3.1 · **Last Updated:** 2026-06-04
+**Version:** V5.3.3 · **Last Updated:** 2026-06-04

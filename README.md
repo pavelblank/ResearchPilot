@@ -1,12 +1,12 @@
 <div align="center">
 
-# ResearchPilot <sub>V5.3.2</sub>
+# ResearchPilot <sub>V5.3.3</sub>
 
 **AI-native research infrastructure for academics and PhD students.**
 
 Ingest papers · Extract insights via AI · Search 5 academic databases · Visualize knowledge graphs · Write with RAG-powered chat
 
-[![Version](https://img.shields.io/badge/version-V5.3.2-6c63ff?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-V5.3.3-6c63ff?style=for-the-badge)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=for-the-badge)](LICENSE)
@@ -62,7 +62,7 @@ ResearchPilot is a complete research operating system that connects to multiple 
 - ⌨️ **Keyboard shortcuts** — `1-9` switch tabs, `/` focus chat, `Esc` close modal.
 - 🪶 **Obsidian-compatible** — the entire folder is a valid Obsidian vault; open it and you get an instant knowledge graph.
 - 🧠 **Smart keyword system** — manual deletes are remembered forever; re-adding a deleted keyword restores it until you delete it again. Auto-scan skips your discard list.
-- 🧪 **Smoke-tested** — 21 automated tests cover encryption, RAG cache, audit log, rate limiter, health, exception handler, keyword rules, Graphify filter, SSRF guard, tool-allowlist interceptor, path-traversal, Pydantic schema, and security wiring.
+- 🧪 **Smoke-tested** — 24 automated tests cover encryption, RAG cache, audit log, rate limiter, health, exception handler, keyword rules, Graphify filter, SSRF guard, tool-allowlist interceptor, path-traversal, Pydantic schema, security wiring, and filename standardisation (Protocol 7).
 - 🤖 **100% AI-built** — every line generated through [OpenCode](https://opencode.ai), a free local AI coding agent.
 
 ---
@@ -271,6 +271,7 @@ ResearchPilot is designed for **single-user, local-first** operation.
 - 🚧 **Path traversal protection** on every file endpoint (`resolve_era_path()` + per-tool Pydantic schema)
 - 🛡️ **Prompt-injection & tool-abuse defence** (V5.3.2) — `ToolExecReq` Pydantic v2 schema (`Literal` of 10 allowed tool names) plus an orchestration interceptor that validates every LLM tool call (type, length, path safety, NUL bytes) before dispatch
 - 🛡️ **SSRF defence** (V5.3.2) — engine URLs and external fetches validated against private IP ranges (`127.0.0.0/8`, `10/8`, `172.16/12`, `192.168/16`, `169.254/16`) and forbidden schemes (`file://`, `gopher://`, `ftp://`)
+- 📁 **Filename standardisation** (V5.3.3) — Protocol 7 enforces `{Author}_{Year}[_{note}][_{N}].{ext}` for every paper artifact (extractions, library PDFs, web imports, summaries). First author only (`Alyami et al. - 2023.pdf` → `Alyami_2023.pdf`), apostrophes sanitised (`O'Brien` → `O_Brien`), collisions auto-disambiguated. Opt-in migration script: `python migrate_filename_format.py` (dry-run) → `--apply --backup` to commit.
 - 📦 **Upload size limit** 500 MB
 - 🔐 **Admin SHA-256 password** for sensitive author settings
 - 🚫 **Zero telemetry** — no analytics, no phone-home, no remote calls except configured AI engines and academic APIs
@@ -312,7 +313,10 @@ Expected output:
 [PASS] ToolExecReq Pydantic schema rejects unknown tools + extras
 [PASS] interceptor is wired into LLM tool-call loops + API
 [PASS] SSRF guard wired into ai_respond and research_web_import
-21/21 passed
+[PASS] filename utilities: canonical naming + disambiguation
+[PASS] filename utilities: legacy detection + author-year parsing
+[PASS] filename wiring: main.py endpoints + migration script present
+24/24 passed
 ```
 [PASS] encryption roundtrip decrypts keys
 [PASS] RAG cache warms (warm < cold/5)

@@ -1,4 +1,4 @@
-# ResearchPilot V5.3.2 — System Specification
+# ResearchPilot V5.3.3 — System Specification
 
 ## Purpose
 

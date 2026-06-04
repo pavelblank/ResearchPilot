@@ -72,6 +72,11 @@ INCOMING/*
 Version 5.1/
 graphify-out/
 
+# Filename migration artifacts (transient; one-shot, opt-in, user-controlled)
+99-SYSTEM-BACKEND/filename_migration_backup/
+99-SYSTEM-BACKEND/migration_plan_*.json
+!99-SYSTEM-BACKEND/filename_migration_backup/.gitkeep
+
 # Temp / logs
 *.log
 *.tmp

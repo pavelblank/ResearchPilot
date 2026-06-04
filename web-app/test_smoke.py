@@ -346,5 +346,77 @@ def t21():
     global passed; passed += 1
 total += 1; check("SSRF guard wired into ai_respond and research_web_import", t21)
 
+# ---------------------------------------------------------------------------
+# v5.3.3 — Filename standardisation (Protocol 7)
+# ---------------------------------------------------------------------------
+
+def t22():
+    """Protocol 7: filename utilities exist and produce canonical names."""
+    import _filename_utils as fu
+    # Extractions keep the P-code prefix
+    assert fu.build_extraction_filename("P001", "Foshay", "2015") == "P001_Foshay_2015.md"
+    # Note suffix for disambiguation
+    assert fu.build_extraction_filename("P001", "Foshay", "2015", note="summary") == "P001_Foshay_2015_summary.md"
+    # Library PDFs use the bare author-year form (ext is a keyword arg)
+    assert fu.build_paper_filename("Foshay", "2015", ext="pdf") == "Foshay_2015.pdf"
+    # Apostrophe sanitised to underscore for cross-platform safety
+    assert fu.build_paper_filename("O'Brien", "2024") == "O_Brien_2024.md"
+    # Missing author → "Untitled" placeholder
+    assert fu.build_paper_filename(None, "2024") == "Untitled_2024.md"
+    # Missing year → "Undated" placeholder
+    assert fu.build_paper_filename("Smith", None) == "Smith_Undated.md"
+    # Collision: appends _2, _3, etc. (takes a folder, not a set)
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        tmpdir = Path(tmp)
+        # Pre-create the file so the next call must disambiguate
+        (tmpdir / "Foshay_2015.md").write_text("placeholder", encoding="utf-8")
+        out = fu.disambiguate_filename(tmpdir, "Foshay_2015.md")
+        assert out == "Foshay_2015_2.md", out
+    global passed; passed += 1
+total += 1; check("filename utilities: canonical naming + disambiguation", t22)
+
+def t23():
+    """Protocol 7: legacy name detection + conversion round-trips correctly."""
+    import _filename_utils as fu
+    # P-prefixed extractions
+    assert fu.is_legacy_p_extraction("P001 - Content Extraction.md")
+    # Hand-typed author-year (with "et al." and " - " separator)
+    assert fu.is_legacy_author_year("Alyami et al. - 2023.pdf")
+    assert fu.is_legacy_author_year("Bansal and Axelton - 2024.pdf")
+    assert fu.is_legacy_author_year("Foshay et al. - 2015.pdf")
+    # Two-author / "and" form
+    a, y = fu.parse_legacy_author_year("Bansal and Axelton - 2024.pdf")
+    assert a == "Bansal" and y == "2024", (a, y)
+    # "et al." truncated to first author
+    a, y = fu.parse_legacy_author_year("Alyami et al. - 2023.pdf")
+    assert a == "Alyami" and y == "2023", (a, y)
+    # Already-canonical names must NOT match
+    assert not fu.is_legacy_p_extraction("P001_Foshay_2015.md")
+    assert not fu.is_legacy_author_year("Foshay_2015.pdf")
+    global passed; passed += 1
+total += 1; check("filename utilities: legacy detection + author-year parsing", t23)
+
+def t24():
+    """Protocol 7: filename utilities are wired into main.py endpoints."""
+    import main
+    src = Path(main.__file__).read_text(encoding="utf-8")
+    # Module is imported
+    assert "_filename_utils as _fn_utils" in src, "_filename_utils not imported in main.py"
+    # extract_paper uses the canonical builder
+    assert "build_extraction_filename" in src
+    # Web-import endpoints use the canonical builder
+    assert "build_paper_filename" in src
+    # Migration helper exists as a sibling CLI script
+    mig = Path(main.__file__).parent / "migrate_filename_format.py"
+    assert mig.exists(), "migrate_filename_format.py should be in web-app/"
+    mig_src = mig.read_text(encoding="utf-8")
+    assert "build_paper_filename" in mig_src and "build_extraction_filename" in mig_src
+    # Migration defaults to dry-run (no surprise renames)
+    assert "--apply" in mig_src
+    assert "DRY-RUN" in mig_src
+    global passed; passed += 1
+total += 1; check("filename wiring: main.py endpoints + migration script present", t24)
+
 print(f"\n{passed}/{total} passed")
 sys.exit(0 if passed == total else 1)

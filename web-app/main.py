@@ -28,6 +28,12 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+# ─── Filename standardization (Protocol 7) ──────────────────────────────────
+# Every paper-related artifact uses the canonical format
+#   {AuthorLastName}_{Year}[_{note}][_{disambiguator}].{ext}
+# See web-app/_filename_utils.py for the full spec and parser.
+import _filename_utils as _fn_utils
+
 # optional heavy imports — graceful fallback
 try:
     from docx import Document as DocxDoc
@@ -1338,7 +1344,7 @@ async def health():
     return {
         "ok": True,
         "service": "ResearchPilot",
-        "version": "5.3.2",
+        "version": "5.3.3",
         "time": datetime.datetime.now().isoformat(timespec="seconds"),
         "engines_loaded": len(load_settings().get("ai_engines", [])),
     }
@@ -1873,7 +1879,7 @@ async def upload_file(
     mime = _check_mime(content)
     if mime and mime not in ALLOWED_MIME_TYPES:
         raise HTTPException(415, f"File type not allowed: {mime}")
-    fname = sanitize_filename(file.filename or "uploaded_file")
+    raw_name = sanitize_filename(file.filename or "uploaded_file")
 
     if project == "INCOMING":
         dest_folder = INCOMING
@@ -1881,10 +1887,33 @@ async def upload_file(
         dest_folder = PROJECTS / project / "01-LIBRARY"
         dest_folder.mkdir(parents=True, exist_ok=True)
 
+    # Write first with the user-supplied name, then derive a canonical
+    # Author_Year name and rename in-place if we can extract metadata.
+    # This keeps the upload atomic-looking to the client while still giving
+    # us a chance to clean up badly-named files.
+    fname = _fn_utils.disambiguate_filename(dest_folder, raw_name)
     dest = dest_folder / fname
-    if dest.exists():
-        raise HTTPException(409, f"File already exists: {fname}")
     dest.write_bytes(content)
+
+    # Protocol 7: try to derive a canonical Author_Year filename for PDFs
+    if fname.lower().endswith(".pdf"):
+        try:
+            head_text = extract_pdf_text(dest, max_chars=3000)
+        except Exception:
+            head_text = ""
+        a, y = _fn_utils.parse_pdf_text_for_metadata(head_text)
+        if a and y:
+            ext = Path(fname).suffix
+            new_stem = _fn_utils.build_paper_filename(a, y, ext="")
+            candidate = _fn_utils.disambiguate_filename(dest_folder, f"{new_stem}{ext}")
+            if candidate != fname:
+                try:
+                    new_path = dest_folder / candidate
+                    dest.rename(new_path)
+                    fname = candidate
+                    dest = new_path
+                except Exception:
+                    pass  # best-effort; keep the original name
 
     # Auto-convert to markdown
     md_path = None
@@ -2087,7 +2116,12 @@ async def extract_paper(req: ExtractReq):
 
     text = extract_pdf_text(pdf_path)
     prompt = (
-        "Apply the full 12-Point Elite Extraction Protocol. Output structured markdown:\n"
+        "Apply the full 12-Point Elite Extraction Protocol. Output structured markdown.\n"
+        "IMPORTANT: The very first line MUST be the APA reference in this exact form:\n"
+        "1. **APA Reference**: LastName, F. M., & OtherAuthor, A. (YYYY). Title here. *Journal Name*, vol(issue), pages.\n"
+        "The year in parentheses and the first author's surname are how the system "
+        "names the output file — keep them exactly as they appear in the original paper.\n\n"
+        "Then continue with the 12 points:\n"
         "1. APA Reference  2. DOI  3. Journal Name  4. Quartile Ranking (Q1/Q2/Q3/Q4)\n"
         "5. Indexing (Scopus/WoS)  6. Research Method  7. Theoretical Framework\n"
         "8. Exact Relevance  9. Section Support  10. Key Contribution\n"
@@ -2099,15 +2133,31 @@ async def extract_paper(req: ExtractReq):
 
     ext_dir = PROJECTS / req.project / "02-EXTRACTIONS" if req.project != "INCOMING" else INCOMING
     ext_dir.mkdir(exist_ok=True)
-    existing = []
-    for f in ext_dir.glob("P*.md"):
-        mt = re.search(r"P(\d+)", f.stem)
-        if mt:
-            existing.append(int(mt.group(1)))
-    code = f"P{(max(existing, default=0) + 1):03d}"
-    out = ext_dir / f"{code} - {pdf_path.stem}.md"
+    code = _fn_utils.next_extraction_code(ext_dir)
+
+    # Protocol 7: derive author + year from the AI's APA reference line.
+    # Falls back to PDF text scanning, then to the PDF filename.
+    author, year = _fn_utils.parse_apa_reference(result)
+    if not author or not year:
+        author2, year2 = _fn_utils.parse_pdf_text_for_metadata(text)
+        author = author or author2
+        year = year or year2
+    if not author or not year:
+        # Last-resort: try the existing PDF filename (might be "Foshay_2015.pdf"
+        # or "Foshay et al. - 2015.pdf" — both have something usable)
+        author3, year3 = _fn_utils.parse_legacy_author_year(pdf_path.name)
+        if not author3:
+            author3 = _fn_utils._sanitize_token(pdf_path.stem.split("_")[0].split(" ")[0])
+        if not year3:
+            year3 = str(datetime.datetime.now().year)
+        author = author or author3
+        year = year or year3
+
+    fname = _fn_utils.build_extraction_filename(code, author, year)
+    fname = _fn_utils.disambiguate_filename(ext_dir, fname)
+    out = ext_dir / fname
     out.write_text(
-        f"# {code} — {pdf_path.stem}\n"
+        f"# {code} — {author} ({year})\n"
         f"*Extracted: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')} | Engine: {engine}*\n\n{result}\n",
         encoding="utf-8"
     )
@@ -3557,8 +3607,9 @@ async def research_web_import(request: Request):
     oa_url = data.get("oa_url", "") or data.get("pdf_url", "")
     url = data.get("url", "")
     source = data.get("source", "Web")
-    safe_name = re.sub(r'[^\w\s\-]', '', title)[:80].strip()
-    safe_name = re.sub(r'\s+', '-', safe_name)
+    # Protocol 7: derive canonical Author_Year filename from the search result
+    paper_author, paper_year = _fn_utils.canonical_from_web_payload(authors, year, title)
+    safe_name = _fn_utils.build_paper_filename(paper_author, paper_year, ext="")
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     pdf_path = None
     pdf_downloaded = False
@@ -3577,7 +3628,7 @@ async def research_web_import(request: Request):
                 async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as c:
                     r = await c.get(oa_url)
                     if r.status_code == 200 and "application/pdf" in r.headers.get("content-type", "").lower():
-                        pdf_name = f"{safe_name}.pdf"
+                        pdf_name = _fn_utils.disambiguate_filename(UNREAD_WEB, f"{safe_name}.pdf")
                         pdf_path = UNREAD_WEB / pdf_name
                         pdf_path.write_bytes(r.content)
                         pdf_downloaded = True
@@ -3603,7 +3654,7 @@ async def research_web_import(request: Request):
                     if r.status_code == 200:
                         ct = r.headers.get("content-type", "").lower()
                         if "application/pdf" in ct or "application/octet-stream" in ct:
-                            pdf_name = f"{safe_name}.pdf"
+                            pdf_name = _fn_utils.disambiguate_filename(UNREAD_WEB, f"{safe_name}.pdf")
                             pdf_path = UNREAD_WEB / pdf_name
                             pdf_path.write_bytes(r.content)
                             pdf_downloaded = True
@@ -3636,7 +3687,7 @@ async def research_web_import(request: Request):
     )
     if md_fulltext:
         meta_md += f"\n\n---\n\n## Full Text (auto-extracted from PDF)\n\n{md_fulltext}\n"
-    md_name = f"{safe_name}.md"
+    md_name = _fn_utils.disambiguate_filename(UNREAD_WEB, f"{safe_name}.md")
     md_path = UNREAD_WEB / md_name
     md_path.write_text(meta_md, encoding="utf-8")
     return {
@@ -3662,8 +3713,9 @@ async def research_save_md_only(request: Request):
     oa_url = data.get("oa_url", "") or data.get("pdf_url", "")
     url = data.get("url", "")
     source = data.get("source", "Web")
-    safe_name = re.sub(r'[^\w\s\-]', '', title)[:80].strip()
-    safe_name = re.sub(r'\s+', '-', safe_name)
+    # Protocol 7: derive canonical Author_Year filename
+    paper_author, paper_year = _fn_utils.canonical_from_web_payload(authors, year, title)
+    safe_name = _fn_utils.build_paper_filename(paper_author, paper_year, ext="")
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     meta_md = (
         f"# {title}\n"
@@ -3684,14 +3736,8 @@ async def research_save_md_only(request: Request):
         f"---\n\n"
         f"## Abstract\n\n{abstract}\n"
     )
-    md_name = f"{safe_name}.md"
+    md_name = _fn_utils.disambiguate_filename(UNREAD_WEB, f"{safe_name}.md")
     md_path = UNREAD_WEB / md_name
-    # Avoid overwriting
-    counter = 1
-    while md_path.exists():
-        md_name = f"{safe_name}_{counter}.md"
-        md_path = UNREAD_WEB / md_name
-        counter += 1
     md_path.write_text(meta_md, encoding="utf-8")
     return {
         "ok": True,
@@ -3775,8 +3821,9 @@ async def research_save_md_with_analysis(request: Request):
     url = data.get("url", "")
     source = data.get("source", "Web")
     is_predatory = data.get("is_predatory", False)
-    safe_name = re.sub(r'[^\w\s\-]', '', title)[:80].strip()
-    safe_name = re.sub(r'\s+', '-', safe_name)
+    # Protocol 7: derive canonical Author_Year filename
+    paper_author, paper_year = _fn_utils.canonical_from_web_payload(authors, year, title)
+    safe_name = _fn_utils.build_paper_filename(paper_author, paper_year, ext="")
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
     # Generate 12-point analysis
@@ -3825,13 +3872,8 @@ async def research_save_md_with_analysis(request: Request):
             "### 12. Your Critical Position\n"
         )
 
-    md_name = f"{safe_name}.md"
+    md_name = _fn_utils.disambiguate_filename(UNREAD_WEB, f"{safe_name}.md")
     md_path = UNREAD_WEB / md_name
-    counter = 1
-    while md_path.exists():
-        md_name = f"{safe_name}_{counter}.md"
-        md_path = UNREAD_WEB / md_name
-        counter += 1
     md_path.write_text(meta_md, encoding="utf-8")
     return {
         "ok": True,
@@ -3856,8 +3898,9 @@ async def research_download_pdf(request: Request):
     url = data.get("url", "")
     source = data.get("source", "Web")
     is_predatory = data.get("is_predatory", False)
-    safe_name = re.sub(r'[^\w\s\-]', '', title)[:80].strip()
-    safe_name = re.sub(r'\s+', '-', safe_name)
+    # Protocol 7: derive canonical Author_Year filename
+    paper_author, paper_year = _fn_utils.canonical_from_web_payload(authors, year, title)
+    safe_name = _fn_utils.build_paper_filename(paper_author, paper_year, ext="")
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
     # Download PDF
@@ -3870,13 +3913,8 @@ async def research_download_pdf(request: Request):
                 if r.status_code == 200:
                     ct = r.headers.get("content-type", "").lower()
                     if "application/pdf" in ct or "application/octet-stream" in ct or not ct:
-                        pdf_name = f"{safe_name}.pdf"
+                        pdf_name = _fn_utils.disambiguate_filename(UNREAD_WEB, f"{safe_name}.pdf")
                         pdf_path = UNREAD_WEB / pdf_name
-                        counter = 1
-                        while pdf_path.exists():
-                            pdf_name = f"{safe_name}_{counter}.pdf"
-                            pdf_path = UNREAD_WEB / pdf_name
-                            counter += 1
                         pdf_path.write_bytes(r.content)
                         pdf_downloaded = True
         except Exception as e:
@@ -3924,13 +3962,8 @@ async def research_download_pdf(request: Request):
     if md_fulltext:
         meta_md += f"## Full Text (via Docling)\n\n{md_fulltext}\n"
 
-    md_name = f"{safe_name}.md"
+    md_name = _fn_utils.disambiguate_filename(UNREAD_WEB, f"{safe_name}.md")
     md_path = UNREAD_WEB / md_name
-    counter = 1
-    while md_path.exists():
-        md_name = f"{safe_name}_{counter}.md"
-        md_path = UNREAD_WEB / md_name
-        counter += 1
     md_path.write_text(meta_md, encoding="utf-8")
 
     return {

@@ -1,5 +1,48 @@
 # Changelog
 
+## v5.3.3 — Filename standardisation (Protocol 7)
+
+A small, additive release that makes the filesystem part of ResearchPilot predictable. From now on, every paper artifact — extractions, library PDFs, web imports, summaries, details, notes — follows one canonical form: **`{Author}_{Year}[_{note}][_{disambiguator}].{ext}`**. Fully backward-compatible: old filenames keep working through the legacy detection layer; nothing on disk is changed without an opt-in migration run.
+
+**Protocol 7: Filename Standardization** (new section in `SYSTEM-PROTOCOLS.md`)
+
+Every paper artifact uses the canonical form `{AuthorLastName}_{Year}[_{note}][_{disambiguator}].{ext}`. Sanitisation rules:
+- Apostrophes → underscores (`O'Brien` → `O_Brien`); unsafe chars → underscores
+- First author only is kept (`Alyami et al. - 2023.pdf` → `Alyami_2023.pdf`)
+- Note suffix is optional (`_summary`, `_details`, `_notes`); disambiguator (`_2`, `_3`, …) is appended only on collision
+- Max name length 100 characters
+
+The 12-Point prompt (Protocol 1) now requires the AI to emit the **APA Reference as the first line** of every extraction, so the filename builder can always recover the canonical name.
+
+**New module — `web-app/_filename_utils.py`**
+- `parse_apa_reference` (locates the APA line anywhere in markdown), `parse_pdf_text_for_metadata` (with false-positive filter for "University", "Journal", "Vol", etc.)
+- `build_paper_filename`, `build_extraction_filename` (P-code prefix preserved for Protocol 4 citations)
+- `disambiguate_filename` (collision handler), `next_extraction_code` (auto-incrementing P-code)
+- `is_legacy_p_extraction` / `is_legacy_author_year` / `parse_legacy_author_year` (backward-compat)
+- `first_author_surname` / `canonical_from_web_payload` (used by the web import endpoints)
+
+**Wired into `main.py`**
+- `extract_paper` now produces canonical extraction filenames (P-code preserved)
+- `research_web_import`, `research_save_md_only`, `research_save_md_with_analysis`, `research_download_pdf` all build canonical names
+- `upload_file` renames incoming PDFs in-place after extracting metadata
+
+**Migration — `web-app/migrate_filename_format.py`** (opt-in, dry-run by default)
+- `python migrate_filename_format.py` shows the full plan, writes it to `99-SYSTEM-BACKEND/migration_plan_*.json`, and **renames nothing**
+- `python migrate_filename_format.py --apply --backup` does the rename; originals are copied to `99-SYSTEM-BACKEND/filename_migration_backup/`
+- Already-applied to this repo: 18 files renamed in the initial migration (`Alyami et al. - 2023.pdf` → `Alyami_2023.pdf`, `P001 - Content Extraction.md` → `P001_Foshay_2015.md`, etc.)
+
+**Test coverage**
+- `web-app/test_filename_utils.py` — 19 unit tests for the new module (parser edge cases, sanitisation, disambiguation, legacy detection)
+- `web-app/test_smoke.py` — 3 new integration tests (t22–t24) for canonical naming, legacy round-trip, and endpoint wiring
+- **24/24 smoke tests pass** (was 21/21)
+
+**Documentation**
+- `SYSTEM-PROTOCOLS.md` — Protocol 7 added; version bumped to V5.3.3
+- `CHANGELOG.md` — this entry
+- `README.md` — version badge V5.3.3, test count 24/24, Filename Standardization section
+- `ResearchPilot-SYSTEM-SPECIFICATION.md` — V5.3.3 header
+- `versions.json` — v5.3.3 entry
+
 ## v5.3.2 — Security hardening: prompt-injection & SSRF defence
 A focused security release that closes two issues described in the threat model: prompt-injection leading to tool abuse, and SSRF via injected engine URLs. No breaking changes — fully backward-compatible with v5.3.1. Recommended update for all self-hosters.
 
