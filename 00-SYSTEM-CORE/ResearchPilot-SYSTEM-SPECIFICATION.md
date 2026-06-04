@@ -1,4 +1,4 @@
-# ResearchPilot V5.3.1 — System Specification
+# ResearchPilot V5.3.2 — System Specification
 
 ## Purpose
 
@@ -86,4 +86,4 @@ See [SECURITY.md](../SECURITY.md) for the full security policy and key-rotation 
 
 ---
 
-**Version:** V5.3.1 · **Last Updated:** 2026-06-04
+**Version:** V5.3.2 · **Last Updated:** 2026-06-04

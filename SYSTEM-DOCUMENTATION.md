@@ -184,6 +184,10 @@ The server initializes by:
 | File Size Limit | `MAX_UPLOAD_SIZE = 500MB` |
 | Local Host Binding | Server binds to `127.0.0.1` by default |
 | Password Hashing | `hashlib.sha256` for admin panel (not bcrypt — lightweight local setup) |
+| Prompt-injection / tool-abuse (V5.3.2) | `ToolExecReq` Pydantic v2 schema (`Literal` of 10 allowed tool names, `extra="forbid"`) + orchestration interceptor `_sanitize_tool_call()` with per-tool argument schemas (str/int/bool/path/enum, length caps 200/500/255, NUL-byte + traversal block, project-ID and system-file allowlists). Wired into both LLM tool-call loops AND the top of `execute_tool()` (defence-in-depth). |
+| SSRF defence (V5.3.2) | `_validate_engine_url()` rejects private IPs (`127.0.0.0/8`, `10/8`, `172.16/12`, `192.168/16`, `169.254/16`) and forbidden schemes (`file://`, `gopher://`, `ftp://`). Invoked from `ai_respond()` (every engine dispatch) and from `research_web_import` (every `oa_url` / DOI fetch). |
+| DoS prevention (V5.3.2) | Interceptor caps string args (200 chars for queries, 500 for paths, 255 for filenames); integer args are non-negative with sensible maxima. Prevents the LLM from issuing a 10 MB `search_files` query. |
+| Forensic audit trail | `audit()` helper writes to `99-SYSTEM-BACKEND/audit.log` (rotating, 2 MB × 2). Covers `settings.save`, `project.delete`, `file.delete`, `lit_review.export`, and now `tool.call` (name + arg keys, never values). |
 
 ### 3.4 Key Classes and Models
 

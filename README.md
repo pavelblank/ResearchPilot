@@ -1,12 +1,12 @@
 <div align="center">
 
-# ResearchPilot <sub>V5.3.1</sub>
+# ResearchPilot <sub>V5.3.2</sub>
 
 **AI-native research infrastructure for academics and PhD students.**
 
 Ingest papers · Extract insights via AI · Search 5 academic databases · Visualize knowledge graphs · Write with RAG-powered chat
 
-[![Version](https://img.shields.io/badge/version-V5.3.1-6c63ff?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-V5.3.2-6c63ff?style=for-the-badge)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=for-the-badge)](LICENSE)
@@ -53,7 +53,8 @@ ResearchPilot is a complete research operating system that connects to multiple 
 - 🌍 **5-source academic search** — OpenAlex · Crossref · Semantic Scholar · PubMed · Google Scholar (with predatory-journal filtering).
 - 🕸 **Multi-dimensional knowledge graph** — filter by Author, Year, Journal, Quartile, Method, Framework, or Keyword (AND/OR logic).
 - 🔒 **Encrypted at rest** — API keys stored using Fernet (AES-128-CBC + HMAC-SHA256); the encryption key never leaves your machine.
-- 🛡️ **Rate-limited + audit-logged** — 240 req/min/IP, every sensitive action (settings save, project delete, file delete) recorded in `audit.log`.
+- 🛡️ **Rate-limited + audit-logged** — 240 req/min/IP, every sensitive action (settings save, project delete, file delete, tool call) recorded in `audit.log`.
+- 🔐 **Prompt-injection & SSRF hardened** — Pydantic v2 `ToolExecReq` schema + orchestration interceptor block unknown tool names, path-traversal, oversized args, and private-IP engine URLs. Validates every LLM tool call before dispatch.
 - 💬 **RAG-powered chat** — no vector DB, no embeddings, no GPU. Keyword-scored context retrieval across your entire library, with 45 s result cache.
 - 📤 **Literature-review export** — `GET /api/export/lit-review?project=X` bundles all 12-point extractions into a single markdown file.
 - 🩺 **Built-in health check** — `GET /api/health` for uptime monitors, plus global exception handler that never leaks stack traces.
@@ -61,7 +62,7 @@ ResearchPilot is a complete research operating system that connects to multiple 
 - ⌨️ **Keyboard shortcuts** — `1-9` switch tabs, `/` focus chat, `Esc` close modal.
 - 🪶 **Obsidian-compatible** — the entire folder is a valid Obsidian vault; open it and you get an instant knowledge graph.
 - 🧠 **Smart keyword system** — manual deletes are remembered forever; re-adding a deleted keyword restores it until you delete it again. Auto-scan skips your discard list.
-- 🧪 **Smoke-tested** — 13 automated tests cover encryption, RAG cache, audit log, rate limiter, health, exception handler, keyword rules, Graphify filter.
+- 🧪 **Smoke-tested** — 21 automated tests cover encryption, RAG cache, audit log, rate limiter, health, exception handler, keyword rules, Graphify filter, SSRF guard, tool-allowlist interceptor, path-traversal, Pydantic schema, and security wiring.
 - 🤖 **100% AI-built** — every line generated through [OpenCode](https://opencode.ai), a free local AI coding agent.
 
 ---
@@ -220,7 +221,7 @@ ResearchPilot/
 │   ├── uninstall-windows.bat        # Clean removal (Windows)
 │   ├── uninstall-mac.sh             # Clean removal (macOS / Linux)
 │   ├── REGISTER-AUTOSTART.bat       # Optional: start on Windows login
-│   ├── test_smoke.py                # 13-test smoke suite
+│   ├── test_smoke.py                # 21-test smoke suite
 │   └── migrate_encrypt_settings.py  # One-time encryption migration
 ├── 00-SYSTEM-CORE/                   # Protocols, knowledge base (gitignored: personal)
 ├── 01-PROJECTS/                      # Research projects (gitignored: personal)
@@ -264,15 +265,17 @@ ResearchPilot is designed for **single-user, local-first** operation.
 
 - 🛡️ **API keys encrypted at rest** with Fernet (AES-128-CBC + HMAC-SHA256); the master key lives in `99-SYSTEM-BACKEND/.settings_key` and is gitignored
 - 🚦 **In-memory rate limiter** — 240 req/min/IP via sliding window; returns 429 if exceeded
-- 📜 **Audit log** — every sensitive action recorded in `99-SYSTEM-BACKEND/audit.log` (rotating, 2 MB × 2)
+- 📜 **Audit log** — every sensitive action recorded in `99-SYSTEM-BACKEND/audit.log` (rotating, 2 MB × 2); now also records tool calls (name + key list, never values)
 - 🌐 **Localhost-only binding** by default (`127.0.0.1`)
 - 🧹 **File sanitization** — filenames stripped of `..`, `~`, `<>:"/\\|?*`
-- 🚧 **Path traversal protection** on every file endpoint
+- 🚧 **Path traversal protection** on every file endpoint (`resolve_era_path()` + per-tool Pydantic schema)
+- 🛡️ **Prompt-injection & tool-abuse defence** (V5.3.2) — `ToolExecReq` Pydantic v2 schema (`Literal` of 10 allowed tool names) plus an orchestration interceptor that validates every LLM tool call (type, length, path safety, NUL bytes) before dispatch
+- 🛡️ **SSRF defence** (V5.3.2) — engine URLs and external fetches validated against private IP ranges (`127.0.0.0/8`, `10/8`, `172.16/12`, `192.168/16`, `169.254/16`) and forbidden schemes (`file://`, `gopher://`, `ftp://`)
 - 📦 **Upload size limit** 500 MB
 - 🔐 **Admin SHA-256 password** for sensitive author settings
 - 🚫 **Zero telemetry** — no analytics, no phone-home, no remote calls except configured AI engines and academic APIs
 
-See [SECURITY.md](SECURITY.md) for the full security policy, key rotation procedure, and how to report vulnerabilities.
+See [SECURITY.md](SECURITY.md) for the full security policy, key rotation procedure, threat model, and how to report vulnerabilities.
 
 ---
 
@@ -287,6 +290,29 @@ python test_smoke.py
 
 Expected output:
 
+```
+[PASS] encryption roundtrip decrypts keys
+[PASS] RAG cache warms (warm < cold/5)
+[PASS] audit log writes correctly
+[PASS] rotating log file present
+[PASS] rate limiter configured (240 req / 60s)
+[PASS] health endpoint registered
+[PASS] global exception handler installed
+[PASS] scan_keywords has _SKIP_PARTS guard
+[PASS] audit() safe with edge-case input
+[PASS] discard list is a set and non-empty
+[PASS] manual add removes word from discard list
+[PASS] manual remove adds word to discard list (cleaned up after)
+[PASS] Graphify filters to research/extraction/chat only
+[PASS] SSRF guard rejects private IPs and dangerous schemes
+[PASS] interceptor rejects unknown tool names
+[PASS] interceptor blocks path-traversal and NUL bytes
+[PASS] interceptor caps string lengths and validates types
+[PASS] interceptor enforces project/system-file allowlists
+[PASS] ToolExecReq Pydantic schema rejects unknown tools + extras
+[PASS] interceptor is wired into LLM tool-call loops + API
+[PASS] SSRF guard wired into ai_respond and research_web_import
+21/21 passed
 ```
 [PASS] encryption roundtrip decrypts keys
 [PASS] RAG cache warms (warm < cold/5)

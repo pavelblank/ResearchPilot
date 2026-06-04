@@ -26,7 +26,7 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # optional heavy imports — graceful fallback
 try:
@@ -340,6 +340,16 @@ def safe_project_path(project: str, subfolder: str, filename: str) -> Path:
 
 async def execute_tool(name: str, args: dict) -> dict:
     """Execute a tool by name with given arguments and return results."""
+    # Defence-in-depth: the orchestration interceptor also runs at the LLM
+    # loop and the /api/tools/execute endpoint, but we run it again here so
+    # that *every* code path (including direct internal calls from future
+    # code) is gated through the same tool-name allowlist and per-tool arg
+    # schema. If a call is rejected, we return the standard error-dict shape
+    # so the existing error-handling code in callers keeps working.
+    _guarded = _sanitize_tool_call(name, args)
+    if isinstance(_guarded, dict) and "error" in _guarded:
+        return _guarded
+    args = _guarded
     try:
         if name == "read_file":
             path_str = args.get("path", "")
@@ -678,6 +688,189 @@ def _validate_engine_url(url: str):
         if host_lower.startswith(prefix):
             raise ValueError(f"Private IP range not allowed: {host}")
 
+# ─── Tool Orchestration Interceptor (prompt-injection / tool-abuse guard) ───
+# Defence-in-depth: a prompt-injected LLM, a malicious frontend, or a hostile
+# paper that sneaks text into the RAG context must NOT be able to:
+#   • call tools that don't exist,
+#   • smuggle path-traversal or shell metacharacters into tool args,
+#   • DoS the system with a 10 MB "query",
+#   • bypass the allowlist by hitting /api/tools/execute directly.
+#
+# This interceptor runs *before* any tool dispatches. It returns a dict shaped
+# like a tool result. If the call is rejected, the LLM sees {"error": "..."}
+# exactly as if the tool itself had returned an error — so existing code paths
+# in the chat loop and /api/tools/execute work unchanged.
+
+# Single source of truth for which tool names exist. Keep in sync with the
+# `if name == "..."` chain in execute_tool() below. Used by both the API
+# endpoint schema and the LLM tool-call interceptor.
+_ALLOWED_TOOLS = frozenset({
+    "read_file",
+    "search_files",
+    "list_directory",
+    "get_project_list",
+    "read_knowledge_base",
+    "read_extractions_list",
+    "read_extraction",
+    "read_project_manifest",
+    "get_system_structure",
+    "read_system_core",
+})
+
+# Per-tool argument constraints. Values are Pydantic-style specs:
+#   { "field_name": (type, max_length, pattern_or_None) }
+#   type ∈ {"str", "int", "path", "enum", "bool"}
+#   "path" → must pass resolve_era_path() (no traversal)
+#   "enum" → value must equal one of `allowed`
+_TOOL_ARG_SCHEMAS = {
+    "read_file":         {"path": ("path", 500, None)},
+    "search_files":      {"query": ("str", 200, None),
+                          "max_results": ("int", None, None)},
+    "list_directory":    {"path": ("path", 500, None)},
+    "get_project_list":  {},
+    "read_knowledge_base": {},
+    "read_extractions_list":  {"project": ("enum", 64, None)},
+    "read_extraction":        {"project": ("enum", 64, None),
+                               "filename": ("str", 255, None)},
+    "read_project_manifest":  {"project": ("enum", 64, None)},
+    "get_system_structure":   {},
+    "read_system_core":       {"filename": ("enum", 255, None)},
+}
+
+# Enum allowlist values (kept tight — these are tool-specific).
+_VALID_PROJECT_IDS = None          # lazy-built from disk (no hardcoded list)
+_VALID_SYSTEM_CORE_FILES = frozenset({
+    "ResearchPilot-SYSTEM-SPECIFICATION.md",
+    "SYSTEM-PROTOCOLS.md",
+    "MASTER-KNOWLEDGE-BASE.md",
+    "GLOBAL-CONNECTIONS.md",
+    "PUBLISHING-ROADMAP.md",
+    "RESEARCHER-PROFILE.md",
+    "predatory-journals.md",
+    "START-HERE.md",
+    "discarded_keywords.json",
+    "keywords.json",
+    "versions.json",
+})
+
+def _build_project_id_allowlist() -> frozenset:
+    """Build the allowlist of project IDs from the actual PROJECTS directory.
+    Done at call time so adding a new project folder Just Works."""
+    global _VALID_PROJECT_IDS
+    if _VALID_PROJECT_IDS is None:
+        ids = set()
+        if PROJECTS.exists():
+            for p in PROJECTS.iterdir():
+                if p.is_dir() and not p.name.startswith("00-"):
+                    ids.add(p.name)
+        _VALID_PROJECT_IDS = frozenset(ids)
+    return _VALID_PROJECT_IDS
+
+def _invalidate_project_id_cache():
+    """Call after a new project is created so the allowlist refreshes."""
+    global _VALID_PROJECT_IDS
+    _VALID_PROJECT_IDS = None
+
+_PATH_TRAVERSAL_CHARS = ("..", "\\", "\x00")
+_PATH_BAD_CHARS = re.compile(r"[\x00-\x1f<>:\"\\|?*]")
+
+def _sanitize_tool_call(name: str, args) -> dict:
+    """Validate a tool call before dispatch. Returns sanitized args, or
+    {'error': '...'} if the call should be rejected.
+
+    This is the *only* function that decides whether a tool may run. Every
+    LLM tool-call loop and every direct API entry point must call it first.
+    """
+    # 1. Tool name must be a known string
+    if not isinstance(name, str) or not name:
+        return {"error": "Tool name must be a non-empty string"}
+    if name not in _ALLOWED_TOOLS:
+        return {"error": f"Unknown tool: {name!r}. Allowed: {sorted(_ALLOWED_TOOLS)}"}
+
+    # 2. Args must be a dict (and not a list/tuple in disguise)
+    if not isinstance(args, dict):
+        # If a malicious frontend sends a string, json.loads will hand us a list
+        # or scalar — refuse rather than coerce.
+        return {"error": f"Tool {name!r} args must be a JSON object, got {type(args).__name__}"}
+
+    # 3. Per-tool schema check
+    schema = _TOOL_ARG_SCHEMAS.get(name, {})
+    # Reject unknown keys (defence against noisy/hallucinated args)
+    extra = set(args.keys()) - set(schema.keys())
+    if extra:
+        return {"error": f"Tool {name!r} got unexpected argument(s): {sorted(extra)}"}
+
+    sanitized = {}
+    for field, (kind, max_len, _) in schema.items():
+        val = args.get(field)
+        # Defaults for missing fields: skip (execute_tool already handles defaults)
+        if val is None:
+            continue
+
+        if kind == "str":
+            if not isinstance(val, str):
+                return {"error": f"Tool {name!r}.{field} must be a string"}
+            if max_len and len(val) > max_len:
+                return {"error": f"Tool {name!r}.{field} too long: {len(val)} > {max_len}"}
+            if any(ch in val for ch in ("\x00",)):
+                return {"error": f"Tool {name!r}.{field} contains NUL byte"}
+            sanitized[field] = val
+
+        elif kind == "int":
+            if isinstance(val, bool) or not isinstance(val, int):
+                return {"error": f"Tool {name!r}.{field} must be an integer"}
+            if max_len is not None and val > max_len:
+                return {"error": f"Tool {name!r}.{field} too large: {val} > {max_len}"}
+            if val < 0:
+                return {"error": f"Tool {name!r}.{field} must be non-negative"}
+            sanitized[field] = val
+
+        elif kind == "bool":
+            if not isinstance(val, bool):
+                return {"error": f"Tool {name!r}.{field} must be a boolean"}
+            sanitized[field] = val
+
+        elif kind == "path":
+            if not isinstance(val, str):
+                return {"error": f"Tool {name!r}.{field} must be a string path"}
+            if max_len and len(val) > max_len:
+                return {"error": f"Tool {name!r}.{field} too long: {len(val)} > {max_len}"}
+            # Block traversal markers and NULs up front (cheap pre-check)
+            if any(tok in val for tok in _PATH_TRAVERSAL_CHARS):
+                return {"error": f"Tool {name!r}.{field} contains forbidden sequence (e.g. '..')"}
+            if _PATH_BAD_CHARS.search(val):
+                return {"error": f"Tool {name!r}.{field} contains forbidden characters"}
+            # Final check: try to resolve; resolve_era_path raises on escape
+            try:
+                resolve_era_path(val)
+            except (PermissionError, OSError, ValueError) as e:
+                return {"error": f"Tool {name!r}.{field} rejected: {e}"}
+            sanitized[field] = val
+
+        elif kind == "enum":
+            if not isinstance(val, str):
+                return {"error": f"Tool {name!r}.{field} must be a string"}
+            if max_len and len(val) > max_len:
+                return {"error": f"Tool {name!r}.{field} too long: {len(val)} > {max_len}"}
+            if field == "project":
+                if val not in _build_project_id_allowlist():
+                    return {"error": f"Tool {name!r}.{field}={val!r} is not a known project"}
+            elif field == "filename" and name == "read_system_core":
+                if val not in _VALID_SYSTEM_CORE_FILES:
+                    return {"error": f"Tool {name!r}.{field}={val!r} is not an allowed system file"}
+            # For read_extraction, filename is checked later in execute_tool
+            sanitized[field] = val
+
+    # 4. Audit the call for forensic visibility. This is a *tool call*,
+    # distinct from a settings change. We log the tool name + keys only,
+    # never the values (filenames and queries may contain user data).
+    try:
+        audit(f"tool.call", tool=name, keys=",".join(sorted(sanitized.keys())) or "-")
+    except Exception:
+        pass
+
+    return sanitized
+
 # ─── Multi-AI Router ──────────────────────────────────────────────────────────
 async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
     async with httpx.AsyncClient(timeout=300.0) as c:
@@ -736,7 +929,17 @@ async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
                             fn_args = json.loads(fn_args)
                         except json.JSONDecodeError:
                             fn_args = {}
-                    result = await execute_tool(fn, fn_args)
+                    # Orchestration interceptor: reject malformed / dangerous tool calls
+                    # before they ever reach execute_tool. If sanitization returns an
+                    # error dict, we feed it to the model exactly as a real tool result
+                    # would be returned — so the chat loop continues normally.
+                    guarded = _sanitize_tool_call(fn, fn_args)
+                    if isinstance(guarded, dict) and "error" in guarded:
+                        result = guarded
+                        fn_args = {}
+                    else:
+                        fn_args = guarded
+                        result = await execute_tool(fn, fn_args)
                     status = "ok" if "error" not in result else "error"
                     tool_uses.append({"tool": fn, "args": fn_args, "status": status})
                     content_str = json.dumps(result, ensure_ascii=False)
@@ -808,7 +1011,17 @@ async def _try_openai_compat(engine: dict, messages: list) -> tuple[str, list]:
                             fn_args = json.loads(fn_args)
                         except json.JSONDecodeError:
                             fn_args = {}
-                    result = await execute_tool(fn, fn_args)
+                    # Orchestration interceptor: reject malformed / dangerous tool calls
+                    # before they ever reach execute_tool. If sanitization returns an
+                    # error dict, we feed it to the model exactly as a real tool result
+                    # would be returned — so the chat loop continues normally.
+                    guarded = _sanitize_tool_call(fn, fn_args)
+                    if isinstance(guarded, dict) and "error" in guarded:
+                        result = guarded
+                        fn_args = {}
+                    else:
+                        fn_args = guarded
+                        result = await execute_tool(fn, fn_args)
                     status = "ok" if "error" not in result else "error"
                     tool_uses.append({"tool": fn, "args": fn_args, "status": status})
                     content_str = json.dumps(result, ensure_ascii=False)
@@ -932,6 +1145,18 @@ async def ai_respond(messages: list, project: str = None, skills: list = None) -
         handler = ENGINE_HANDLERS.get(engine["type"])
         if not handler:
             continue
+        # SSRF guard: the engine's URL lives in user-mutable settings.json.
+        # A prompt-injected LLM, a malicious frontend, or a compromised
+        # settings file must not be able to flip a URL to a private network
+        # endpoint. Skip the engine (treat as unreachable) if the URL is bad.
+        engine_url = (engine.get("url") or "").strip()
+        if engine_url:
+            try:
+                _validate_engine_url(engine_url)
+            except ValueError as e:
+                logger.warning("Skipping engine %s: SSRF guard rejected URL (%s)", engine.get("name", "?"), e)
+                errors.append(f"{engine['name']}: SSRF guard rejected URL ({e})")
+                continue
         try:
             result, tool_uses = await handler(engine, full_msgs)
             if result and result.strip():
@@ -1113,7 +1338,7 @@ async def health():
     return {
         "ok": True,
         "service": "ResearchPilot",
-        "version": "5.3",
+        "version": "5.3.2",
         "time": datetime.datetime.now().isoformat(timespec="seconds"),
         "engines_loaded": len(load_settings().get("ai_engines", [])),
     }
@@ -1532,6 +1757,8 @@ async def create_project(request: Request):
         f"## Status\n- [ ] Phase 1: Library\n- [ ] Phase 2: Extractions\n- [ ] Phase 3: Drafting\n- [ ] Phase 4: Submit\n",
         encoding="utf-8"
     )
+    # Refresh the orchestration interceptor's project allowlist
+    _invalidate_project_id_cache()
     return {"ok": True, "id": name}
 
 @app.delete("/api/projects/{project_id}")
@@ -2063,14 +2290,42 @@ async def delete_skill(name: str):
     return {"ok": True}
 
 # ── Tools API ──
+# Pydantic v2 schema for the direct tool-execution endpoint. The `tool` field
+# is constrained to the allowlist (defence against a hostile frontend that
+# tries to smuggle in a non-existent tool name). The `args` field is a plain
+# dict here for compatibility with the LLM-side tool-calling protocol, but
+# the per-field constraints are enforced by _sanitize_tool_call() before any
+# dispatch — see the orchestration interceptor above.
+from typing import Literal
+_TOOL_LITERAL = Literal[
+    "read_file", "search_files", "list_directory", "get_project_list",
+    "read_knowledge_base", "read_extractions_list", "read_extraction",
+    "read_project_manifest", "get_system_structure", "read_system_core",
+]
+
 class ToolExecReq(BaseModel):
-    tool: str
-    args: dict = {}
+    tool: _TOOL_LITERAL
+    # Cap args to a reasonable size — a 50-key dict is already suspicious.
+    args: dict = Field(default_factory=dict, max_length=50)
+
+    model_config = {
+        "extra": "forbid",        # unknown top-level keys → 422
+        "str_strip_whitespace": True,
+    }
 
 @app.post("/api/tools/execute")
 async def api_execute_tool(req: ToolExecReq):
-    """Execute a tool directly (for frontend or testing)."""
-    result = await execute_tool(req.tool, req.args)
+    """Execute a tool directly (for frontend or testing).
+
+    Two layers of validation:
+      1. Pydantic v2 schema above rejects unknown tool names and oversize args.
+      2. _sanitize_tool_call() (orchestration interceptor) validates per-tool
+         arg types, lengths, and path safety before any tool body runs.
+    """
+    guarded = _sanitize_tool_call(req.tool, req.args)
+    if isinstance(guarded, dict) and "error" in guarded:
+        return {"ok": False, "result": guarded}
+    result = await execute_tool(req.tool, guarded)
     return {"ok": "error" not in result, "result": result}
 
 @app.get("/api/tools")
@@ -3308,22 +3563,40 @@ async def research_web_import(request: Request):
     pdf_path = None
     pdf_downloaded = False
     if oa_url:
+        # SSRF guard: oa_url arrives from a search-result payload (Crossref /
+        # OpenAlex / Semantic Scholar), which means it ultimately comes from
+        # an external source the user can influence. A malicious URL could
+        # try to hit the local ResearchPilot server (127.0.0.1) or other
+        # private endpoints. Validate before fetch.
         try:
-            async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as c:
-                r = await c.get(oa_url)
-                if r.status_code == 200 and "application/pdf" in r.headers.get("content-type", "").lower():
-                    pdf_name = f"{safe_name}.pdf"
-                    pdf_path = UNREAD_WEB / pdf_name
-                    pdf_path.write_bytes(r.content)
-                    pdf_downloaded = True
-        except Exception as e:
-            print(f"[Research] PDF download failed: {e}")
+            _validate_engine_url(oa_url)
+        except ValueError as e:
+            print(f"[Research] PDF download blocked by SSRF guard: {e}")
+        else:
+            try:
+                async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as c:
+                    r = await c.get(oa_url)
+                    if r.status_code == 200 and "application/pdf" in r.headers.get("content-type", "").lower():
+                        pdf_name = f"{safe_name}.pdf"
+                        pdf_path = UNREAD_WEB / pdf_name
+                        pdf_path.write_bytes(r.content)
+                        pdf_downloaded = True
+            except Exception as e:
+                print(f"[Research] PDF download failed: {e}")
     if not pdf_downloaded and doi:
         for try_url in [
             f"https://doi.org/{doi}",
             f"https://sci-hub.se/{doi}",
             f"https://unpaywall.org/{doi}"
         ]:
+            # SSRF guard for the DOI fallback hosts (these are well-known
+            # public endpoints, but the guard also defends against a future
+            # caller who swaps the list with a private URL).
+            try:
+                _validate_engine_url(try_url)
+            except ValueError as e:
+                print(f"[Research] Skipping {try_url}: SSRF guard ({e})")
+                continue
             try:
                 async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as c:
                     r = await c.get(try_url, headers={"User-Agent": "ResearchPilot/2.0"})
