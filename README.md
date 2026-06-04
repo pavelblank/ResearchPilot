@@ -1,249 +1,287 @@
+<div align="center">
+
 # ResearchPilot <sub>V5.3</sub>
 
-> **AI-native research infrastructure for academics or students.**  
-> Ingest papers, extract insights via AI, search across 5 academic databases, visualise knowledge graphs, and write with RAG-powered chat — all self-hosted, all local-first.
+**AI-native research infrastructure for academics and PhD students.**
+
+Ingest papers · Extract insights via AI · Search 5 academic databases · Visualize knowledge graphs · Write with RAG-powered chat
+
+[![Version](https://img.shields.io/badge/version-V5.3-6c63ff?style=for-the-badge)](CHANGELOG.md)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=for-the-badge)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/pavelblank/ResearchPilot?style=for-the-badge&logo=github)](https://github.com/pavelblank/ResearchPilot/stargazers)
+[![Self-hosted](https://img.shields.io/badge/self--hosted-local--first-orange?style=for-the-badge)](#-quick-start)
+[![AI-Native](https://img.shields.io/badge/built--with-OpenCode%20AI-ff4d6d?style=for-the-badge)](#-built-with-ai)
+
+[Features](#-features) · [Quick Start](#-quick-start) · [Screenshots](#-screenshots) · [Documentation](SYSTEM-DOCUMENTATION.md) · [Security](#-security)
+
+</div>
 
 ---
 
-> `CLAUDE.md` contains AI behaviour instructions for Claude Code integration — optional, safe to ignore.
+> **All self-hosted. All local-first. Your research, your machine, your keys.**
 
-##  Overview
-
-ResearchPilot is a self-hosted research assistant that connects to multiple AI backends (Ollama, Gemini, Claude, OpenRouter, etc.) and provides a complete workflow for academic research:
-
-- **Ingest** any file (PDF, DOCX, PPTX, HTML, TXT, MD) — auto-converts to Markdown
-- **Extract** papers using the 12-point Elite Extraction Protocol via AI
-- **Search** across 5 academic databases (OpenAlex, Crossref, Semantic Scholar, ArXiv, PubMed)
-- **Visualize** research with a multi-dimension knowledge graph
-- **Chat** with AI using your research library as RAG context
-- **Track** keywords, predatory journals, and version changelog
-- **Dashboard** — live System Pulse graph with animated nodes, Quote of the Day (365 quotes)
-- **Quick Notes** — persistent CRUD notes stored server-side in `99-SYSTEM-BACKEND/notes.json`
-- **Multi-AI Engine Router** — unlimited engines with priority-based failover
+ResearchPilot is a complete research operating system that connects to multiple AI backends (Ollama, Gemini, Claude, OpenRouter, NVIDIA, and more) and gives you a full workflow for academic research — from paper discovery and ingestion to AI-powered extraction, multi-dimensional knowledge graphs, and RAG-augmented writing.
 
 ---
 
-## 📸 Screenshots (V5.3)
+## 📸 Screenshots
 
 <div align="center">
   <table>
     <tr>
-      <td><img src="5.3.0-%20Home%20page%20dashbard%20.png" alt="Home Dashboard" width="300"></td>
-      <td><img src="5.3.0-%20Web%20Research%20page.png" alt="Web Research" width="300"></td>
-      <td><img src="5.3.0-%20Knowledge%20Graph%20page.png" alt="Knowledge Graph" width="300"></td>
+      <td><img src="5.3.0-%20Home%20page%20dashbard%20.png" alt="Home Dashboard" width="320"></td>
+      <td><img src="5.3.0-%20Web%20Research%20page.png" alt="Web Research" width="320"></td>
+      <td><img src="5.3.0-%20Knowledge%20Graph%20page.png" alt="Knowledge Graph" width="320"></td>
     </tr>
     <tr>
-      <td align="center"><b>🏠 Home Dashboard</b></td>
-      <td align="center"><b>🔍 Web Research</b></td>
-      <td align="center"><b>🕸 Knowledge Graph</b></td>
+      <td align="center"><b>🏠 Home Dashboard</b><br><sub>System Pulse · Quotes · Stats</sub></td>
+      <td align="center"><b>🔍 Web Research</b><br><sub>5 academic sources</sub></td>
+      <td align="center"><b>🕸 Knowledge Graph</b><br><sub>7 dimensions · AND/OR filters</sub></td>
     </tr>
   </table>
 </div>
 
 ---
 
-##  Prerequisites
+## ✨ Why ResearchPilot?
 
-| Requirement | Minimum |
-|-------------|---------|
-| **Python** | 3.10+ (tested on 3.11) |
-| **OS** | Windows 10+ / Linux / macOS |
-| **Ollama** (optional) | Install from [ollama.com](https://ollama.com) and pull a model (`ollama pull llama3`) |
-| **Disk space** | ~500 MB for dependencies + your papers |
+- 🧠 **Multi-AI failover router** — 11+ engines, zero downtime. If one engine fails, the next takes over automatically.
+- 📚 **Universal file ingestion** — PDF · DOCX · PPTX · HTML · TXT · MD · CSV · JSON, all auto-converted to Markdown.
+- 🎓 **12-Point Elite Extraction** — every paper analysed via APA, DOI, Quartile, Method, Framework, Limitations, and more.
+- 🌍 **5-source academic search** — OpenAlex · Crossref · Semantic Scholar · PubMed · Google Scholar (with predatory-journal filtering).
+- 🕸 **Multi-dimensional knowledge graph** — filter by Author, Year, Journal, Quartile, Method, Framework, or Keyword (AND/OR logic).
+- 🔒 **Encrypted at rest** — API keys stored using Fernet symmetric encryption; the encryption key never leaves your machine.
+- 💬 **RAG-powered chat** — no vector DB, no embeddings, no GPU. Keyword-scored context retrieval across your entire library.
+- 📊 **System Pulse dashboard** — live animated graph with quote-of-the-day, stats, and quick notes.
+- 🪶 **Obsidian-compatible** — the entire folder is a valid Obsidian vault; open it and you get an instant knowledge graph.
+- 🤖 **100% AI-built** — every line generated through [OpenCode](https://opencode.ai), a free local AI coding agent.
 
 ---
 
-##  Quick Start
+## 📋 Prerequisites
 
-### 1. Install
+| Requirement | Minimum |
+|---|---|
+| **Python** | 3.10+ (tested on 3.11) |
+| **OS** | Windows 10+ · Linux · macOS |
+| **Ollama** (optional) | [ollama.com](https://ollama.com) — `ollama pull llama3` |
+| **Disk space** | ~500 MB for dependencies + your papers |
+| **RAM** | 512 MB min · 2 GB recommended |
+
+---
+
+## 🚀 Quick Start
+
+### 1️⃣ Install
 
 ```bash
-# Clone or download
+git clone https://github.com/pavelblank/ResearchPilot.git
 cd ResearchPilot/web-app
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
-### 2. Configure AI
-
-Copy and edit the environment file:
+### 2️⃣ Configure AI
 
 ```bash
 cp .env.example .env
 ```
 
-Set at least one AI key (or use local Ollama):
+Add at least one AI key in the UI after first launch (Settings → AI Engines), or use local Ollama. Your keys are **encrypted at rest** automatically.
 
-| Engine | How to Get |
-|--------|-----------|
-| **Ollama** (free, local) | Install from [ollama.com](https://ollama.com), pull a model like `llama3` |
-| **Gemini** (free tier) | Get key at [aistudio.google.com](https://aistudio.google.com/app/apikey) |
-| **Claude** | API key from [console.anthropic.com](https://console.anthropic.com) |
-| **OpenRouter** (free models) | Key from [openrouter.ai](https://openrouter.ai) |
+| Engine | Free? | Get it from |
+|---|---|---|
+| **Ollama** (local) | ✅ | [ollama.com](https://ollama.com) |
+| **Gemini Flash** | ✅ tier | [aistudio.google.com](https://aistudio.google.com/app/apikey) |
+| **OpenRouter** (free models) | ✅ tier | [openrouter.ai](https://openrouter.ai) |
+| **NVIDIA NIM** (free tier) | ✅ | [build.nvidia.com](https://build.nvidia.com) |
+| **Claude** | 💳 | [console.anthropic.com](https://console.anthropic.com) |
 
-### 3. Run
+### 3️⃣ Run
 
 ```bash
 python main.py
 ```
 
-Open **http://127.0.0.1:8000** in your browser.
+Open **<http://127.0.0.1:8000>** in your browser.
 
->  **Windows users:** Double-click `START-SERVER.bat`
+> 💡 **Windows users:** double-click `START-SERVER.bat` for one-click launch.
 
 ---
 
-##  Features
+## 🔥 Features in Detail
 
-###  Universal File Ingestion
-| Format | Auto-converts to .md |
-|--------|:---:|
-| PDF | ✅ (via PyMuPDF or Docling) |
-| DOCX / DOC | ✅ |
-| PPTX / PPT | ✅ |
-| HTML / HTM | ✅ |
-| TXT / CSV / JSON | ✅ |
+<details>
+<summary><b>📥 Universal File Ingestion</b></summary>
 
-###  Multi-AI Engine Router
-Tries enabled engines in priority order. First one that responds wins — **your AI never stops**. Supports any number of engines with auto-failover, per-engine enable/disable, and dynamic priority ordering.
+| Format | Parser | Auto .md |
+|---|---|:-:|
+| PDF | Docling (preferred) → PyMuPDF | ✅ |
+| DOCX / DOC | python-docx | ✅ |
+| PPTX / PPT | python-pptx | ✅ |
+| HTML / HTM | html2text | ✅ |
+| TXT · CSV · JSON · YAML | direct read | ✅ |
 
-Supported types: `OpenAI-compatible (OpenRouter, Jan, LocalAI)` · `Ollama (local)` · `Gemini` · `Claude API` · `Claude CLI (login)` · `Custom Plugin`
+</details>
 
-Includes auto-failover on empty content, tool calling, and model-level configuration per engine.
+<details>
+<summary><b>🔀 Multi-AI Engine Router</b></summary>
 
-###  Academic Web Search
-Search across 5 sources simultaneously:
+Supports unlimited engines with priority-based failover, per-engine enable/disable, dynamic reordering, and tool-calling. Falls back transparently when one engine rate-limits or errors.
+
+**Supported types:** OpenAI-compatible (OpenRouter · Jan · LocalAI · LM Studio) · Ollama (local) · Gemini · Claude API · Claude CLI · Custom Plugin
+
+</details>
+
+<details>
+<summary><b>🎓 12-Point Elite Extraction Protocol</b></summary>
+
+Every paper is analysed through these 12 dimensions:
+
+1. **APA Reference** — full academic citation
+2. **DOI** — Digital Object Identifier
+3. **Journal Name** — full name and ranking
+4. **Quartile Ranking** — Q1/Q2 verified via Scopus/SJR
+5. **Indexing** — Scopus, Web of Science confirmation
+6. **Research Method** — Quantitative · Qualitative · Mixed · Review
+7. **Theoretical Framework** — primary theories used
+8. **Exact Relevance** — specific utility for your project
+9. **Section Support** — which chapter or section it informs
+10. **Key Contribution** — the "One Big Insight"
+11. **Limitations** — critical gaps identified by authors
+12. **Classification** — Behaviour · Governance · Technical · Essential
+
+</details>
+
+<details>
+<summary><b>🕸 Knowledge Graph</b></summary>
+
+Visualise research across **7 dimensions**: Author · Year · Journal · Quartile · Method · Framework · Keyword.
+
+Multi-layer filtering with AND/OR logic. **Graphify** is a built-in code-level AST engine that annotates every source file, class, and function with semantic metadata.
+
+</details>
+
+<details>
+<summary><b>🌍 Academic Web Search</b></summary>
+
+Search 5 sources in parallel, with automatic deduplication and predatory-journal filtering:
 
 - **OpenAlex** — 250M+ works
 - **Crossref** — scholarly publishing metadata
-- **Semantic Scholar** — AI-powered paper discovery
+- **Semantic Scholar** — AI-powered discovery
 - **PubMed** — biomedical literature
-- **Google Scholar** — broad academic search (via scholarly)
+- **Google Scholar** — broad academic search
 
-With automatic predatory journal filtering, PDF download, and 12-point AI analysis.
+For each result: preview, open, download PDF (OA), or save metadata + 12-point AI analysis.
 
-###  Knowledge Graph
-Visualize your research across 7 dimensions:
+</details>
 
-`Author` · `Year` · `Journal` · `Quartile` · `Method` · `Framework` · `Keyword`
+<details>
+<summary><b>💬 RAG-Powered Chat (No Vector DB)</b></summary>
 
-Multi-layer filtering with AND/OR logic. Built-in Obsidian vault integration.
+Unlike conventional RAG, ResearchPilot uses **keyword-scored context retrieval** — no embeddings, no vector store, no GPU, no API service. Works with any AI engine. <1 s latency. Fully transparent (you can see which files matched).
 
-**Graphify** — built-in code-level AST graph engine. Annotates every source file, class, and function with semantic metadata. Renders an interactive visual code-map alongside your paper graph, powered by `graphify-out/cache/`.
+</details>
 
-###  12-Point Elite Extraction Protocol
-Every paper is analyzed through:
+<details>
+<summary><b>📊 Dashboard, Quotes, Quick Notes</b></summary>
 
-1. **APA Reference** — Full academic citation
-2. **DOI** — Digital Object Identifier
-3. **Journal Name** — Full name and ranking
-4. **Quartile Ranking** — Q1/Q2 verified via Scopus/SJR
-5. **Indexing** — Scopus, Web of Science confirmation
-6. **Research Method** — Quantitative, Qualitative, Mixed, or Review
-7. **Theoretical Framework** — Primary theories used
-8. **Exact Relevance** — Specific utility for the PhD project
-9. **Section Support** — Which chapter or section it informs
-10. **Key Contribution** — The "One Big Insight"
-11. **Limitations** — Critical gaps identified by authors
-12. **Classification** — Behaviour, Governance, Technical, or Essential
+- **System Pulse** — live animated graph with 6 nodes (ResearchPilot, AI Engine, Library, Chat, Extractions, Knowledge Graph)
+- **Quote of the Day** — 365+ quotes from Einstein, Curie, Sagan, Feynman, Tesla, Rumi, Mandela, and more
+- **Quick Notes** — persistent sticky notes with full CRUD, stored server-side
 
-###  Chat with RAG
-Chat with any enabled AI engine. Automatically injects relevant context from your research library — no manual file selection needed.
-
-###  System Pulse Dashboard
-Live animated graph with 6 interconnected nodes: **ResearchPilot** (center), AI Engine, Library, Chat, Extractions, and Knowledge Graph — each with pulsing status dots and real-time counts.
-
-###  Quote of the Day
-365+ inspiring quotes from Einstein, Curie, Sagan, Feynman, Tesla, Rumi, Mandela, and more — rotates by day of year with a refresh button for random picks. No network fetch needed (all embedded client-side).
-
-###  Quick Notes
-Persistent sticky notes with full CRUD (Create, Read, Update, Delete). Stored server-side in `99-SYSTEM-BACKEND/notes.json` — survives browser clears and reboots. Accessible from sidebar, max 3 visible with scroll.
+</details>
 
 ---
 
-##  Project Structure
+## 📁 Project Structure
 
 ```
 ResearchPilot/
 ├── web-app/                          # FastAPI web application
-│   ├── main.py                       # Server + all API endpoints (~3100 lines)
+│   ├── main.py                       # Server + all API endpoints
 │   ├── requirements.txt              # Python dependencies
 │   ├── .env.example                  # Environment template
 │   ├── static/
-│   │   └── index.html               # Single-page frontend (~3800 lines)
+│   │   └── index.html               # Single-page frontend
 │   ├── START-SERVER.bat             # Windows launcher
-│   └── test_final.py                # Test suite
-├── 00-SYSTEM-CORE/                   # System protocols, master knowledge base
-├── 01-PROJECTS/                      # Research projects (P1, P2, ...)
-├── 99-SYSTEM-BACKEND/               # Chats, logs, notes, automation reports
-│   └── notes.json                   # Quick Notes persistent storage
-├── INCOMING/                         # Landing zone for new papers
-├── graphify-out/                    # Graphify AST cache (knowledge graph engine)
+│   └── migrate_encrypt_settings.py  # One-time encryption migration
+├── 00-SYSTEM-CORE/                   # Protocols, knowledge base (gitignored: personal)
+├── 01-PROJECTS/                      # Research projects (gitignored: personal)
+├── 99-SYSTEM-BACKEND/                # Settings, logs, chats (gitignored)
+├── INCOMING/                         # New papers (gitignored)
+├── graphify-out/                     # AST cache (gitignored)
 ├── .gitignore
-└── README.md                        # This file
+├── LICENSE                           # MIT
+├── LICENSE-APACHE                    # Apache 2.0
+├── README.md                         # This file
+├── SYSTEM-DOCUMENTATION.md           # Full architecture reference
+├── SECURITY.md                       # Security policy + key rotation
+└── CHANGELOG.md                      # Version history
 ```
 
 ---
 
-##  Settings
+## ⚙️ Settings
 
-Accessible from the UI: **⚙️ Settings →**  
+Accessible from the UI: **⚙️ Settings →**
 
 | Section | Purpose |
-|---------|---------|
-| General | Context size, auto-extract, auto-start, timezone |
-| AI Engines | Add, configure, enable/disable, and reorder AI backends |
-| Skills | Custom markdown instructions injected with every chat |
-| Knowledge Base | Read-only view of the master synthesis |
-| Keywords | Auto-scan and track research keywords |
-| Predatory Journals | Manage filtered journal list |
-| Author | Display information |
-| Plugins | View and manage installed Python plugins |
-| Obsidian | Connect to Obsidian vault for bidirectional sync |
-| Changelog | Record version history |
+|---|---|
+| **General** | Context size · auto-extract · auto-start · timezone |
+| **AI Engines** | Add, configure, enable/disable, reorder AI backends |
+| **Skills** | Custom markdown instructions injected with every chat |
+| **Knowledge Base** | Read-only view of the master synthesis |
+| **Keywords** | Auto-scan and track research keywords |
+| **Predatory Journals** | Manage filtered journal list |
+| **Author** | Display information (gitignored) |
+| **Plugins** | View and manage installed Python plugins |
+| **Obsidian** | Connect to Obsidian vault |
+| **Changelog** | Record version history |
 
 ---
 
-##  Security Notes
+## 🔒 Security
 
-- Server binds to `127.0.0.1` by default (localhost only)
-- API keys are stored locally in `settings.json` (excluded from git)
-- Uploaded files are sanitized and limited to 500MB
-- Path traversal is blocked on all file endpoints
+ResearchPilot is designed for **single-user, local-first** operation.
+
+- 🛡️ **API keys encrypted at rest** with Fernet (AES-128-CBC + HMAC-SHA256); the master key lives in `99-SYSTEM-BACKEND/.settings_key` and is gitignored
+- 🌐 **Localhost-only binding** by default (`127.0.0.1`)
+- 🧹 **File sanitization** — filenames stripped of `..`, `~`, `<>:"/\\|?*`
+- 🚧 **Path traversal protection** on every file endpoint
+- 📦 **Upload size limit** 500 MB
+- 🔐 **Admin SHA-256 password** for sensitive author settings
+- 🚫 **Zero telemetry** — no analytics, no phone-home, no remote calls except configured AI engines and academic APIs
+
+See [SECURITY.md](SECURITY.md) for the full security policy, key rotation procedure, and how to report vulnerabilities.
 
 ---
 
 ## 🤖 Built With AI
 
-ResearchPilot was developed entirely using **[OpenCode](https://opencode.ai)** —
-a free, local AI coding agent — with no manual coding involved. Every component,
-from the FastAPI backend to the single-page frontend, was built through
-AI-assisted development.
+ResearchPilot was developed **entirely** using **[OpenCode](https://opencode.ai)** — a free, local AI coding agent — with no manual coding. Every component, from the FastAPI backend to the single-page frontend, was built through AI-assisted development.
 
-This project demonstrates that researchers and academics can build
-production-grade tools without a traditional software development background,
-using AI as the development engine.
+This project demonstrates that researchers and academics can build production-grade tools without a traditional software background, using AI as the development engine.
 
 ---
 
-##  Author
+## 📜 License
 
-**Md Yeahia Bhuiyan**
-*AI Enthusiast*
+Dual-licensed under your choice of:
 
-I am a researcher and educator specialising in cybersecurity behaviour, organisational culture, and privacy mental models in Higher Education Institutions. My work bridges qualitative academic research and applied AI systems design.
-
-ResearchPilot was built as part of a broader effort to construct portable, AI-assisted research infrastructure — systems that reduce cognitive overhead, preserve research continuity, and support publication-quality output across long-term academic projects.
-
-**Research Interests**
-Cybersecurity behaviour · Privacy mental models · Organisational culture · Protection Motivation Theory · AI-assisted academic workflows
-
-**Connect**
-- GitHub: [pavelblank]
-- Institution: [skip]
-- Contact: mrblank1010ai@gmail.com
+- [MIT License](LICENSE) — permissive, simple
+- [Apache License 2.0](LICENSE-APACHE) — explicit patent grant
 
 ---
 
+## 🌟 Star History
 
+If ResearchPilot helps your research, consider giving it a ⭐ on GitHub — it helps others discover the project.
+
+<div align="center">
+
+**[⬆ Back to Top](#researchpilot-subv53sub)**
+
+</div>

@@ -4,8 +4,9 @@ Multi-AI backbone (never stops), universal file ingestion, settings from web UI,
 project management, skills system. All chats saved as .md for Obsidian.
 """
 
-import os, json, re, shutil, datetime, traceback, asyncio, hashlib
+import os, json, re, shutil, datetime, traceback, asyncio, hashlib, secrets, base64
 from pathlib import Path
+from cryptography.fernet import Fernet
 from typing import List, Optional, Any
 
 # ─── Load .env ────────────────────────────────────────────────────────────────
@@ -66,7 +67,48 @@ CHATS_DIR  = BACKEND / "chats"
 SKILLS_DIR = CORE / "skills"
 PLUGINS_DIR = BACKEND / "plugins"
 SETTINGS_F = BACKEND / "settings.json"
+SETTINGS_KEY_FILE = BACKEND / ".settings_key"
 STATIC     = Path(__file__).parent / "static"
+
+# ─── Auth token ─────────────────────────────────────────────────────────
+TOKEN_FILE = BASE / ".token"
+if not TOKEN_FILE.exists():
+    TOKEN_FILE.write_text(secrets.token_hex(32))
+AUTH_TOKEN = TOKEN_FILE.read_text().strip()
+
+# ─── Settings encryption ────────────────────────────────────────────────
+def _get_fernet() -> Fernet:
+    if not SETTINGS_KEY_FILE.exists():
+        SETTINGS_KEY_FILE.write_text(Fernet.generate_key().decode())
+    key = SETTINGS_KEY_FILE.read_text().strip().encode()
+    return Fernet(key)
+
+def _encrypt_val(val: str) -> str:
+    if not val:
+        return val
+    return _get_fernet().encrypt(val.encode()).decode()
+
+def _decrypt_val(val: str) -> str:
+    if not val:
+        return val
+    try:
+        return _get_fernet().decrypt(val.encode()).decode()
+    except Exception:
+        return val  # already plaintext or corrupted — return as-is
+
+def _encrypt_settings(data: dict) -> dict:
+    d = json.loads(json.dumps(data))  # deep copy
+    for eng in d.get("ai_engines", []):
+        if eng.get("api_key"):
+            eng["api_key"] = _encrypt_val(eng["api_key"])
+    return d
+
+def _decrypt_settings(data: dict) -> dict:
+    d = json.loads(json.dumps(data))  # deep copy
+    for eng in d.get("ai_engines", []):
+        if eng.get("api_key"):
+            eng["api_key"] = _decrypt_val(eng["api_key"])
+    return d
 
 # ─── Load saved plugin API keys ─────────────────────────────────────────
 _plugins_dir = BACKEND / "plugins"
@@ -110,14 +152,15 @@ DEFAULT_SETTINGS = {
 def load_settings() -> dict:
     if SETTINGS_F.exists():
         try:
-            return json.loads(SETTINGS_F.read_text(encoding="utf-8"))
+            raw = json.loads(SETTINGS_F.read_text(encoding="utf-8"))
+            return _decrypt_settings(raw)
         except Exception:
             pass
-    SETTINGS_F.write_text(json.dumps(DEFAULT_SETTINGS, indent=2), encoding="utf-8")
+    SETTINGS_F.write_text(json.dumps(_encrypt_settings(DEFAULT_SETTINGS), indent=2), encoding="utf-8")
     return DEFAULT_SETTINGS.copy()
 
 def save_settings(data: dict):
-    SETTINGS_F.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    SETTINGS_F.write_text(json.dumps(_encrypt_settings(data), indent=2), encoding="utf-8")
 
 # ─── Tool Definitions (for local AI file access) ──────────────────────────────
 # These let the AI read/search/list any file in the ResearchPilot system on demand.
@@ -572,6 +615,29 @@ def build_rag_prompt(query: str, project: str = None, skills: list = None) -> st
     prompt += "\n\n## ResearchPilot FOLDER STRUCTURE\n- 00-SYSTEM-CORE/: System files, protocols, master knowledge base\n- 01-PROJECTS/[PROJECT]/01-LIBRARY/: Paper PDFs and converted markdown\n- 01-PROJECTS/[PROJECT]/02-EXTRACTIONS/: 12-point paper extractions\n- 01-PROJECTS/[PROJECT]/99-META/: Project manifests, connections, notes"
     return prompt
 
+# ─── SSRF Guard ──────────────────────────────────────────────────────────────
+_PRIVATE_RANGES = (
+    "127.", "10.", "169.254.", "172.16.", "172.17.", "172.18.", "172.19.",
+    "172.20.", "172.21.", "172.22.", "172.23.", "172.24.", "172.25.",
+    "172.26.", "172.27.", "172.28.", "172.29.", "172.30.", "172.31.",
+    "192.168.", "0.", "::1", "::ffff:",
+)
+def _validate_engine_url(url: str):
+    """Reject SSRF-prone URLs: private IPs, non-https schemes, file/gopher."""
+    if not url:
+        return
+    import urllib.parse
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme not in ("http", "https"):
+        raise ValueError(f"Disallowed URL scheme: {parsed.scheme}")
+    host = parsed.hostname or ""
+    host_lower = host.lower()
+    if host_lower in ("localhost", "localhost.localdomain"):
+        return  # localhost is OK for Ollama/LM Studio
+    for prefix in _PRIVATE_RANGES:
+        if host_lower.startswith(prefix):
+            raise ValueError(f"Private IP range not allowed: {host}")
+
 # ─── Multi-AI Router ──────────────────────────────────────────────────────────
 async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
     async with httpx.AsyncClient(timeout=300.0) as c:
@@ -977,9 +1043,39 @@ app = FastAPI(title="ResearchPilot", version="2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
 
+# ─── Auth middleware ──────────────────────────────────────────────────────────
+from fastapi import Request as _Req
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse as _JSONResp
+
+SKIP_AUTH_PATHS = ("/static/", "/docs", "/redoc", "/openapi.json")
+
+class AuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: _Req, call_next):
+        path = request.url.path
+        # Skip static files, docs, and the root page
+        if any(path.startswith(p) for p in SKIP_AUTH_PATHS):
+            return await call_next(request)
+        if path == "/":
+            return await call_next(request)
+        # Short-circuit OPTIONS (CORS preflight)
+        if request.method == "OPTIONS":
+            return await call_next(request)
+        # Require Bearer token on all other requests
+        auth = request.headers.get("Authorization", "")
+        if not auth.startswith("Bearer ") or auth[7:] != AUTH_TOKEN:
+            return _JSONResp({"error": "Unauthorized — restart the server and refresh the page"}, status_code=401)
+        return await call_next(request)
+
+app.add_middleware(AuthMiddleware)
+
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    return FileResponse(STATIC / "index.html")
+    html = Path(STATIC / "index.html").read_text(encoding="utf-8")
+    # Inject auth token for frontend to use
+    token_script = f'<script>window.__AUTH_TOKEN__="{AUTH_TOKEN}";</script>'
+    html = html.replace("</head>", f"{token_script}</head>")
+    return HTMLResponse(html)
 
 # ── Settings ──
 @app.get("/api/settings")
@@ -1406,7 +1502,21 @@ async def library(project: str = None):
     scan(INCOMING, "INCOMING")
     return result
 
-MAX_UPLOAD_SIZE = 500 * 1024 * 1024  # 500MB
+MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50MB
+ALLOWED_MIME_TYPES = {
+    "application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "text/html", "text/plain", "text/markdown", "text/csv",
+    "application/json", "application/octet-stream",
+}
+
+def _check_mime(content: bytes) -> str:
+    """Detect MIME type from content bytes. Returns empty string if python-magic not available."""
+    try:
+        import magic as _magic
+        return _magic.from_buffer(content, mime=True)
+    except ImportError:
+        return ""  # skip check if python-magic not installed
 
 def sanitize_filename(name: str) -> str:
     name = name.replace("..", "").replace("~", "")
@@ -1421,7 +1531,10 @@ async def upload_file(
 ):
     content = await file.read()
     if len(content) > MAX_UPLOAD_SIZE:
-        raise HTTPException(413, "File too large (max 500MB)")
+        raise HTTPException(413, "File too large (max 50MB)")
+    mime = _check_mime(content)
+    if mime and mime not in ALLOWED_MIME_TYPES:
+        raise HTTPException(415, f"File type not allowed: {mime}")
     fname = sanitize_filename(file.filename or "uploaded_file")
 
     if project == "INCOMING":
@@ -1467,7 +1580,11 @@ async def upload_folder(
     for f in files:
         content = await f.read()
         if len(content) > MAX_UPLOAD_SIZE:
-            results.append({"file": f.filename, "error": "File too large"})
+            results.append({"file": f.filename, "error": "File too large (max 50MB)"})
+            continue
+        mime = _check_mime(content)
+        if mime and mime not in ALLOWED_MIME_TYPES:
+            results.append({"file": f.filename, "error": f"Type not allowed: {mime}"})
             continue
         fname = sanitize_filename(f.filename or "uploaded_file")
         dest = lib / fname
@@ -2231,8 +2348,12 @@ async def get_graph_data(filter: str = "all"):
 @app.get("/api/graph/file")
 async def get_graph_file(rel_path: str = ""):
     if not rel_path: raise HTTPException(400, "Missing rel_path param")
-    fp = BASE / rel_path
-    if not fp.exists() or not str(fp.resolve()).startswith(str(BASE.resolve())): raise HTTPException(404, "File not found or outside ResearchPilot root")
+    try:
+        fp = resolve_era_path(rel_path)
+    except PermissionError:
+        raise HTTPException(403, "Access denied")
+    if not fp.exists():
+        raise HTTPException(404, "File not found")
     return {"content": fp.read_text(encoding="utf-8", errors="replace"), "path": rel_path, "ext": fp.suffix}
 
 @app.post("/api/graph/refresh")
@@ -3397,15 +3518,15 @@ async def research_list_papers():
 
 @app.get("/api/research/pdf/{filename:path}")
 async def research_serve_pdf(filename: str):
-    fp = UNREAD_WEB / filename
-    if not fp.exists():
+    fp = (UNREAD_WEB / filename).resolve()
+    if not str(fp).startswith(str(UNREAD_WEB.resolve())) or not fp.exists():
         raise HTTPException(404, "PDF not found")
     return FileResponse(str(fp), media_type="application/pdf", filename=filename)
 
 @app.get("/api/research/file/{filename:path}")
 async def research_serve_file(filename: str):
-    fp = UNREAD_WEB / filename
-    if not fp.exists():
+    fp = (UNREAD_WEB / filename).resolve()
+    if not str(fp).startswith(str(UNREAD_WEB.resolve())) or not fp.exists():
         raise HTTPException(404, "File not found")
     if fp.suffix.lower() == ".md":
         return {"content": fp.read_text(encoding="utf-8")}

@@ -2,8 +2,23 @@
 .env
 web-app/.env
 99-SYSTEM-BACKEND/settings.json
+99-SYSTEM-BACKEND/.settings_key
 99-SYSTEM-BACKEND/plugins/*.json
+99-SYSTEM-BACKEND/notes.json
 00-SYSTEM-CORE/author.json
+00-SYSTEM-CORE/keywords.json
+00-SYSTEM-CORE/discarded_keywords.json
+00-SYSTEM-CORE/predatory_journals.json
+00-SYSTEM-CORE/RESEARCHER-PROFILE.md
+00-SYSTEM-CORE/MASTER-KNOWLEDGE-BASE.md
+00-SYSTEM-CORE/GLOBAL-CONNECTIONS.md
+00-SYSTEM-CORE/PUBLISHING-ROADMAP.md
+.token
+*.bak
+*.tmp
+*.swp
+.DS_Store
+Thumbs.db
 
 # Python
 __pycache__/

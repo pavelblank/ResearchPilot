@@ -1000,6 +1000,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 
 <script>
 const API='';
+
+// ─── Auth: wrap native fetch to inject Bearer token ─────────────────────
+(()=>{const _f=window.fetch;window.fetch=function(u,o={}){o=o||{};o.headers=o.headers||{};if(window.__AUTH_TOKEN__&&typeof u==='string'&&u.includes('/api/')){o.headers['Authorization']='Bearer '+window.__AUTH_TOKEN__}return _f.call(this,u,o)}})();
+
 let projects=[],library=[],memory=[],sessions=[],settings={},skills=[];
 let currentSession=null;
 
