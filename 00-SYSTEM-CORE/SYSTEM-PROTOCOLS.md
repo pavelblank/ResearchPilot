@@ -1,43 +1,80 @@
-# ResearchPilot: System Protocols V5.3
+# ResearchPilot V5.3.1 — System Protocols
+
+These are the standards every AI engine in the system must follow. They are enforced through the `00-SYSTEM-CORE/skills/` markdown files, which are automatically injected into every AI conversation.
 
 ## Protocol 1: The 12-Point Elite Extraction
-All analysis must be stored in: `01-PROJECTS/[Project]/02-EXTRACTIONS/`
-1. **APA Reference**: Full academic citation.
-2. **DOI**: Digital Object Identifier.
-3. **Journal Name**: Full name and ranking.
-4. **Quartile Ranking**: Verify Q1/Q2 status via Scopus/SJR.
-5. **Indexing**: Confirm Scopus, Web of Science, etc.
-6. **Research Method**: Quantitative, Qualitative, Mixed, or Review.
-7. **Theoretical Framework**: Primary theories used.
-8. **Exact Relevance**: Specific utility for the current PhD project.
-9. **Section Support**: Which chapter or section it informs.
-10. **Key Contribution**: The "One Big Insight."
-11. **Limitations**: Critical gaps identified by authors.
-12. **Classification**: (Behaviour, Governance, Technical, or Essential).
+
+When a paper is extracted (via the Upload tab or `POST /api/extract`), the result is stored in `01-PROJECTS/[Project]/02-EXTRACTIONS/` and must contain all 12 sections:
+
+1. **APA Reference** — full academic citation
+2. **DOI** — Digital Object Identifier
+3. **Journal Name** — full name
+4. **Quartile Ranking** — Q1/Q2 verified via Scopus/SJR
+5. **Indexing** — Scopus, Web of Science confirmation
+6. **Research Method** — Quantitative, Qualitative, Mixed, or Review
+7. **Theoretical Framework** — primary theories used
+8. **Exact Relevance** — specific utility for the active project
+9. **Section Support** — which chapter or section it informs
+10. **Key Contribution** — the "One Big Insight"
+11. **Limitations** — critical gaps identified by authors
+12. **Classification** — Behaviour, Governance, Technical, or Essential
 
 ## Protocol 2: Project Standardization
-Every research project MUST be initialized with these 4 folders:
-1. **01-LIBRARY**: For sources and the library file.
-2. **02-EXTRACTIONS**: For 12-point deep analysis.
-3. **03-MANUSCRIPTS**: For writing and drafting.
-4. **99-META**: For system-level logs and notes.
 
-## Protocol 3: Optimized Search & Discovery
-When searching online, always use these parameters:
-- **Timeframe**: 2022–2026.
-- **Context**: "Higher Education Institutions" or "Universities."
-- **Quality**: Peer-reviewed, high H-index journals.
-- **Query Logic**: Combine core keywords with "Diagnostic Framework" or "Cybersecurity Readiness."
+Every research project is initialized with 4 subfolders (created automatically when you make a new project via Settings → Projects):
+
+1. **01-LIBRARY/** — uploaded PDFs (auto-converted to `.md` on ingest)
+2. **02-EXTRACTIONS/** — 12-point analysis for every paper
+3. **03-MANUSCRIPTS/** — your drafts and writing
+4. **99-META/** — project notes and AI context (helps the AI understand the project)
+
+See `01-PROJECTS/00-TEMPLATE/README.md` for the blueprint.
+
+## Protocol 3: Web Research
+
+When searching for papers, the system queries 5 sources in parallel:
+
+- **OpenAlex** (250M+ works)
+- **Crossref** (scholarly publishing metadata)
+- **Semantic Scholar** (AI-powered discovery)
+- **PubMed** (biomedical literature)
+- **Google Scholar** (broad academic search)
+
+Results are deduplicated and filtered against the predatory-journals list (`00-SYSTEM-CORE/predatory_journals.json`, 244+ entries).
 
 ## Protocol 4: Data Integrity (Zero Hallucination)
-- **Exact Quotes**: Use verbatim lines from the text in "quotes."
-- **Source Verification**: Check DOIs before adding to the library.
-- **Conflict Logging**: Proactively log contradictions with P002 (Thesis) in the Master Brain.
 
-## Protocol 5: The Ingestion Workflow
-When new materials arrive in the `INCOMING/` folder:
-1. **Identify Destination**: Determine which Project (P1, P2, etc.) the paper belongs to.
-2. **Standard Move**: Move the PDF to `01-PROJECTS/[Project]/01-LIBRARY/`.
-3. **Execute Extraction**: Perform the 12-point deep analysis immediately.
-4. **Link & Sync**: Update the project's library file and the Global `MASTER-KNOWLEDGE-BASE.md`.
-5. **Clear Entry**: Ensure the `INCOMING/` folder is empty after processing.
+- AI answers must cite specific extractions (e.g., `[P001, 2024]`)
+- DOIs are verified before adding to the library
+- Inferences are flagged as `[inferred]` vs. `[stated]`
+- When evidence is missing, the system says so explicitly — never invents
+
+## Protocol 5: RAG Chat
+
+The chat assistant uses **keyword-scored context retrieval** (no vector DB, no embeddings, no GPU):
+
+- Indexes all `.md` files in projects, extractions, and manuscripts
+- Scores by keyword overlap
+- Caches results for 45 seconds
+- Returns the top matches with file references
+
+This means:
+
+- Works with any AI engine (Ollama, Gemini, Claude, etc.)
+- No GPU required
+- < 1s latency on most queries
+- Fully transparent (you can see which files matched)
+
+## Protocol 6: Security
+
+- API keys are Fernet-encrypted at rest (AES-128-CBC + HMAC-SHA256)
+- Master key in `99-SYSTEM-BACKEND/.settings_key` is gitignored
+- In-memory rate limiter: 240 req/min/IP, returns 429
+- Audit log records sensitive operations (settings save, project delete, file delete, lit-review export)
+- Localhost-only binding by default (`127.0.0.1`)
+
+See [SECURITY.md](../SECURITY.md) for the full security policy.
+
+---
+
+**Version:** V5.3.1 · **Last Updated:** 2026-06-04

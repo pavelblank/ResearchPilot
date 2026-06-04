@@ -9,7 +9,7 @@ When extracting a research paper, ALWAYS apply the full 12-point protocol:
 5. **Indexing**: Confirm Scopus, Web of Science, etc.
 6. **Research Method**: Quantitative, Qualitative, Mixed, or Review
 7. **Theoretical Framework**: Primary theories used
-8. **Exact Relevance**: Specific utility for the current PhD project
+8. **Exact Relevance**: Specific utility for the active project
 9. **Section Support**: Which chapter or section it informs
 10. **Key Contribution**: The "One Big Insight"
 11. **Limitations**: Critical gaps identified by authors

@@ -1,12 +1,12 @@
 <div align="center">
 
-# ResearchPilot <sub>V5.3</sub>
+# ResearchPilot <sub>V5.3.1</sub>
 
 **AI-native research infrastructure for academics and PhD students.**
 
 Ingest papers · Extract insights via AI · Search 5 academic databases · Visualize knowledge graphs · Write with RAG-powered chat
 
-[![Version](https://img.shields.io/badge/version-V5.3-6c63ff?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-V5.3.1-6c63ff?style=for-the-badge)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=for-the-badge)](LICENSE)

@@ -1,49 +1,89 @@
-# ResearchPilot: System Specification V5.3
+# ResearchPilot V5.3.1 — System Specification
 
-## Purpose & Vision
-The ResearchPilot is a structured, semi-autonomous research operating system designed to synthesize academic literature into Q1-indexed publications. It minimizes clutter and maximizes the "Signal-to-Noise" ratio for the Head Researcher.
+## Purpose
 
-## Core Architecture Specification
+ResearchPilot is a **self-hosted research operating system** for academic researchers and PhD students. It runs entirely on the user's machine, with all data stored locally. The system connects to multiple AI backends (Ollama, Gemini, Claude, OpenRouter, NVIDIA, and more) and provides a complete workflow for academic research — from paper discovery and ingestion to AI-powered extraction, multi-dimensional knowledge graphs, and RAG-augmented writing.
 
-### [00-SYSTEM-CORE/](file:///c:/F-%20Drive/MYWORK-Research1/00-SYSTEM-CORE)
-**Reason**: Centralized intelligence and system governance.
-- `ResearchPilot-SYSTEM-SPECIFICATION.md`: This document. The definitive system manual.
-- `RESEARCHER-PROFILE.md`: Assistant memory and self-learning preferences.
-- `SYSTEM-PROTOCOLS.md`: Rigorous standards for search and extraction.
-- `MASTER-KNOWLEDGE-BASE.md`: High-level synthesis of all research.
-- `GLOBAL-CONNECTIONS.md`: Theoretical and causal mapping across projects.
-- `PUBLISHING-ROADMAP.md`: Strategic path to Q1 publication.
+## Design Principles
 
-### [01-PROJECTS/](file:///c:/F-%20Drive/MYWORK-Research1/01-PROJECTS)
-**Reason**: Application of the core brain to specific publication targets.
-- **Sub-Folder Standard**:
-    1. `01-LIBRARY`: Raw sources and the Reference-Library index.
-    2. `02-EXTRACTIONS`: 12-point deep analysis for manuscript evidence.
-    3. `03-MANUSCRIPTS`: Active writing, drafting, and outlining.
-    4. `99-META`: Project-specific logs and scratchpad data.
+- **Local-first** — your data never leaves your machine
+- **Multi-AI failover** — 12 engine types, priority-based fallback if one fails
+- **Zero hallucination** — the AI only uses content from your library
+- **Elite standards** — every paper gets a 12-point deep analysis
+- **Encrypted at rest** — API keys Fernet-encrypted, master key gitignored
+- **Open format** — everything is markdown + JSON, no proprietary database
 
-### [INCOMING/](file:///c:/F-%20Drive/MYWORK-Research1/INCOMING)
-**Reason**: The landing zone for all new raw data (PDFs, docs).
+## Core Architecture — 4-Subfolder System
 
-### [99-SYSTEM-BACKEND/](file:///c:/F-%20Drive/MYWORK-Research1/99-SYSTEM-BACKEND)
-**Reason**: Hiding technical noise (logs, automated reports, archives).
+| Sub-system | Folder | Purpose |
+|---|---|---|
+| **System Core** | `00-SYSTEM-CORE/` | Brain: protocols, skills, reference data |
+| **Projects** | `01-PROJECTS/` | Research projects (papers, extractions, manuscripts) |
+| **Backend** | `99-SYSTEM-BACKEND/` | Settings, logs, encrypted API keys, chats |
+| **Web App** | `web-app/` | FastAPI server + single-page UI |
 
-## Operational Workflow (How & When)
+### Each Project Has 4 Subfolders
 
-1. **Discovery (When needed)**: Assistant searches online using Optimized Search Prompts (`SYSTEM-PROTOCOLS.md`).
-2. **Ingestion**: Raw files are moved to `INCOMING/` and converted to `.md`.
-3. **Extraction**: Assistant performs a **12-Point Elite Extraction** into `PROJECT/02-EXTRACTIONS/`.
-4. **Synthesis**: Findings are cross-linked to the `MASTER-KNOWLEDGE-BASE.md` and `GLOBAL-CONNECTIONS.md`.
-5. **Manuscript Drafting**: Evidence is pulled from Extractions into the `03-MANUSCRIPTS/` zone for paper construction.
+| Subfolder | Purpose |
+|---|---|
+| `01-LIBRARY/` | Source PDFs (auto-converted to `.md` on upload) |
+| `02-EXTRACTIONS/` | 12-point analysis per paper |
+| `03-MANUSCRIPTS/` | Drafts, chapters, literature reviews |
+| `99-META/` | Project notes and AI context |
 
-## AI / Software Integration Note
-Any external AI or future software reading this system should treat `00-SYSTEM-CORE` as the "Main Brain" and `01-PROJECTS` as individual database modules. Naming conventions follow the `[Pxxx]` schema for consistent indexing.
+## Workflow
+
+1. **Discovery** — Web Research tab searches 5 academic sources in parallel
+2. **Ingestion** — PDFs dropped into `INCOMING/` or uploaded via the UI
+3. **Extraction** — AI performs 12-point Elite Extraction
+4. **Synthesis** — Knowledge graph visualises 7 dimensions (Author, Year, Journal, Quartile, Method, Framework, Keyword)
+5. **Manuscript Drafting** — AI chat pulls context from extractions and library, suggests text
+
+## Technical Stack
+
+- **Backend**: Python 3.10+, FastAPI, Uvicorn
+- **Storage**: Markdown files + JSON config (no database)
+- **AI**: 12 engine types with priority-based failover
+- **Search**: Keyword-scored RAG (no vector DB, no embeddings, no GPU)
+- **Auth**: Per-install random token stored in `.token` (gitignored)
+- **Encryption**: Fernet (AES-128-CBC + HMAC-SHA256) for API keys at rest
+- **UI**: Single-page HTML/CSS/JS (no React, no build step)
+
+## Supported File Formats
+
+| Format | Parser | Auto .md |
+|---|---|:-:|
+| PDF | Docling (preferred) → PyMuPDF | ✅ |
+| DOCX / DOC | python-docx | ✅ |
+| PPTX / PPT | python-pptx | ✅ |
+| HTML / HTM | html2text | ✅ |
+| TXT · CSV · JSON · YAML · MD | direct read | ✅ |
+
+## Web UI Tabs
+
+1. **Home** — system pulse, quote of the day, stats
+2. **Web Research** — 5-source academic search with predatory-journal filter
+3. **Upload** — drag-and-drop PDF upload with auto-conversion
+4. **Projects** — create, manage, switch between projects
+5. **Library** — browse all extractions in current project
+6. **Knowledge Graph** — multi-dimensional filter (7 dimensions, AND/OR)
+7. **Chat** — RAG-powered AI chat with full tool access
+8. **Manuscripts** — view and edit drafts
+9. **Settings** — AI engines, skills, keywords, audit log, etc.
+
+## Security
+
+- API keys encrypted at rest (Fernet AES-128-CBC + HMAC-SHA256)
+- Master key in `99-SYSTEM-BACKEND/.settings_key` (gitignored, never committed)
+- In-memory rate limiter: 240 req/min/IP
+- Audit log for sensitive operations (settings.save, project.delete, file.delete, lit-review.export)
+- Localhost-only binding by default (`127.0.0.1`)
+- File sanitization on all uploads
+- Path-traversal protection on every file endpoint
+- Zero telemetry — no analytics, no phone-home, no remote calls except configured AI engines and academic APIs
+
+See [SECURITY.md](../SECURITY.md) for the full security policy and key-rotation procedure.
 
 ---
 
-## Metadata
-**System**: ResearchPilot V5.3
-**Copyright**: 2026 Mr. Blank Research. All rights reserved.
-**Owner**: ResearchPilot
-**Created**: May 2026
-**Last Updated**: June 2026
+**Version:** V5.3.1 · **Last Updated:** 2026-06-04

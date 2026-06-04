@@ -3,12 +3,17 @@
     {
       "date": "2026-06-01",
       "version": "v5.2.1",
-      "description": "Initial build - Author section, changelog, multi-layer graph filters"
+      "description": "Initial build — Author section, changelog, multi-layer graph filters"
     },
     {
       "date": "2026-06-03",
       "version": "v5.3.0",
-      "description": "System enhancement, gitignore hardening, README overhaul — full V5.3 release"
+      "description": "Stability, performance, security, UX, code quality, new features"
+    },
+    {
+      "date": "2026-06-04",
+      "version": "v5.3.1",
+      "description": "GitHub-ready bootstrap — fresh clones work without crashes; cross-platform setup scripts; 00-TEMPLATE blueprint; .gitkeep scaffolding for 99-SYSTEM-BACKEND and INCOMING"
     }
   ]
 }
