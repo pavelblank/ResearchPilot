@@ -1,5 +1,36 @@
 # Changelog
 
+## v5.3.1 — GitHub-ready bootstrap, cross-platform setup
+**Branch:** `feature/v5.3.1-github-bootstrap` · A user-facing release that fixes the broken-on-fresh-clone bug and adds the cross-platform setup experience. Recommended for `main`.
+
+**Bootstrap fix (critical)**
+- `web-app/main.py` — folder creation moved before logger/audit registration
+- Fresh GitHub clones no longer crash on first run when `99-SYSTEM-BACKEND/` and `INCOMING/` are absent (those folders hold user-specific data and are gitignored)
+- Audit log, server log, `.token`, `.settings_key`, default `settings.json` all auto-create cleanly
+
+**GitHub-ready folder scaffolding** (no personal data, no API keys)
+- `01-PROJECTS/00-TEMPLATE/` — blueprint project with README in each of 4 subfolders + a sample `PROJECT-MANIFEST.md` so new users see the project structure
+- `99-SYSTEM-BACKEND/{,chats/,plugins/}` — `.gitkeep` files with explanations
+- `INCOMING/{,UNREAD-WEB/}` — `.gitkeep` files with explanations
+- `.gitignore` updated with selective exceptions — user projects, papers, and personal JSON files remain gitignored
+
+**Setup experience**
+- New `SETUP.md` — 10-minute beginner guide for Windows / macOS / Linux
+- New `web-app/START-SERVER.sh` — macOS / Linux launcher (auto-installs deps, opens browser)
+- New `web-app/install-{windows,mac}.{bat,sh}` — one-time setup wizards
+- New `web-app/uninstall-{windows,mac}.{bat,sh}` — clean removal
+- `web-app/START-SERVER.bat`, `web-app/REGISTER-AUTOSTART.bat`, `start-research.bat` — rewritten to be self-locating (no more hardcoded install path)
+- `web-app/main.py` — `BASE` path auto-detects from `__file__`; `RESEARCHPILOT_HOME` env var override
+- `README.md` — self-contained Quick Start (Python install → clone → deps → run, all visible without clicking through)
+
+**Quality**
+- `web-app/test_smoke.py` — the discard-list test now self-primes (works on fresh installs)
+- 13/13 smoke tests pass on a clean clone
+
+**Branch policy**
+- `main` = previous public version (v5.3.0)
+- `feature/v5.3.1-*` = work-in-progress; merge to `main` only after review
+
 ## v5.3.0 — Stability, Performance, Security, UX, Quality, Features
 A consolidated release with improvements across all system layers. No breaking changes — fully backward-compatible with v5.2.
 
