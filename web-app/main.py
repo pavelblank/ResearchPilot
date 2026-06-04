@@ -1112,23 +1112,57 @@ from starlette.responses import JSONResponse as _JSONResp
 SKIP_AUTH_PATHS = ("/static/", "/docs", "/redoc", "/openapi.json")
 
 class AuthMiddleware(BaseHTTPMiddleware):
+    # In-memory per-IP rate limiter: 240 req / 60s (4 rps sustained) — localhost-only
+    # protects against accidental DoS from a runaway frontend loop.
+    _buckets: dict = {}
+    _RATE_LIMIT = 240
+    _RATE_WINDOW = 60.0
+
     async def dispatch(self, request: _Req, call_next):
         path = request.url.path
-        # Skip static files, docs, and the root page
         if any(path.startswith(p) for p in SKIP_AUTH_PATHS):
             return await call_next(request)
-        if path == "/":
+        if path == "/" or request.method == "OPTIONS":
             return await call_next(request)
-        # Short-circuit OPTIONS (CORS preflight)
-        if request.method == "OPTIONS":
-            return await call_next(request)
-        # Require Bearer token on all other requests
+        # ── Rate limit ──────────────────────────────────────────────────────
+        ip = request.client.host if request.client else "?"
+        now = time.time()
+        hits = self._buckets.setdefault(ip, [])
+        hits = [t for t in hits if now - t < self._RATE_WINDOW]
+        if len(hits) >= self._RATE_LIMIT:
+            logger.warning("Rate limit hit for %s on %s", ip, path)
+            return _JSONResp({"error": "Rate limit exceeded. Slow down."}, status_code=429)
+        hits.append(now)
+        self._buckets[ip] = hits
+        # ── Auth ────────────────────────────────────────────────────────────
         auth = request.headers.get("Authorization", "")
         if not auth.startswith("Bearer ") or auth[7:] != AUTH_TOKEN:
             return _JSONResp({"error": "Unauthorized — restart the server and refresh the page"}, status_code=401)
         return await call_next(request)
 
 app.add_middleware(AuthMiddleware)
+
+# ─── Audit log — record sensitive operations to a separate file ──────────────
+AUDIT_LOG = BACKEND / "audit.log"
+_audit_logger = logging.getLogger("ResearchPilot.audit")
+_audit_handler = logging.handlers.RotatingFileHandler(
+    AUDIT_LOG, maxBytes=2_000_000, backupCount=2, encoding="utf-8"
+)
+_audit_handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s"))
+_audit_logger.addHandler(_audit_handler)
+_audit_logger.setLevel(logging.INFO)
+_audit_logger.info("Audit log initialised → %s", AUDIT_LOG)
+
+
+def audit(action: str, **details):
+    """Record a sensitive operation to the audit log. Safe to call from anywhere.
+    Example: audit("settings.save", user="local", engine_count=12)
+    """
+    try:
+        msg = f"{action} | " + " | ".join(f"{k}={v}" for k, v in details.items() if v is not None)
+        _audit_logger.info(msg)
+    except Exception:
+        pass  # never let audit logging break the request
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -1159,6 +1193,7 @@ async def update_settings(request: Request):
         raise HTTPException(400, "Invalid settings data")
     data = strip_html(data)
     save_settings(data)
+    audit("settings.save", engines=len(data.get("ai_engines", [])))
     return {"ok": True}
 
 # ── Author ──
@@ -1490,6 +1525,7 @@ async def delete_project(project_id: str):
     p = PROJECTS / project_id
     if not p.exists():
         raise HTTPException(404)
+    audit("project.delete", project=project_id)
     shutil.rmtree(str(p))
     return {"ok": True}
 
@@ -1711,6 +1747,7 @@ async def delete_library_file(project: str, filename: str):
     if md_fp.exists():
         md_fp.unlink()
     fp.unlink()
+    audit("file.delete", project=project, filename=filename)
 
     return {"ok": True, "deleted": filename, "project": project}
 
