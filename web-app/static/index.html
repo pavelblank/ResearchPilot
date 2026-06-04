@@ -316,6 +316,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
   <div class="tab" onclick="go('graph')">🕸 Graph</div>
   <div class="tab" onclick="go('memory')">🧠 Memory</div>
   <div class="tab" onclick="go('settings')">⚙️ Settings</div>
+  <div title="Keyboard shortcuts: 1-9 switch tabs · / focus chat · Esc close modal" style="padding:8px 16px;font-size:11px;color:var(--muted);cursor:help;border-top:1px solid var(--border);">⌨️ 1-9 tabs · / chat · Esc</div>
 </nav>
 
 <div class="body">
@@ -2908,6 +2909,26 @@ function go(name){
   if(name==='obsidian')updateObsidianStats();
   if(name==='research'){loadWebPapers();populateYearSelects();}
 }
+
+// ─── Keyboard shortcuts ─────────────────────────────────────────────────────
+//   1-9, 0  →  switch tabs
+//   /       →  focus chat input (when on chat tab)
+//   Esc     →  close modal
+document.addEventListener('keydown', (e) => {
+  if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key >= '1' && e.key <= '9') { e.preventDefault(); go(TABS[parseInt(e.key) - 1]); return; }
+  if (e.key === '0') { e.preventDefault(); go(TABS[9]); return; }
+  if (e.key === '/') {
+    const ci = document.getElementById('chat-input');
+    if (ci) { e.preventDefault(); ci.focus(); }
+    return;
+  }
+  if (e.key === 'Escape') {
+    const m = document.getElementById('modal');
+    if (m && m.style.display === 'flex') { m.style.display = 'none'; e.preventDefault(); }
+  }
+});
 
 // ─── Modal ───────────────────────────────────────────────────────────────────
 function openModal(title,content,project,filepath){
