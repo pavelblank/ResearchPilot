@@ -1,0 +1,59 @@
+{
+  "_comment": "TEST CONFIG for 'AI in Education' project - to prove the engine is project-agnostic",
+  "project": {
+    "code": "TEST-AIEDU",
+    "name": "TEST-AI-EDUCATION",
+    "folder": "TEST-AIEDU",
+    "title": "AI in Education",
+    "description": "Test config for verifying the search engine works for any project"
+  },
+  "core_constructs": {
+    "ngrams": ["artificial intelligence education", "generative ai learning"],
+    "weight": 10
+  },
+  "framework_layers": {},
+  "noun_phrases": {
+    "artificial intelligence": 6,
+    "generative ai": 7,
+    "chatgpt": 6,
+    "intelligent tutoring": 8,
+    "adaptive learning": 7,
+    "agentic ai": 8,
+    "large language model": 6,
+    "llm education": 8,
+    "ai literacy": 7
+  },
+  "context_anchors": {
+    "must_have_any": ["education", "learning", "student", "teacher", "tutoring"],
+    "weight": 3,
+    "must_not_have": ["medical", "patient", "clinical", "hospital"]
+  },
+  "population_anchors": {
+    "preferred": ["student", "teacher", "learner", "educator", "tutor"],
+    "auto_reject_populations": ["patient", "driver", "consumer"]
+  },
+  "method_anchors": {
+    "preferred": ["experimental", "design-based", "mixed methods", "case study"],
+    "weight": 1
+  },
+  "theory_anchors": {
+    "preferred": ["constructivism", "zone of proximal development", "self-regulated learning"],
+    "weight": 1
+  },
+  "scoring": {
+    "accept_threshold": 20,
+    "review_min": 10,
+    "reject_threshold": 5
+  },
+  "lemmatize": {
+    "tutored": "tutor",
+    "tutors": "tutor",
+    "learners": "learner",
+    "learned": "learn",
+    "students": "student"
+  },
+  "stopwords": {
+    "universal": [],
+    "project_specific": ["edtech", "mooc"]
+  }
+}

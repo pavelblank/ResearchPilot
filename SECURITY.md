@@ -144,4 +144,4 @@ You can expect an initial response within 7 days. We follow responsible disclosu
 
 ---
 
-*Last updated: 2026-06-04 · ResearchPilot V5.3*
+*Last updated: 2026-06-04 · ResearchPilot V5.4*

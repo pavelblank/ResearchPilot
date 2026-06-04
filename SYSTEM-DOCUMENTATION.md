@@ -1,7 +1,7 @@
 # ResearchPilot: Complete System Documentation
 
 > **A Self-Hosted, AI-Native Research Operating System for PhD-Level Academic Workflows**
-> Version: 2.0 | System Architecture: ResearchPilot V5.3 | Built: May–June 2026
+> Version: 2.0 | System Architecture: ResearchPilot V5.4 | Built: May–June 2026
 
 ---
 
@@ -1327,4 +1327,4 @@ ResearchPilot is dual-licensed under **MIT OR Apache 2.0**:
 
 ---
 
-*Document generated: June 1, 2026 | System: ResearchPilot V5.3 | Backend: 3,227 lines Python + 2,400 lines HTML/CSS/JS | Build tool: OpenCode AI Assistant*
+*Document generated: June 4, 2026 | System: ResearchPilot V5.4 | Backend: 3,295 lines Python + 2,455 lines HTML/CSS/JS | Build tool: OpenCode AI Assistant*

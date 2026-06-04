@@ -1,4 +1,4 @@
-# ResearchPilot V5.3.3 — System Protocols
+# ResearchPilot V5.4.0 — System Protocols
 
 These are the standards every AI engine in the system must follow. They are enforced through the `00-SYSTEM-CORE/skills/` markdown files, which are automatically injected into every AI conversation.
 
@@ -101,4 +101,4 @@ A one-shot migration script (`web-app/migrate_filename_format.py`) renames exist
 
 ---
 
-**Version:** V5.3.3 · **Last Updated:** 2026-06-04
+**Version:** V5.4.0 · **Last Updated:** 2026-06-04

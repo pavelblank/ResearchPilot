@@ -1,5 +1,122 @@
 # Changelog
 
+## v5.4.0 — Web-research upgrade + Graph cluster mode
+
+A research-workflow release that ships a brand-new **web research engine** alongside the existing graph and chat layers. Everything is local-first and purely input-driven — no project config is required to find papers.
+
+### 🔍 New web-research engine — `00-SYSTEM-CORE/SEARCH-SYSTEM/`
+
+A complete PowerShell-based search and filter pipeline, designed to run from the command line OR be called by the web app.
+
+**`EXTRACT-KEYWORDS.ps1`** — 8-step NLP pipeline that turns any user sentence into ready-to-paste Scopus/WoS queries.
+- Purely input-driven: keywords come 100% from the user input. The `-Project` parameter is accepted but is a no-op for extraction.
+- Steps: tokenise → year filter → stopwords (incl. academic filler verbs) → punctuation (keeps hyphens) → loose numbers → Tier A/B/C classification → phrase building (greedy 5-word merge, adjacency-only, longer-first) → PRIMARY/FALLBACK query.
+- Outputs `Primary` (multi-word phrases, AND-joined), `Fallback` (Tier B single words, OR-joined), `LooseNumbers` (year tokens kept as data, never injected into the query), and `RawBigrams`/`RawTrigrams` for downstream scoring.
+
+**`SCORE-AGAINST-INPUT.ps1`** — project-free paper scorer.
+- Reads trigrams / bigrams / single-words from user input, matches them against paper text.
+- Decision thresholds: ≥2 trigrams → ACCEPT HIGHLY, ≥1 trigram + score≥6 → ACCEPT LIKELY, bigrams only → REVIEW, nothing → REJECT.
+- Returns matched trigrams/bigrams for full transparency.
+
+**`FILTER-PAPERS.ps1`** — top-level project-free folder filter.
+- One input + one folder → scored + sorted results.
+- New `-EnableQualityFilter`, `-ShowPredatory`, `-MoveRejects`, `-OutputCsv`, `-ExtraPredatoryPath` switches.
+- Reads metadata from YAML frontmatter or inline `**Journal:** ...` lines.
+
+**`JOURNAL-QUALITY-FILTER.ps1`** + **`JOURNAL-TIERS.json`** + **`JOURNAL-QUARTILES.json`** — quality tier scorer.
+- 4 tiers: Tier 1 (trusted publisher), Tier 2 (DOAJ), Tier 3 (unverified, never auto-removed), Tier 4 (Beall's list, hidden by default).
+- New **Q1–Q4 quartile** lookup (word-boundary match) and **peer-review** detection (signal patterns).
+- `EXTRA-PREDATORY-TEMPLATE.json` + `-ExtraPredatoryPath` lets users add their own predatory list (added to the built-in 244-entry Beall's list).
+- Badges: Scopus/WoS Indexed (green), DOAJ (teal), Quartile Q1–Q4, Peer-reviewed / Not peer-reviewed, Unverified (amber), Predatory (red), Open Access PDF (blue), Preprint (grey).
+
+**`SEARCH-API.ps1`** — parallel multi-source search.
+- OpenAlex · Crossref · Semantic Scholar via `Start-Job` (PowerShell 5.1 compatible).
+- Dedupe by DOI first, then by title-similarity Jaccard ≥ 0.85.
+- TLS 1.2 + polite User-Agent with `mailto:`. Handles rate-limit responses gracefully.
+
+**`predatory_journals.json`** (in `00-SYSTEM-CORE/`) — 244-entry Beall's List blocklist (already shipped, now loadable from the filter).
+
+**`WEB-SEARCH-WORKFLOW.md`** — codified **The Six Filtering Rules** (CLEANING · CLASSIFICATION · PHRASE BUILDING · PREDATORY · YEAR · SEARCH SPEED) as the system's non-negotiable contract.
+
+### 🕸 Graph cluster mode
+
+The Knowledge Graph gains a new **cluster** mode in addition to filter mode.
+
+- Set any dim to `__any__` (or click "ALL" in the value dropdown) → group papers by that dim without filtering them out.
+- A central **Category Hub** node appears in the centre of the cluster (e.g. `📅 Year`, `👤 Author`, `⭐ Quartile`).
+- One **value node** per unique dim value, with edges to every file sharing that value.
+- Direct file-to-file cluster edges (weight 0.8) for visual grouping.
+- Cluster dims and filter dims can be combined: e.g. "show all Q1+Q2 papers (filter) clustered by year (cluster)".
+- New `hub` shape in `CAT_COLORS` (28-px star, orange) for the central hub node.
+
+### 🧪 Tests
+
+- `web-app/test_smoke.py` — **30/30 smoke tests pass** (was 24/24)
+- New integration tests for cluster mode (hub node creation, filter+cluster combination, ALL-as-cluster-value, dim/val persistence)
+- New `00-SYSTEM-CORE/SEARCH-SYSTEM/test-cases/` — 11 fixtures: 5 tier fixtures (Tier 1, Tier 2, arXiv preprint, predatory, unverified), 4 Q1–Q4 fixtures, 1 preprint + peer-review fixture, 1 custom predatory fixture
+
+### 📁 Files
+
+**Added:**
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/EXTRACT-KEYWORDS.ps1`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/KEYWORD-FILTER.ps1` (legacy, kept for back-compat)
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/PRE-FILTER.ps1` (with `-ScoreOnly` switch)
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/SEARCH.ps1` (legacy, kept for back-compat)
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/SCORE-AGAINST-INPUT.ps1` (project-free scorer)
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/FILTER-PAPERS.ps1` (top-level project-free filter)
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/FILTER-PAPERS-README.md`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/JOURNAL-QUALITY-FILTER.ps1`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/JOURNAL-TIERS.json`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/JOURNAL-QUARTILES.json`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/EVALUATE-RESULT.ps1`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/EVALUATE-INCOMING.ps1`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/SEARCH-API.ps1`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/EXTRA-PREDATORY-TEMPLATE.json`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/EXTRA-PREDATORY-README.md`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/WEB-SEARCH-WORKFLOW.md`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/SEARCH-STRATEGY.md`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/SEARCH-CONFIG-TEMPLATE.json`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/NOUN-PHRASE-INDEX-TEMPLATE.md`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/SEARCH-LOG-TEMPLATE.md`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/README.md`
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/test-cases/*.json` (5 tier + 4 quartile + 1 preprint + 1 custom predatory = 11 fixtures)
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/test-cases/*.md` (4 paper-text fixtures)
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/projects/P1-HEI-CULTURE.json` (sample project config)
+- `00-SYSTEM-CORE/SEARCH-SYSTEM/projects/DEFAULT.json` (fallback)
+
+**Modified:**
+- `web-app/main.py` — new `__any__` cluster branch in `get_graph_filters` and `get_graph_data`; new `icon_map` and `_build_filter_edges` helper
+- `web-app/static/index.html` — `ALL` placeholder in val dropdowns, cluster dim handling in `buildFilterQueryString`, `loadGraph` recognises `__any__`, `hub` shape in `CAT_COLORS`
+- `web-app/test_smoke.py` — 6 new cluster-mode tests
+- `00-SYSTEM-CORE/versions.json` — v5.4.0 entry
+- `README.md` — V5.4.0 badge, version refs updated, new "Where to update" section
+- `CHANGELOG.md` — this entry
+- `CLAUDE.md` — V5.4 status line
+
+### 🔄 Backward compatibility
+
+- Existing project-driven scripts (`KEYWORD-FILTER.ps1`, `PRE-FILTER.ps1`, `SEARCH.ps1`) kept; their signatures and behaviour unchanged.
+- Existing graph filter behaviour (specific `dim:val` filters) is the default; `__any__` is opt-in.
+- Existing `tier_*_trusted.publisher_patterns` in `JOURNAL-TIERS.json` unchanged; new `JOURNAL-QUARTILES.json` is additive.
+- No breaking changes to the Python API or the web-app REST endpoints.
+
+### 📍 Where to update (developer notes)
+
+The web research engine lives in **`00-SYSTEM-CORE/SEARCH-SYSTEM/`** (PowerShell). The web app's Research tab will call into it via a new `web-app/research/` bridge in a future release. For now, run the search system from the command line:
+
+```powershell
+# Extract keywords from a free-form user input
+.\00-SYSTEM-CORE\SEARCH-SYSTEM\EXTRACT-KEYWORDS.ps1 -InputText "cybersecurity behaviour in higher education" -Mode query
+
+# Score a folder of papers
+.\00-SYSTEM-CORE\SEARCH-SYSTEM\FILTER-PAPERS.ps1 -InputText "cybersecurity behaviour higher education" -Folder "C:\papers" -EnableQualityFilter
+
+# Parallel multi-source search
+.\00-SYSTEM-CORE\SEARCH-SYSTEM\SEARCH-API.ps1 -Query "cybersecurity behaviour higher education" -MaxPerSource 25
+```
+
+---
+
 ## v5.3.3 — Filename standardisation (Protocol 7)
 
 A small, additive release that makes the filesystem part of ResearchPilot predictable. From now on, every paper artifact — extractions, library PDFs, web imports, summaries, details, notes — follows one canonical form: **`{Author}_{Year}[_{note}][_{disambiguator}].{ext}`**. Fully backward-compatible: old filenames keep working through the legacy detection layer; nothing on disk is changed without an opt-in migration run.

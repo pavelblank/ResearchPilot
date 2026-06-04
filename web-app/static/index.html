@@ -639,7 +639,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="graph-layer" style="display:flex;gap:4px;align-items:center;padding:4px 8px;background:var(--panel);border-radius:6px;border:1px solid var(--border)">
         <span class="badge" style="background:rgba(108,99,255,.2);color:var(--accent);border:none">1</span>
         <select id="gf-dim1" onchange="updateGraphLayer(1)" style="width:90px;padding:3px 6px;font-size:10px">
-          <option value="">— Dim —</option>
+          <option value="">default</option>
           <option value="author">👤 Author</option>
           <option value="year">📅 Year</option>
           <option value="journal">📰 Journal</option>
@@ -649,7 +649,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <option value="keyword">🏷 Keyword</option>
         </select>
         <select id="gf-val1" onchange="loadGraph()" style="width:120px;padding:3px 6px;font-size:10px;display:none">
-          <option value="">— Value —</option>
+          <option value="">ALL</option>
         </select>
         <button class="btn btn-d btn-s" onclick="removeGraphLayer(1)" style="padding:1px 5px;font-size:9px;display:none" id="gf-rm1">✕</button>
       </div>
@@ -658,7 +658,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="graph-layer" id="gl2" style="display:none;gap:4px;align-items:center;padding:4px 8px;background:var(--panel);border-radius:6px;border:1px solid var(--border)">
         <span class="badge" style="background:rgba(0,212,170,.2);color:var(--a2);border:none">2</span>
         <select id="gf-dim2" onchange="updateGraphLayer(2)" style="width:90px;padding:3px 6px;font-size:10px">
-          <option value="">— Dim —</option>
+          <option value="">default</option>
           <option value="author">👤 Author</option>
           <option value="year">📅 Year</option>
           <option value="journal">📰 Journal</option>
@@ -668,7 +668,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <option value="keyword">🏷 Keyword</option>
         </select>
         <select id="gf-val2" onchange="loadGraph()" style="width:120px;padding:3px 6px;font-size:10px;display:none">
-          <option value="">— Value —</option>
+          <option value="">ALL</option>
         </select>
         <select id="gf-op2" style="width:55px;padding:3px 6px;font-size:9px" onchange="loadGraph()">
           <option value="AND">AND</option>
@@ -681,7 +681,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="graph-layer" id="gl3" style="display:none;gap:4px;align-items:center;padding:4px 8px;background:var(--panel);border-radius:6px;border:1px solid var(--border)">
         <span class="badge" style="background:rgba(245,197,24,.2);color:var(--gold);border:none">3</span>
         <select id="gf-dim3" onchange="updateGraphLayer(3)" style="width:90px;padding:3px 6px;font-size:10px">
-          <option value="">— Dim —</option>
+          <option value="">default</option>
           <option value="author">👤 Author</option>
           <option value="year">📅 Year</option>
           <option value="journal">📰 Journal</option>
@@ -691,7 +691,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <option value="keyword">🏷 Keyword</option>
         </select>
         <select id="gf-val3" onchange="loadGraph()" style="width:120px;padding:3px 6px;font-size:10px;display:none">
-          <option value="">— Value —</option>
+          <option value="">ALL</option>
         </select>
         <select id="gf-op3" style="width:55px;padding:3px 6px;font-size:9px" onchange="loadGraph()">
           <option value="AND">AND</option>
@@ -704,7 +704,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="graph-layer" id="gl4" style="display:none;gap:4px;align-items:center;padding:4px 8px;background:var(--panel);border-radius:6px;border:1px solid var(--border)">
         <span class="badge" style="background:rgba(255,77,109,.2);color:var(--red);border:none">4</span>
         <select id="gf-dim4" onchange="updateGraphLayer(4)" style="width:90px;padding:3px 6px;font-size:10px">
-          <option value="">— Dim —</option>
+          <option value="">default</option>
           <option value="author">👤 Author</option>
           <option value="year">📅 Year</option>
           <option value="journal">📰 Journal</option>
@@ -714,7 +714,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
           <option value="keyword">🏷 Keyword</option>
         </select>
         <select id="gf-val4" onchange="loadGraph()" style="width:120px;padding:3px 6px;font-size:10px;display:none">
-          <option value="">— Value —</option>
+          <option value="">ALL</option>
         </select>
         <select id="gf-op4" style="width:55px;padding:3px 6px;font-size:9px" onchange="loadGraph()">
           <option value="AND">AND</option>
@@ -2893,7 +2893,7 @@ async function disconnectPlugin(id){
 }
 
 // ─── Tab navigation ───────────────────────────────────────────────────────────
-const TABS=['dashboard','chat','upload','research','library','memory','plugins','graph','obsidian','settings'];
+const TABS=['dashboard','chat','research','projects','upload','library','graph','memory','settings'];
 function go(name){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('on',TABS[i]===name));
   document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.id==='page-'+name));
@@ -2917,7 +2917,6 @@ document.addEventListener('keydown', (e) => {
   if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   if (e.key >= '1' && e.key <= '9') { e.preventDefault(); go(TABS[parseInt(e.key) - 1]); return; }
-  if (e.key === '0') { e.preventDefault(); go(TABS[9]); return; }
   if (e.key === '/') {
     const ci = document.getElementById('chat-input');
     if (ci) { e.preventDefault(); ci.focus(); }
@@ -3551,6 +3550,7 @@ const CAT_COLORS = {
   chat:      { bg:'#1a1a2e', bd:'#ff6b9d', shape:'star',     sz:14, label:'Chat' },
   rationale: { bg:'#1c2030', bd:'#ff9f43', shape:'triangle', sz:12, label:'Rationale' },
   keyword:   { bg:'#0a1a2e', bd:'#ff6b00', shape:'triangle', sz:10, label:'Keyword' },
+  hub:       { bg:'#1a0a1a', bd:'#ff6b00', shape:'star',     sz:28, label:'Category Hub' },
   other:     { bg:'#202438', bd:'#8892a4', shape:'dot',      sz:12, label:'Other' }
 };
 const CAT_KEYS = Object.keys(CAT_COLORS);
@@ -3574,7 +3574,7 @@ function buildPartialFilterQueryString(upTo) {
     const dim = document.getElementById('gf-dim'+i)?.value;
     const val = document.getElementById('gf-val'+i)?.value;
     const op = (i>1) ? (document.getElementById('gf-op'+i)?.value||'AND') : '';
-    if(dim && val) layers.push({dim, val, op});
+    if(dim) layers.push({dim, val: val || '__any__', op});
   }
   if(!layers.length) return '';
   return layers.map((l, idx) => idx===0 ? `${l.dim}:${l.val}` : `${l.op}:${l.dim}:${l.val}`).join('|');
@@ -3597,7 +3597,7 @@ async function refreshLayerDropdown(layer) {
     vals = dimData ? dimData.values : [];
   }
   const cur = valSel.value;
-  valSel.innerHTML = '<option value="">— Value —</option>' + vals.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
+  valSel.innerHTML = '<option value="">ALL</option>' + vals.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join('');
   if (cur && vals.includes(cur)) valSel.value = cur;
   else valSel.value = '';
 }
@@ -3606,7 +3606,12 @@ async function updateGraphLayer(layer){
   const dim = document.getElementById('gf-dim'+layer)?.value;
   const valSel = document.getElementById('gf-val'+layer);
   if(!valSel) return;
-  if(!dim){ valSel.style.display='none'; return; }
+  if(!dim){
+    valSel.style.display='none';
+    valSel.value = '';
+    loadGraph();
+    return;
+  }
   valSel.style.display='inline-block';
   await refreshLayerDropdown(layer);
   loadGraph();
@@ -3657,12 +3662,13 @@ function buildFilterQueryString(){
     const dim = document.getElementById('gf-dim'+i)?.value;
     const val = document.getElementById('gf-val'+i)?.value;
     const op = (i>1) ? (document.getElementById('gf-op'+i)?.value||'AND') : '';
-    if(dim && val){
-      layers.push({dim, val, op});
+    if(dim){
+      layers.push({dim, val: val || '__any__', op});
     }
   }
   if(!layers.length) return 'all';
   // Build a compact filter string: dim1:val1|OP:dim2:val2|...
+  // val='__any__' means "cluster/group by this dim" (no specific value filter)
   return layers.map((l, idx) => {
     if(idx === 0) return `${l.dim}:${l.val}`;
     return `${l.op}:${l.dim}:${l.val}`;
@@ -3691,11 +3697,12 @@ async function loadGraph(){
       const dim = document.getElementById('gf-dim'+i)?.value;
       const val = document.getElementById('gf-val'+i)?.value;
       const op = (i>1) ? (document.getElementById('gf-op'+i)?.value||'AND') : '';
-      if(dim && val){
+      if(dim){
         const iconMap = {author:'👤',year:'📅',journal:'📰',quartile:'⭐',method:'🔬',framework:'📐',keyword:'🏷'};
+        const valLabel = val ? esc(val) : '<em style="opacity:.6">all</em>';
         filterParts.push((i>1?' <span class="text-m" style="font-size:9px">'+op+'</span> ':'') +
           '<span class="badge" style="background:rgba(108,99,255,.15);color:var(--accent);font-size:9px">'+
-          (iconMap[dim]||'')+' '+esc(val)+'</span>');
+          (iconMap[dim]||'')+' '+dim+': '+valLabel+'</span>');
       }
     }
     const filterDesc = filterParts.length ? 'Filters: '+filterParts.join('') : 'No filters active — showing all';
@@ -3765,22 +3772,26 @@ function renderGraph(){
       if (e.relation === 'same_project' && e.label) edgeMap[key].project_label = e.label;
     }
   });
-  const edgeColors = { keyword:'#3385ff', imports:'#6c63ff', calls:'#00d4aa', contains:'#2a2f45', same_project:'#8892a4', rationale_for:'#f5c518', extends:'#ff6b9d', inherits:'#ff6b9d', references:'#b388ff', imports_from:'#6c63ff', shared_keywords:'#ff9f43' };
+  const edgeColors = { keyword:'#3385ff', imports:'#6c63ff', calls:'#00d4aa', contains:'#2a2f45', same_project:'#8892a4', rationale_for:'#f5c518', extends:'#ff6b9d', inherits:'#ff6b9d', references:'#b388ff', imports_from:'#6c63ff', shared_keywords:'#ff9f43', hub:'#ff6b00', cluster:'#ff9f43' };
   const edges = Object.values(edgeMap).map(e => {
     const isProj = e.relations.includes('same_project');
     const isKw = e.relations.includes('keyword');
+    const isHub = e.relations.includes('hub');
+    const isCluster = e.relations.includes('cluster');
     const cnt = e.shared_kw_count || 0;
     let rel = 'keyword';
-    if (isProj && !isKw) rel = 'same_project';
+    if (isHub) rel = 'hub';
+    else if (isCluster) rel = 'cluster';
+    else if (isProj && !isKw) rel = 'same_project';
     else if (isProj && isKw) rel = 'keyword+project';
     return {
       from: e.source, to: e.target,
       label: rel === 'keyword' ? '' : (e.project_label || e.label || e.relation), arrows: '',
       relation: rel, source_file: e.source_file || '', shared_keywords: e.shared_keywords || '', shared_kw_count: cnt,
       project_label: e.project_label || e.label || '',
-      color: { color: rel==='same_project' ? edgeColors.same_project : kwColor(cnt||1), opacity: rel==='same_project'?0.3:0.9 },
-      width: rel==='same_project' ? 0.5 : kwWidth(cnt||1),
-      dashes: rel==='same_project' ? true : (isKw ? [3,6] : false)
+      color: { color: rel==='hub' ? edgeColors.hub : (rel==='cluster' ? edgeColors.cluster : (rel==='same_project' ? edgeColors.same_project : kwColor(cnt||1))), opacity: rel==='same_project'?0.3:0.9 },
+      width: rel==='hub' ? 2.0 : (rel==='cluster' ? 1.5 : (rel==='same_project' ? 0.5 : kwWidth(cnt||1))),
+      dashes: rel==='same_project' ? true : (rel==='hub' ? false : (rel==='cluster' ? [2,4] : (isKw ? [3,6] : false)))
     };
   });
   if (!nodes.length) {

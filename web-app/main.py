@@ -1344,7 +1344,7 @@ async def health():
     return {
         "ok": True,
         "service": "ResearchPilot",
-        "version": "5.3.3",
+        "version": "5.4.0",
         "time": datetime.datetime.now().isoformat(timespec="seconds"),
         "engines_loaded": len(load_settings().get("ai_engines", [])),
     }
@@ -2585,6 +2585,9 @@ async def get_graph_filters(context: str = ""):
             dim = layer["dim"]
             val = layer["val"].lower().strip()
             op = layer.get("op", "AND")
+            # val='__any__' means "cluster by this dim" — don't filter files by it
+            if val == "__any__":
+                continue
             layer_matched = set()
             if dim == "keyword":
                 kw_data = _load_keywords()
@@ -2715,13 +2718,26 @@ async def get_graph_data(filter: str = "all"):
             filter_edges = list(md_edges)
     else:
         # --- Multi-layer filter logic ---
-        # Build set of files matching ALL layers (AND between layers)
-        # For OR, we accumulate across layers
-        matched_files = None  # None = no constraint yet
+        # Separate layers into:
+        #   - cluster layers: dim set, val='__any__' → group/cluster by this dim
+        #   - filter layers: dim set, val=specific → narrow files to this dim=val
+        cluster_dims = set()
+        filter_layers = []
         for layer in multi_layers:
             dim = layer["dim"]
             val = layer["val"].lower().strip()
             op = layer.get("op", "AND")
+            if val == "__any__":
+                cluster_dims.add(dim)
+            else:
+                filter_layers.append({"dim": dim, "val": val, "op": op})
+
+        # Build set of files matching all filter layers (AND between layers)
+        matched_files = None  # None = no constraint yet
+        for layer in filter_layers:
+            dim = layer["dim"]
+            val = layer["val"]
+            op = layer["op"]
 
             # Get files matching this dimension=value
             layer_matched = set()
@@ -2759,12 +2775,14 @@ async def get_graph_data(filter: str = "all"):
         md_nodes_filtered = [n for n in md_nodes if n["id"] in keep_nids]
         md_edges_filtered = [e for e in md_edges if e.get("source") in keep_nids and e.get("target") in keep_nids]
         # When keyword filter is active, hide project edges (only show keyword connections)
-        if any(l["dim"] == "keyword" for l in multi_layers):
+        if any(l["dim"] == "keyword" for l in filter_layers):
             md_edges_filtered = [e for e in md_edges_filtered if e.get("relation") != "same_project"]
 
-        # Also add filter-value nodes for each layer
+        # Build the list of value/cluster nodes
         filter_val_nodes = []
-        for layer in multi_layers:
+
+        # Add filter-value nodes for each filter layer
+        for layer in filter_layers:
             dim = layer["dim"]
             val = layer["val"]
             if dim and val:
@@ -2775,6 +2793,44 @@ async def get_graph_data(filter: str = "all"):
                 for n in md_nodes_filtered:
                     md_edges_filtered.append({"source": vnid, "target": n["id"], "relation": dim,
                         "weight": 0.5, "source_file": vnid, "source_location": ""})
+
+        # Add cluster nodes/edges for cluster dims (val='__any__')
+        icon_map = {"author": "👤", "year": "📅", "journal": "📰", "quartile": "⭐", "method": "🔬", "framework": "📐", "keyword": "🏷"}
+        for dim in cluster_dims:
+            # Build cluster edges (edges between files sharing the same dim value),
+            # restricted to files that survived the filter layers.
+            cluster_file_edges = _build_filter_edges(file_meta, dim)
+            cluster_file_edges = [e for e in cluster_file_edges
+                if e.get("source") in keep_nids and e.get("target") in keep_nids]
+            # Create the central category hub node (e.g., "📅 Year", "👤 Author")
+            hub_nid = f"cluster-hub:{dim}"
+            filter_val_nodes.append({"id": hub_nid, "label": f"{icon_map.get(dim, '')} {dim.capitalize()}",
+                "file_type": "hub", "source_file": f"Cluster hub: {dim}",
+                "source_location": dim, "rel_path": ""})
+            # Create one value node per unique dim value present in the cluster edges
+            seen_vals = set()
+            for e in cluster_file_edges:
+                v = e["source_file"]
+                if v and v not in seen_vals:
+                    seen_vals.add(v)
+                    vnid = f"cluster:{dim}:{v}"
+                    filter_val_nodes.append({"id": vnid, "label": str(v), "file_type": "keyword",
+                        "source_file": f"Cluster: {dim}", "source_location": str(v), "rel_path": ""})
+                    # Connect the central hub to this value node
+                    md_edges_filtered.append({"source": hub_nid, "target": vnid, "relation": "hub",
+                        "weight": 0.3, "source_file": hub_nid, "source_location": ""})
+            # Connect each value node to the files in its cluster
+            for e in cluster_file_edges:
+                vnid = f"cluster:{dim}:{e['source_file']}"
+                md_edges_filtered.append({"source": vnid, "target": e["source"], "relation": dim,
+                    "weight": 0.5, "source_file": vnid, "source_location": ""})
+                md_edges_filtered.append({"source": vnid, "target": e["target"], "relation": dim,
+                    "weight": 0.5, "source_file": vnid, "source_location": ""})
+            # Add direct file-to-file cluster edges (papers of the same dim connected to each other)
+            for e in cluster_file_edges:
+                md_edges_filtered.append({"source": e["source"], "target": e["target"], "relation": "cluster",
+                    "weight": 0.8, "source_file": str(e["source_file"]), "source_location": "",
+                    "shared_kw_count": 2, "shared_keywords": f"{dim}: {e['source_file']}"})
 
         # Strip non-research nodes from code_nodes and md_nodes for cleaner view
         code_nodes_filtered = [n for n in code_nodes if n.get("file_type") in {"research", "extraction", "chat", "keyword"}]

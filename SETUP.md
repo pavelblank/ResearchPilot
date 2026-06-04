@@ -442,4 +442,4 @@ Set the `PORT` environment variable before starting:
 
 ---
 
-<p align="center"><sub>Last updated: 2026-06-04 · ResearchPilot V5.3 · Made with care for researchers worldwide.</sub></p>
+<p align="center"><sub>Last updated: 2026-06-04 · ResearchPilot V5.4 · Made with care for researchers worldwide.</sub></p>

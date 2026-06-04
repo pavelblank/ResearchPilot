@@ -1,12 +1,12 @@
 <div align="center">
 
-# ResearchPilot <sub>V5.3.3</sub>
+# ResearchPilot <sub>V5.4.0</sub>
 
 **AI-native research infrastructure for academics and PhD students.**
 
-Ingest papers · Extract insights via AI · Search 5 academic databases · Visualize knowledge graphs · Write with RAG-powered chat
+Ingest papers · Extract insights via AI · Search 5 academic databases · Cluster knowledge graphs · Run input-driven web research · Write with RAG-powered chat
 
-[![Version](https://img.shields.io/badge/version-V5.3.3-6c63ff?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-V5.4.0-6c63ff?style=for-the-badge)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=for-the-badge)](LICENSE)
@@ -51,7 +51,9 @@ ResearchPilot is a complete research operating system that connects to multiple 
 - 📚 **Universal file ingestion** — PDF · DOCX · PPTX · HTML · TXT · MD · CSV · JSON, all auto-converted to Markdown.
 - 🎓 **12-Point Elite Extraction** — every paper analysed via APA, DOI, Quartile, Method, Framework, Limitations, and more.
 - 🌍 **5-source academic search** — OpenAlex · Crossref · Semantic Scholar · PubMed · Google Scholar (with predatory-journal filtering).
+- 🔬 **Input-driven web-research engine** (V5.4.0) — 8-step NLP extraction → parallel multi-source search → trigram/bigram scoring → journal-quality tier filter (Q1–Q4 + peer-review). Purely user-input-driven, no project config required. New `00-SYSTEM-CORE/SEARCH-SYSTEM/` folder.
 - 🕸 **Multi-dimensional knowledge graph** — filter by Author, Year, Journal, Quartile, Method, Framework, or Keyword (AND/OR logic).
+- 🧩 **Graph cluster mode** (V5.4.0) — group papers by Author / Year / Journal / Quartile / Method / Framework without filtering, with a central Category Hub node and direct file-to-file cluster edges. Mix cluster + filter dims in one view.
 - 🔒 **Encrypted at rest** — API keys stored using Fernet (AES-128-CBC + HMAC-SHA256); the encryption key never leaves your machine.
 - 🛡️ **Rate-limited + audit-logged** — 240 req/min/IP, every sensitive action (settings save, project delete, file delete, tool call) recorded in `audit.log`.
 - 🔐 **Prompt-injection & SSRF hardened** — Pydantic v2 `ToolExecReq` schema + orchestration interceptor block unknown tool names, path-traversal, oversized args, and private-IP engine URLs. Validates every LLM tool call before dispatch.
@@ -62,7 +64,7 @@ ResearchPilot is a complete research operating system that connects to multiple 
 - ⌨️ **Keyboard shortcuts** — `1-9` switch tabs, `/` focus chat, `Esc` close modal.
 - 🪶 **Obsidian-compatible** — the entire folder is a valid Obsidian vault; open it and you get an instant knowledge graph.
 - 🧠 **Smart keyword system** — manual deletes are remembered forever; re-adding a deleted keyword restores it until you delete it again. Auto-scan skips your discard list.
-- 🧪 **Smoke-tested** — 24 automated tests cover encryption, RAG cache, audit log, rate limiter, health, exception handler, keyword rules, Graphify filter, SSRF guard, tool-allowlist interceptor, path-traversal, Pydantic schema, security wiring, and filename standardisation (Protocol 7).
+- 🧪 **Smoke-tested** — 30 automated tests cover encryption, RAG cache, audit log, rate limiter, health, exception handler, keyword rules, Graphify filter, SSRF guard, tool-allowlist interceptor, path-traversal, Pydantic schema, security wiring, filename standardisation (Protocol 7), and **graph cluster mode (V5.4.0)**.
 - 🤖 **100% AI-built** — every line generated through [OpenCode](https://opencode.ai), a free local AI coding agent.
 
 ---
@@ -272,6 +274,8 @@ ResearchPilot is designed for **single-user, local-first** operation.
 - 🛡️ **Prompt-injection & tool-abuse defence** (V5.3.2) — `ToolExecReq` Pydantic v2 schema (`Literal` of 10 allowed tool names) plus an orchestration interceptor that validates every LLM tool call (type, length, path safety, NUL bytes) before dispatch
 - 🛡️ **SSRF defence** (V5.3.2) — engine URLs and external fetches validated against private IP ranges (`127.0.0.0/8`, `10/8`, `172.16/12`, `192.168/16`, `169.254/16`) and forbidden schemes (`file://`, `gopher://`, `ftp://`)
 - 📁 **Filename standardisation** (V5.3.3) — Protocol 7 enforces `{Author}_{Year}[_{note}][_{N}].{ext}` for every paper artifact (extractions, library PDFs, web imports, summaries). First author only (`Alyami et al. - 2023.pdf` → `Alyami_2023.pdf`), apostrophes sanitised (`O'Brien` → `O_Brien`), collisions auto-disambiguated. Opt-in migration script: `python migrate_filename_format.py` (dry-run) → `--apply --backup` to commit.
+- 🔬 **Input-driven web-research engine** (V5.4.0) — New `00-SYSTEM-CORE/SEARCH-SYSTEM/` folder. Purely user-input-driven, no project config required. 8-step NLP extraction → parallel multi-source search (OpenAlex · Crossref · Semantic Scholar with DOI + title-similarity dedupe) → trigram/bigram paper scoring → 4-tier journal quality filter (Tier 1 trusted / Tier 2 DOAJ / Tier 3 unverified / Tier 4 predatory) with Q1–Q4 quartile lookup, peer-review detection, and a user-supplied predatory list via `-ExtraPredatoryPath`.
+- 🧩 **Graph cluster mode** (V5.4.0) — Set any graph-filter dim to `__any__` (or click "ALL" in the value dropdown) to group papers by Author / Year / Journal / Quartile / Method / Framework instead of filtering them. A central Category Hub node and per-value cluster nodes connect the files visually. Combine cluster and filter dims in one view (e.g. "show all Q1+Q2 papers clustered by year").
 - 📦 **Upload size limit** 500 MB
 - 🔐 **Admin SHA-256 password** for sensitive author settings
 - 🚫 **Zero telemetry** — no analytics, no phone-home, no remote calls except configured AI engines and academic APIs
@@ -316,6 +320,36 @@ Expected output:
 [PASS] filename utilities: canonical naming + disambiguation
 [PASS] filename utilities: legacy detection + author-year parsing
 [PASS] filename wiring: main.py endpoints + migration script present
+[PASS] graph cluster: __any__ marker recognised in filter
+[PASS] graph cluster: hub + value nodes created for __any__ dims
+[PASS] graph cluster: filter and cluster dims combine correctly
+[PASS] graph cluster: ALL placeholder rendered in value dropdown
+30/30 passed
+```
+[PASS] encryption roundtrip decrypts keys
+[PASS] RAG cache warms (warm < cold/5)
+[PASS] audit log writes correctly
+[PASS] rotating log file present
+[PASS] rate limiter configured (240 req / 60s)
+[PASS] health endpoint registered
+[PASS] global exception handler installed
+[PASS] scan_keywords has _SKIP_PARTS guard
+[PASS] audit() safe with edge-case input
+[PASS] discard list is a set and non-empty
+[PASS] manual add removes word from discard list
+[PASS] manual remove adds word to discard list (cleaned up after)
+[PASS] Graphify filters to research/extraction/chat only
+[PASS] SSRF guard rejects private IPs and dangerous schemes
+[PASS] interceptor rejects unknown tool names
+[PASS] interceptor blocks path-traversal and NUL bytes
+[PASS] interceptor caps string lengths and validates types
+[PASS] interceptor enforces project/system-file allowlists
+[PASS] ToolExecReq Pydantic schema rejects unknown tools + extras
+[PASS] interceptor is wired into LLM tool-call loops + API
+[PASS] SSRF guard wired into ai_respond and research_web_import
+[PASS] filename utilities: canonical naming + disambiguation
+[PASS] filename utilities: legacy detection + author-year parsing
+[PASS] filename wiring: main.py endpoints + migration script present
 24/24 passed
 ```
 [PASS] encryption roundtrip decrypts keys
@@ -333,6 +367,35 @@ Expected output:
 [PASS] Graphify filters to research/extraction/chat only
 13/13 passed
 ```
+
+---
+
+## 📍 Where to Update (V5.4.0)
+
+When extending ResearchPilot, the file you need depends on what you're changing:
+
+| You're changing… | Edit this file / folder | Notes |
+|---|---|---|
+| **Web-research pipeline** (extraction, scoring, journal quality, search API) | `00-SYSTEM-CORE/SEARCH-SYSTEM/` | Pure PowerShell. Add new entry-point scripts here; update `WEB-SEARCH-WORKFLOW.md` with new rules. |
+| **Q1–Q4 lookup or peer-review patterns** | `00-SYSTEM-CORE/SEARCH-SYSTEM/JOURNAL-QUARTILES.json` | Word-boundary match. Edit the JSON directly to add your discipline's journals. |
+| **User-supplied predatory list** | `00-SYSTEM-CORE/SEARCH-SYSTEM/EXTRA-PREDATORY-TEMPLATE.json` → save as your own JSON file → pass via `-ExtraPredatoryPath` | See `EXTRA-PREDATORY-README.md`. |
+| **Built-in Beall's list** (244 entries) | `00-SYSTEM-CORE/predatory_journals.json` | Loaded automatically; append-only. |
+| **Graph layout, filters, or cluster mode** | `web-app/main.py` (Python) + `web-app/static/index.html` (JS) | Add a `__any__` branch in the graph endpoint, then handle the new placeholder in the dropdown. |
+| **Filename canonical form** (Protocol 7) | `web-app/_filename_utils.py` | Plus `SYSTEM-PROTOCOLS.md` § Protocol 7. |
+| **Auth, settings encryption, audit log, rate limit** | `web-app/main.py` | See `SECURITY.md` for the threat model. |
+| **Knowledge-graph schema** (nodes, edges, categories) | `web-app/main.py` `get_graph_data` and `CAT_COLORS` | Hub category was added in V5.4.0 — copy that pattern for new node kinds. |
+| **System version bump** | `00-SYSTEM-CORE/versions.json` + `CHANGELOG.md` + `README.md` (badge + features) + `CLAUDE.md` (status line) | All four must move in lockstep. |
+| **Project template** (blueprint for new users) | `01-PROJECTS/00-TEMPLATE/` | Gitignored `01-PROJECTS/*` keeps personal projects out of Git. |
+| **AI engine / LLM provider** | `web-app/main.py` (engine list + dispatch logic) | Each engine has its own dispatcher; follow the existing pattern. |
+| **12-point extraction prompt** | `00-SYSTEM-CORE/skills/12-point-extraction.md` | The canonical source of the extraction template. |
+| **Smoke tests** | `web-app/test_smoke.py` | One function per behaviour. Run with `python test_smoke.py` from `web-app/`. |
+
+**One-glance orientation:** the top-level folder is the system. Each numbered folder has a single purpose:
+- `00-SYSTEM-CORE/` — system specs, protocols, knowledge base, the new search engine, skill prompts
+- `01-PROJECTS/` — per-project folders (gitignored except the template)
+- `INCOMING/` — landing zone for new papers
+- `99-SYSTEM-BACKEND/` — runtime logs, audit log, settings key (gitignored)
+- `web-app/` — the FastAPI server + single-page UI
 
 ---
 

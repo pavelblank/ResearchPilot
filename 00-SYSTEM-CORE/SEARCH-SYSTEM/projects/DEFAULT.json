@@ -1,0 +1,54 @@
+{
+  "_comment": "FALLBACK config used when no project is specified. The search engine still works, but uses no project-specific keywords. Add your own projects/PROJECTCODE.json for higher precision.",
+
+  "project": {
+    "code": "DEFAULT",
+    "name": "DEFAULT-GENERIC",
+    "folder": "DEFAULT",
+    "title": "Generic search (no project config)",
+    "description": "Used when EXTRACT-KEYWORDS.ps1 is called without -Project. Pure input-driven extraction."
+  },
+
+  "core_constructs": {
+    "ngrams": [],
+    "weight": 0
+  },
+
+  "framework_layers": {},
+
+  "noun_phrases": {},
+
+  "context_anchors": {
+    "must_have_any": [],
+    "weight": 0,
+    "must_not_have": []
+  },
+
+  "population_anchors": {
+    "preferred": [],
+    "auto_reject_populations": []
+  },
+
+  "method_anchors": {
+    "preferred": [],
+    "weight": 0
+  },
+
+  "theory_anchors": {
+    "preferred": [],
+    "weight": 0
+  },
+
+  "scoring": {
+    "accept_threshold": 0,
+    "review_min": 0,
+    "reject_threshold": 0
+  },
+
+  "lemmatize": {},
+
+  "stopwords": {
+    "universal": [],
+    "project_specific": []
+  }
+}

@@ -24,6 +24,11 @@
       "date": "2026-06-04",
       "version": "v5.3.3",
       "description": "Filename standardisation: Protocol 7 (Author_Year[_note][_N].ext) applied to extractions, library PDFs, web imports; new _filename_utils.py module; migrate_filename_format.py migration script (opt-in, dry-run by default); 19 unit tests + 3 new smoke tests (24/24 pass)"
+    },
+    {
+      "date": "2026-06-04",
+      "version": "v5.4.0",
+      "description": "Web-research upgrade + Graph cluster mode. New 00-SYSTEM-CORE/SEARCH-SYSTEM/ folder ships the input-driven search engine: EXTRACT-KEYWORDS 8-step NLP pipeline (purely user-input-driven, no project config), FILTER-PAPERS top-level project-free filter, journal-quality tier scorer (Tier 1-4 with Q1-Q4 quartile lookup, peer-review detection, custom predatory list via -ExtraPredatoryPath), parallel multi-source API search (OpenAlex/Crossref/SemanticScholar with DOI + title-similarity dedupe). Web app graph gains cluster mode: dim=__any__ groups papers by author/year/journal/quartile/method/framework without filtering, central hub node + per-value cluster nodes + file-to-file cluster edges. 30/30 smoke tests pass."
     }
   ]
 }
