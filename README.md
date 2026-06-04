@@ -14,7 +14,7 @@ Ingest papers · Extract insights via AI · Search 5 academic databases · Visua
 [![Self-hosted](https://img.shields.io/badge/self--hosted-local--first-orange?style=for-the-badge)](#-quick-start)
 [![AI-Native](https://img.shields.io/badge/built--with-OpenCode%20AI-ff4d6d?style=for-the-badge)](#-built-with-ai)
 
-[Features](#-features) · [Quick Start](#-quick-start) · [Screenshots](#-screenshots) · [Documentation](SYSTEM-DOCUMENTATION.md) · [Security](#-security)
+[Features](#-features) · [Setup Guide](SETUP.md) · [Quick Start](#-quick-start) · [Screenshots](#-screenshots) · [Documentation](SYSTEM-DOCUMENTATION.md) · [Security](#-security)
 
 </div>
 
@@ -80,21 +80,26 @@ ResearchPilot is a complete research operating system that connects to multiple 
 
 ## 🚀 Quick Start
 
-### 1️⃣ Install
+**New here?** Read the full **[Setup Guide](SETUP.md)** — it covers Windows, macOS, Linux, troubleshooting, and auto-start in plain language.
+
+### 30-second version (developers comfortable with the command line)
 
 ```bash
 git clone https://github.com/pavelblank/ResearchPilot.git
 cd ResearchPilot/web-app
 pip install -r requirements.txt
+python main.py
 ```
 
-### 2️⃣ Configure AI
+Open **<http://127.0.0.1:8000>** in your browser.
 
-```bash
-cp .env.example .env
-```
+> 💡 **Windows users:** double-click `START-SERVER.bat` — it auto-installs dependencies on first run, no terminal needed.
+>
+> 🍎 **macOS / Linux:** double-click `START-SERVER.sh` (or run `./START-SERVER.sh` from a terminal).
 
-Add at least one AI key in the UI after first launch (Settings → AI Engines), or use local Ollama. Your keys are **encrypted at rest** automatically.
+### Configure AI
+
+Add at least one AI key in the UI after first launch (**Settings → AI Engines**), or use local Ollama. Your keys are **encrypted at rest** automatically.
 
 | Engine | Free? | Get it from |
 |---|---|---|
@@ -103,16 +108,6 @@ Add at least one AI key in the UI after first launch (Settings → AI Engines), 
 | **OpenRouter** (free models) | ✅ tier | [openrouter.ai](https://openrouter.ai) |
 | **NVIDIA NIM** (free tier) | ✅ | [build.nvidia.com](https://build.nvidia.com) |
 | **Claude** | 💳 | [console.anthropic.com](https://console.anthropic.com) |
-
-### 3️⃣ Run
-
-```bash
-python main.py
-```
-
-Open **<http://127.0.0.1:8000>** in your browser.
-
-> 💡 **Windows users:** double-click `START-SERVER.bat` for one-click launch.
 
 ---
 
@@ -212,7 +207,13 @@ ResearchPilot/
 │   ├── .env.example                  # Environment template
 │   ├── static/
 │   │   └── index.html               # Single-page frontend
-│   ├── START-SERVER.bat             # Windows launcher
+│   ├── START-SERVER.bat             # Windows launcher (auto-installs deps)
+│   ├── START-SERVER.sh              # macOS / Linux launcher
+│   ├── install-windows.bat          # One-time Windows setup
+│   ├── install-mac.sh               # One-time macOS / Linux setup
+│   ├── uninstall-windows.bat        # Clean removal (Windows)
+│   ├── uninstall-mac.sh             # Clean removal (macOS / Linux)
+│   ├── REGISTER-AUTOSTART.bat       # Optional: start on Windows login
 │   ├── test_smoke.py                # 13-test smoke suite
 │   └── migrate_encrypt_settings.py  # One-time encryption migration
 ├── 00-SYSTEM-CORE/                   # Protocols, knowledge base (gitignored: personal)
@@ -224,6 +225,7 @@ ResearchPilot/
 ├── LICENSE                           # MIT
 ├── LICENSE-APACHE                    # Apache 2.0
 ├── README.md                         # This file
+├── SETUP.md                          # Beginner-friendly setup guide
 ├── SYSTEM-DOCUMENTATION.md           # Full architecture reference
 ├── SECURITY.md                       # Security policy + key rotation
 └── CHANGELOG.md                      # Version history

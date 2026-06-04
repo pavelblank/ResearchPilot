@@ -58,7 +58,15 @@ except ImportError:
     HAS_SCHOLARLY = False
 
 # ─── Paths ────────────────────────────────────────────────────────────────────
-BASE       = Path(r"C:\F- Drive\MYWORK-Research1")
+# Auto-detect: BASE is the parent of this script's directory (the ResearchPilot
+# root). This means the system works no matter where the user installs it
+# — Documents/, Desktop/, D:\Research\, ~/ResearchPilot, etc.
+# Override with RESEARCHPILOT_HOME environment variable if needed.
+_BASE_OVERRIDE = os.getenv("RESEARCHPILOT_HOME", "").strip()
+if _BASE_OVERRIDE:
+    BASE = Path(_BASE_OVERRIDE)
+else:
+    BASE = Path(__file__).resolve().parent.parent
 PROJECTS   = BASE / "01-PROJECTS"
 CORE       = BASE / "00-SYSTEM-CORE"
 BACKEND    = BASE / "99-SYSTEM-BACKEND"
