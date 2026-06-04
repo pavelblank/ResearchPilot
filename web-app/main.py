@@ -2567,10 +2567,29 @@ async def save_keywords(request: Request):
         return {"ok": True}
     if not word: raise HTTPException(400, "Keyword required")
     if action == "add":
+        # If re-adding a previously-discarded keyword, this is the "smart"
+        # behaviour: keep it until the user deletes it again. The user
+        # explicitly wants this, so we honour it.
+        was_discarded = word in discarded
         discarded.discard(word)
         _save_discarded(discarded)
         kw.setdefault(word, {"files": [], "note": data.get("note", "")})
         kw[word]["note"] = data.get("note", kw[word].get("note", ""))
+        # Auto-link to files that actually contain this word (so it shows
+        # up properly in Graphify and search). Fast: one grep per file.
+        if not kw[word].get("files"):
+            linked = []
+            for root in (PROJECTS, CORE, INCOMING):
+                if not root.exists(): continue
+                for f in root.rglob("*.md"):
+                    if any(p in f.parts for p in {".obsidian","graphify-out",".claude","__pycache__",".git"}):
+                        continue
+                    try:
+                        if word in f.read_text(encoding="utf-8", errors="ignore").lower():
+                            linked.append(str(f.relative_to(BASE)))
+                    except Exception:
+                        continue
+            kw[word]["files"] = sorted(set(linked))[:200]
     elif action == "remove":
         kw.pop(word, None)
         discarded.add(word)

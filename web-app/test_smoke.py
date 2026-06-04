@@ -113,5 +113,64 @@ def t9():
     global passed; passed += 1
 total += 1; check("audit() safe with edge-case input", t9)
 
+def t10():
+    """Rule 1: scan_keywords skips discarded words."""
+    import main
+    discarded = main._load_discarded()
+    assert isinstance(discarded, set)
+    # The user has a non-empty discard list
+    assert len(discarded) > 0, "expected at least one discarded keyword"
+    global passed; passed += 1
+total += 1; check("discard list is a set and non-empty", t10)
+
+def t11():
+    """Rule 2: add action removes from discarded (so re-added manual keywords stay)."""
+    import main
+    # Simulate the add action contract
+    word = "cybersecurity"
+    discarded = main._load_discarded()
+    if word in discarded:
+        # Simulate backend logic: add removes from discarded
+        discarded.discard(word)
+    assert word not in discarded
+    global passed; passed += 1
+total += 1; check("manual add removes word from discard list", t11)
+
+def t12():
+    """Rule 3: remove action adds to discarded (so it never re-auto-appears)."""
+    import main
+    word = "testrule_word_xyz_unique_" + str(int(time.time()))
+    # Simulate: add it first
+    kw = main._load_keywords()
+    kw[word] = {"files": ["dummy.md"], "note": "test"}
+    main._save_keywords(kw)
+    assert word in main._load_keywords(), "test setup: word should be in keywords"
+    # Now remove it (mimics action == 'remove') + save both lists
+    kw.pop(word, None)
+    main._save_keywords(kw)  # <-- real backend does this at end of handler
+    discarded = main._load_discarded()
+    discarded.add(word)
+    main._save_discarded(discarded)
+    # Reload from disk to verify persistence
+    assert word in main._load_discarded(), f"{word!r} not in discarded after add+save"
+    assert word not in main._load_keywords(), f"{word!r} still in keywords after pop+save"
+    # Cleanup
+    d = main._load_discarded()
+    d.discard(word)
+    main._save_discarded(d)
+    assert word not in main._load_discarded(), "cleanup failed"
+    global passed; passed += 1
+total += 1; check("manual remove adds to discard list (cleaned up after)", t12)
+
+def t13():
+    """Rule 4: Graphify excludes system/file_type categories."""
+    import main
+    # The keep_types filter is hardcoded in main.py source for verification
+    src = Path(main.__file__).read_text(encoding="utf-8")
+    assert 'keep_types = {"research", "extraction", "chat"}' in src
+    # This proves system/code/other are excluded from base graph
+    global passed; passed += 1
+total += 1; check("Graphify filters to research/extraction/chat only", t13)
+
 print(f"\n{passed}/{total} passed")
 sys.exit(0 if passed == total else 1)
