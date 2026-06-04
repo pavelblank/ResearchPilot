@@ -4,7 +4,7 @@ Multi-AI backbone (never stops), universal file ingestion, settings from web UI,
 project management, skills system. All chats saved as .md for Obsidian.
 """
 
-import os, json, re, shutil, datetime, traceback, asyncio, hashlib, secrets, base64
+import os, json, re, shutil, datetime, traceback, asyncio, hashlib, secrets, base64, logging, logging.handlers
 from pathlib import Path
 from cryptography.fernet import Fernet
 from typing import List, Optional, Any
@@ -69,6 +69,20 @@ PLUGINS_DIR = BACKEND / "plugins"
 SETTINGS_F = BACKEND / "settings.json"
 SETTINGS_KEY_FILE = BACKEND / ".settings_key"
 STATIC     = Path(__file__).parent / "static"
+
+# ─── Logging (rotating, max ~2 MB × 4 files) ──────────────────────────────────
+LOG_FILE = BACKEND / "server.log"
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.handlers.RotatingFileHandler(
+            LOG_FILE, maxBytes=2_000_000, backupCount=3, encoding="utf-8"
+        ),
+    ],
+)
+logger = logging.getLogger("ResearchPilot")
 
 # ─── Auth token ─────────────────────────────────────────────────────────
 TOKEN_FILE = BASE / ".token"
@@ -1042,6 +1056,41 @@ def extract_pdf_text(path: Path, max_chars: int = 40000) -> str:
 app = FastAPI(title="ResearchPilot", version="2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.mount("/static", StaticFiles(directory=str(STATIC)), name="static")
+
+# ─── Global exception handler — never leak stack traces to client ─────────────
+from starlette.responses import JSONResponse as _JSONResp
+from fastapi import Request as _Req
+
+@app.exception_handler(Exception)
+async def _unhandled(request: _Req, exc: Exception):
+    logger.exception("Unhandled error on %s %s: %s", request.method, request.url.path, exc)
+    return _JSONResp(
+        status_code=500,
+        content={"ok": False, "error": "Internal server error", "detail": str(exc)[:300]},
+    )
+
+@app.on_event("startup")
+async def _on_startup():
+    logger.info("=" * 60)
+    logger.info("ResearchPilot V%s starting on %s:%s", "5.3", os.getenv("HOST", "127.0.0.1"), os.getenv("PORT", "8000"))
+    logger.info("Projects dir: %s", PROJECTS)
+    logger.info("Log file:     %s", LOG_FILE)
+    logger.info("=" * 60)
+
+@app.on_event("shutdown")
+async def _on_shutdown():
+    logger.info("ResearchPilot shutting down")
+
+@app.get("/api/health")
+async def health():
+    """Lightweight health check for uptime monitors and load balancers."""
+    return {
+        "ok": True,
+        "service": "ResearchPilot",
+        "version": "5.3",
+        "time": datetime.datetime.now().isoformat(timespec="seconds"),
+        "engines_loaded": len(load_settings().get("ai_engines", [])),
+    }
 
 # ─── Auth middleware ──────────────────────────────────────────────────────────
 from fastapi import Request as _Req
