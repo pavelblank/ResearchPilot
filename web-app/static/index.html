@@ -753,7 +753,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <div class="sn-item" onclick="showSettingsSection('keywords')">🔑 Keywords</div>
       <div class="sn-item" onclick="showSettingsSection('predatory')">🚫 Predatory Journals</div>
       <div class="sn-item" onclick="showSettingsSection('author')">👤 Author</div>
-      <div class="sn-item" onclick="showSettingsSection('plugins')">🔌 Plugins</div>
       <div class="sn-item" onclick="showSettingsSection('obsidian')">🪨 Obsidian</div>
       <div class="sn-item" onclick="showSettingsSection('versions')">📋 Changelog</div>
     </div>
@@ -894,35 +893,15 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
         </div>
       </div>
 
-      <!-- Plugins -->
-      <div id="ss-plugins" style="display:none">
-        <div class="section-title">🔌 AI Plugin Engine</div>
-        <div class="text-sm text-m mb12">ResearchPilot supports these AI engine types. Add new ones by installing Python plugins into <code>00-SYSTEM-CORE/plugins/</code>.</div>
-        <div id="plugins-list"></div>
-        <hr class="separator">
-        <div class="section-title">➡️ How to Add Claude</div>
-        <div class="card">
-          <div class="card-t">🤖 Option 1: Claude API (Recommended)</div>
-          <div class="card-s">Get an API key at <a href="https://console.anthropic.com" target="_blank" style="color:var(--accent)">console.anthropic.com</a> → Add it in Settings → AI Engines → Enable "Claude API".</div>
-        </div>
-        <div class="card">
-          <div class="card-t">🔐 Option 2: Claude Login (Plugin)</div>
-          <div class="card-s">If you have a paid Claude account, install the CLI: <code>pip install claude-cli</code> then run <code>claude login</code>. ResearchPilot will auto-detect it.</div>
-        </div>
-        <div class="card">
-          <div class="card-t">📦 Option 3: Custom OpenAI-Compatible</div>
-          <div class="card-s">Any OpenAI-compatible API (OpenRouter, Jan, LocalAI) can be added in Settings → AI Engines with type "Custom API".</div>
-        </div>
-      </div>
-
       <!-- Obsidian -->
       <div id="ss-obsidian" style="display:none">
         <div class="section-title">🪨 Obsidian Integration</div>
+        <div id="obsidian-install-status"></div>
         <div class="card">
           <div class="card-t">📂 This folder IS your Obsidian vault</div>
           <div class="card-s" style="margin-top:4px">
             Open this folder in Obsidian to see all your research connected in a graph.<br>
-            <code style="color:var(--a2);font-size:12px">C:\F- Drive\MYWORK-Research1</code>
+            <code id="obsidian-vault-path" style="color:var(--a2);font-size:12px">—</code>
           </div>
         </div>
         <div class="grid2" style="grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
@@ -930,13 +909,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
             <div style="font-size:32px;margin-bottom:8px">📂</div>
             <div style="font-size:13px;font-weight:600;margin-bottom:8px">Open in Obsidian</div>
             <div class="card-s">Launches Obsidian with this vault loaded</div>
-            <button class="btn btn-p mt12" onclick="openObsidian()" style="width:100%">🚀 Open Vault</button>
+            <button id="obs-open-vault-btn" class="btn btn-p mt12" onclick="openObsidian()" style="width:100%">🚀 Open Vault</button>
           </div>
           <div class="card" style="text-align:center;padding:20px">
             <div style="font-size:32px;margin-bottom:8px">🔗</div>
             <div style="font-size:13px;font-weight:600;margin-bottom:8px">Graph View</div>
             <div class="card-s">Open Obsidian's local graph for the entire vault</div>
-            <button class="btn btn-p mt12" onclick="openObsidianGraph()" style="width:100%">🕸 Open Graph</button>
+            <button id="obs-open-graph-btn" class="btn btn-p mt12" onclick="openObsidianGraph()" style="width:100%">🕸 Open Graph</button>
           </div>
         </div>
         <div class="card" id="obsidian-stats">
@@ -1298,20 +1277,20 @@ async function saveGeneral(){
 }
 
 function showSettingsSection(id){
-  ['general','ai','skills','kb','keywords','predatory','author','plugins','obsidian','versions'].forEach(s=>{
+  ['general','ai','skills','kb','keywords','predatory','author','obsidian','versions'].forEach(s=>{
     const el=document.getElementById('ss-'+s);
     if(el)el.style.display=s===id?'block':'none';
   });
   document.querySelectorAll('.sn-item').forEach((el,i)=>{
-    el.classList.toggle('on',['general','ai','skills','kb','keywords','predatory','author','plugins','obsidian','versions'][i]===id);
+    el.classList.toggle('on',['general','ai','skills','kb','keywords','predatory','author','obsidian','versions'][i]===id);
   });
   if(id==='ai'){renderEngines();}
   if(id==='skills')renderSkills();
   if(id==='kb')loadKB();
   if(id==='keywords')loadKeywords();
   if(id==='predatory')loadPredatory();
-  if(id==='plugins')loadPlugins();
   if(id==='author'){};
+  if(id==='obsidian'){loadObsidianInfo();}
   if(id==='versions'){loadVersions();}
 }
 
@@ -2834,64 +2813,6 @@ function refreshQuote(){
   }catch(e){console.error('quote err',e)}
 }
 
-// ─── Plugins ──────────────────────────────────────────────────────────────────
-async function loadPlugins(){
-  const d=await fetch(`${API}/api/plugins`).then(r=>r.json());
-  document.getElementById('plugins-list').innerHTML=d.plugins.map(p=>`
-    <div class="card">
-      <div class="card-t">${p.icon} ${p.name}</div>
-      <div class="card-s">${p.description}</div>
-      <div class="flex gap8 items-c mt12">
-        ${p.connected
-          ? `<span class="tag green">✓ Connected</span>
-             <button class="btn btn-d btn-s" onclick="disconnectPlugin('${p.id}')">Disconnect</button>`
-          : `<span class="tag red">Not connected</span>
-             <button class="btn btn-p btn-s" onclick="showPluginConnect('${p.id}')">Connect</button>`
-        }
-        <a href="${p.docs_url}" target="_blank" class="btn btn-g btn-s" style="text-decoration:none">Get API Key</a>
-      </div>
-    </div>`).join('');
-}
-
-function showPluginConnect(id){
-  const el=document.getElementById('plugins-list');
-  const card=el.querySelector('.card')||el;
-  const form=document.createElement('div');form.id='plugin-form';
-  form.innerHTML=`
-    <div class="card" style="border-color:var(--accent)">
-      <div class="card-t">🔑 Connect Claude AI</div>
-      <div class="form-row"><label>Claude API Key</label>
-        <input type="password" id="pk-key" class="w100" placeholder="sk-ant-... paste your API key here">
-      </div>
-      <div class="form-row"><label>API Key URL</label>
-        <input class="w100" value="https://console.anthropic.com" readonly style="color:var(--muted)">
-      </div>
-      <div class="flex gap8">
-        <button class="btn btn-p" onclick="connectPlugin('${id}')">Connect</button>
-        <button class="btn btn-g" onclick="document.getElementById('plugin-form').remove()">Cancel</button>
-      </div>
-      <div id="pk-status" class="mt12 text-sm"></div>
-    </div>`;
-  el.appendChild(form);
-}
-
-async function connectPlugin(id){
-  const key=document.getElementById('pk-key').value.trim();
-  if(!key)return document.getElementById('pk-status').textContent='Please paste your API key';
-  document.getElementById('pk-status').textContent='Connecting...';
-  try{
-    const d=await fetch(`${API}/api/plugins/${id}/connect`,{method:'POST',
-      headers:{'Content-Type':'application/json'},body:JSON.stringify({api_key:key})}).then(r=>r.json());
-    if(d.ok){toast('Claude connected!','ok');loadPlugins();}
-    else document.getElementById('pk-status').textContent=d.error||'Connection failed';
-  }catch(e){document.getElementById('pk-status').textContent='Error: '+e;}
-}
-
-async function disconnectPlugin(id){
-  const d=await fetch(`${API}/api/plugins/${id}/disconnect`,{method:'POST'}).then(r=>r.json());
-  if(d.ok){toast('Claude disconnected','ok');loadPlugins();}
-}
-
 // ─── Tab navigation ───────────────────────────────────────────────────────────
 const TABS=['dashboard','chat','research','projects','upload','library','graph','memory','settings'];
 function go(name){
@@ -2903,7 +2824,6 @@ function go(name){
   if(name==='library')loadLibrary();
   if(name==='memory')loadMemory();
   if(name==='chat'){loadSessions();loadSkills();}
-  if(name==='plugins')loadPlugins();
   if(name==='graph'){loadGraphFilterData();loadGraph();}
   if(name==='obsidian')updateObsidianStats();
   if(name==='research'){loadWebPapers();populateYearSelects();}
@@ -3905,15 +3825,63 @@ async function runGraphify(){
 }
 
 // ─── Obsidian ──────────────────────────────────────────────────────────
+let _obsidianInfo = null;
+async function loadObsidianInfo(){
+  try{
+    const d=await fetch(`${API}/api/obsidian`).then(r=>r.json());
+    _obsidianInfo = d;
+    document.getElementById('obsidian-vault-path').textContent = d.vault_path;
+    // Install status banner
+    const status = document.getElementById('obsidian-install-status');
+    if(d.installed){
+      status.innerHTML = `<div class="card" style="border-color:var(--green);margin-bottom:12px">
+        <div class="card-t" style="color:var(--green)">✅ Obsidian Detected</div>
+        <div class="card-s">Vault name: <code>${d.vault_name}</code> — the buttons below will open this vault in Obsidian.</div>
+      </div>`;
+    } else {
+      status.innerHTML = `<div class="card" style="border-color:var(--accent);margin-bottom:12px">
+        <div class="card-t" style="color:var(--accent)">⚠️ Obsidian Not Detected</div>
+        <div class="card-s" style="margin-bottom:8px">The "Open Vault" / "Open Graph" buttons need Obsidian installed. It's free and takes ~2 minutes.</div>
+        <a href="${d.download_url}" target="_blank" class="btn btn-p" style="text-decoration:none;display:inline-block">⬇️ Download Obsidian (Free)</a>
+        <div class="card-s mt12"><strong>After installing:</strong> open Obsidian once → click "Open folder as vault" → select <code>${d.vault_path}</code> → then the buttons below will work.</div>
+      </div>`;
+      document.getElementById('obs-open-vault-btn').textContent = '⬇️ Download Obsidian First';
+      document.getElementById('obs-open-vault-btn').onclick = ()=>window.open(d.download_url,'_blank');
+      document.getElementById('obs-open-graph-btn').textContent = '⬇️ Download Obsidian First';
+      document.getElementById('obs-open-graph-btn').onclick = ()=>window.open(d.download_url,'_blank');
+    }
+  } catch(e){
+    console.error('Obsidian info load failed:', e);
+  }
+}
+
 function openObsidian(){
-  const url='obsidian://open?vault=C%3A%5CF-%20Drive%5CMYWORK-Research1';
-  window.open(url,'_blank');
+  if(!_obsidianInfo){
+    toast('Loading Obsidian info, please wait...','err');
+    return loadObsidianInfo().then(openObsidian);
+  }
+  if(!_obsidianInfo.installed){
+    if(confirm('Obsidian is not installed on this system.\n\nClick OK to open the download page.')){
+      window.open(_obsidianInfo.download_url,'_blank');
+    }
+    return;
+  }
+  window.open(_obsidianInfo.vault_url,'_blank');
   toast('Opening Obsidian vault...','ok');
 }
 
 function openObsidianGraph(){
-  const url='obsidian://graph?vault=C%3A%5CF-%20Drive%5CMYWORK-Research1';
-  window.open(url,'_blank');
+  if(!_obsidianInfo){
+    toast('Loading Obsidian info, please wait...','err');
+    return loadObsidianInfo().then(openObsidianGraph);
+  }
+  if(!_obsidianInfo.installed){
+    if(confirm('Obsidian is not installed on this system.\n\nClick OK to open the download page.')){
+      window.open(_obsidianInfo.download_url,'_blank');
+    }
+    return;
+  }
+  window.open(_obsidianInfo.graph_url,'_blank');
   toast('Opening Obsidian graph...','ok');
 }
 

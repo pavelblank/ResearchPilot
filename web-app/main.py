@@ -4,7 +4,7 @@ Multi-AI backbone (never stops), universal file ingestion, settings from web UI,
 project management, skills system. All chats saved as .md for Obsidian.
 """
 
-import os, json, re, shutil, datetime, traceback, asyncio, hashlib, secrets, base64, logging, logging.handlers
+import os, json, re, shutil, datetime, traceback, asyncio, hashlib, secrets, base64, logging, logging.handlers, urllib.parse
 from pathlib import Path
 from cryptography.fernet import Fernet
 from typing import List, Optional, Any
@@ -1578,116 +1578,74 @@ async def get_auto_start():
     method = "task" if exists else ("startup_folder" if shortcut_exists else None)
     return {"enabled": enabled or shortcut_exists, "task_exists": exists, "shortcut_exists": shortcut_exists, "method": method}
 
-# ── Plugin Management ──
-PLUGIN_REGISTRY = {
-    "claude": {
-        "id": "claude",
-        "name": "Claude AI",
-        "icon": "🤖",
-        "description": "Connect your Anthropic API key to use Claude models (Sonnet, Haiku). Get key at console.anthropic.com",
-        "docs_url": "https://console.anthropic.com",
-        "type": "anthropic"
-    },
-    "claude_login": {
-        "id": "claude_login",
-        "name": "Claude Login",
-        "icon": "🔐",
-        "description": "Login with your paid Claude account. Requires 'claude' CLI: pip install claude-cli && claude login",
-        "docs_url": "https://claude.ai",
-        "type": "claude_plugin"
-    },
-    "gemini": {
-        "id": "gemini",
-        "name": "Google Gemini",
-        "icon": "🔮",
-        "description": "Free tier Gemini Flash model. Get key at aistudio.google.com",
-        "docs_url": "https://aistudio.google.com/app/apikey",
-        "type": "gemini"
-    },
-    "ollama": {
-        "id": "ollama",
-        "name": "Ollama (Local)",
-        "icon": "🦙",
-        "description": "Free local AI models. Install from ollama.com, pull a model like llama3 or qwen2.5",
-        "docs_url": "https://ollama.com",
-        "type": "ollama"
-    }
-}
+# ── Obsidian Integration ──
+def _detect_obsidian():
+    """Detect if Obsidian is installed on this system."""
+    import platform
+    import shutil
+    system = platform.system()
+    # Check common executable locations
+    candidates = []
+    if system == "Windows":
+        candidates += [
+            shutil.which("obsidian"),
+            os.path.expandvars(r"%LOCALAPPDATA%\Obsidian\Obsidian.exe"),
+            os.path.expandvars(r"%PROGRAMFILES%\Obsidian\Obsidian.exe"),
+            os.path.expandvars(r"%PROGRAMFILES(X86)%\Obsidian\Obsidian.exe"),
+            os.path.expandvars(r"%USERPROFILE%\AppData\Local\Obsidian\Obsidian.exe"),
+        ]
+    elif system == "Darwin":
+        candidates += [
+            "/Applications/Obsidian.app/Contents/MacOS/Obsidian",
+            os.path.expanduser("~/Applications/Obsidian.app/Contents/MacOS/Obsidian"),
+        ]
+    else:  # Linux
+        candidates += [
+            shutil.which("obsidian"),
+            "/usr/bin/obsidian",
+            "/usr/local/bin/obsidian",
+            "/opt/Obsidian/obsidian",
+            "/snap/bin/obsidian",
+            os.path.expanduser("~/.local/bin/obsidian"),
+            "/var/lib/flatpak/exports/bin/obsidian",
+        ]
+    for c in candidates:
+        if c and os.path.isfile(c):
+            return True, c
+    return False, None
 
-@app.get("/api/plugins")
-async def list_plugins():
-    """List all available engine plugins and their connection status."""
-    cfg = load_settings()
-    engines = cfg.get("ai_engines", [])
-    result = []
-    for pid, info in PLUGIN_REGISTRY.items():
-        engine = next((e for e in engines if e.get("type") == info["type"]), None)
-        connected = engine is not None and engine.get("enabled", False)
-        if engine and engine.get("api_key"):
-            connected = True
-        # Check Claude CLI availability
-        cli_available = False
-        if pid == "claude_login":
+def _get_obsidian_vault_name(vault_path: Path):
+    """Read the vault display name from the .obsidian config, or fall back to folder name."""
+    obs_dir = vault_path / ".obsidian"
+    if obs_dir.is_dir():
+        app_json = obs_dir / "app.json"
+        if app_json.is_file():
             try:
-                import subprocess
-                r = subprocess.run(["claude", "--version"], capture_output=True, text=True, timeout=5)
-                cli_available = r.returncode == 0
+                d = json.loads(app_json.read_text(encoding="utf-8"))
+                name = d.get("vaultName")
+                if name:
+                    return name
             except Exception:
                 pass
-        result.append({
-            "id": pid,
-            "name": info["name"],
-            "icon": info["icon"],
-            "description": info["description"],
-            "connected": connected,
-            "cli_available": cli_available,
-            "docs_url": info["docs_url"],
-            "type": info["type"]
-        })
-    return {"plugins": result}
+    return vault_path.name
 
-@app.post("/api/plugins/{plugin_id}/connect")
-async def connect_plugin(plugin_id: str, request: Request):
-    """Connect a plugin by saving its API key and enabling the engine."""
-    data = await request.json()
-    api_key = data.get("api_key", "")
-    plugin = PLUGIN_REGISTRY.get(plugin_id)
-    if not plugin:
-        raise HTTPException(404, "Plugin not found")
-    cfg = load_settings()
-    engines = cfg.get("ai_engines", [])
-    existing = next((e for e in engines if e.get("type") == plugin["type"]), None)
-    if existing:
-        existing["api_key"] = api_key
-        existing["enabled"] = True
-    else:
-        engines.append({
-            "name": plugin["name"],
-            "type": plugin["type"],
-            "url": "",
-            "model": "claude-sonnet-4-20250514" if plugin["type"] == "anthropic" else "gemini-1.5-flash" if plugin["type"] == "gemini" else "",
-            "api_key": api_key,
-            "enabled": True,
-            "priority": len(engines) + 1,
-            "note": f"Connected via plugin: {plugin['name']}"
-        })
-    cfg["ai_engines"] = engines
-    save_settings(cfg)
-    return {"ok": True, "plugin": plugin_id}
-
-@app.post("/api/plugins/{plugin_id}/disconnect")
-async def disconnect_plugin(plugin_id: str):
-    """Disconnect a plugin by disabling its engine."""
-    plugin = PLUGIN_REGISTRY.get(plugin_id)
-    if not plugin:
-        raise HTTPException(404, "Plugin not found")
-    cfg = load_settings()
-    for e in cfg.get("ai_engines", []):
-        if e.get("type") == plugin["type"]:
-            e["enabled"] = False
-            e["api_key"] = ""
-    save_settings(cfg)
-    return {"ok": True, "plugin": plugin_id}
+@app.get("/api/obsidian")
+async def obsidian_info():
+    """Return Obsidian installation status + vault path for the Open buttons."""
+    installed, exe = _detect_obsidian()
+    vault_path = BASE
+    vault_name = _get_obsidian_vault_name(vault_path)
+    # Build the obsidian:// URLs using the vault NAME (Obsidian resolves names, not paths)
+    encoded = urllib.parse.quote(vault_name, safe="")
+    return {
+        "installed": installed,
+        "exe": exe,
+        "vault_path": str(vault_path),
+        "vault_name": vault_name,
+        "vault_url": f"obsidian://open?vault={encoded}",
+        "graph_url": f"obsidian://graph?vault={encoded}",
+        "download_url": "https://obsidian.md/download",
+    }
 
 # ── AI Status ──
 @app.get("/api/status")

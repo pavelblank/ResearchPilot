@@ -255,7 +255,6 @@ Accessible from the UI: **⚙️ Settings →**
 | **Keywords** | Auto-scan and track research keywords |
 | **Predatory Journals** | Manage filtered journal list |
 | **Author** | Display information (gitignored) |
-| **Plugins** | View and manage installed Python plugins |
 | **Obsidian** | Connect to Obsidian vault |
 | **Changelog** | Record version history |
 
