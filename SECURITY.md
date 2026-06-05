@@ -140,7 +140,7 @@ You can expect an initial response within 7 days. We follow responsible disclosu
 - [ ] Firewall blocks inbound 8000 from public networks (Windows default ✅)
 - [ ] Backups of `99-SYSTEM-BACKEND/` are stored encrypted (it now contains the encrypted keys + the .settings_key, so treat it as a single secret bundle)
 - [ ] `audit.log` is reviewed periodically for unexpected actions
-- [ ] Smoke test passes: `cd web-app && python test_smoke.py` → 21/21
+- [ ] Smoke test passes: `cd web-app && python test_smoke.py` → 30/30
 
 ---
 

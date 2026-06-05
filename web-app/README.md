@@ -1,9 +1,8 @@
 # ResearchPilot — Web System
 
 ## Access
-Open any browser on your network:
+Open any browser on your computer:
 - **This PC**: http://localhost:8000
-- **Any device on LAN**: http://192.168.68.103:8000
 
 ---
 
@@ -13,7 +12,7 @@ Open any browser on your network:
 
 Or from terminal:
 ```
-cd "C:\F- Drive\MYWORK-Research1\web-app"
+cd web-app
 python main.py
 ```
 
@@ -50,7 +49,7 @@ web-app/
 ```
 
 ## Obsidian Integration
-Vault the entire `MYWORK-Research1` folder in Obsidian.
+Vault the entire ResearchPilot folder in Obsidian.
 All chats saved to `99-SYSTEM-BACKEND/chats/` as `.md` files.
 Full memory, searchable, linked — no forgetting.
 
@@ -65,5 +64,4 @@ Full memory, searchable, linked — no forgetting.
 - [x] Extraction viewer
 - [x] Master Knowledge Base viewer
 - [x] Dashboard with live stats
-- [x] LAN accessible (port 8000)
 - [x] Auto AI engine switching (Ollama → Gemini)
