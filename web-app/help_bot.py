@@ -165,18 +165,22 @@ def _extract_tags(text: str) -> List[str]:
 # ──────────────────────────────────────────────────────────────────────────────
 
 _SMALLTALK = [
-    (re.compile(r"^\s*(hi|hello|hey|yo|good (morning|afternoon|evening))[\s!.]*$", re.I),
-     "Hi! Ask me about any tab, setting, or how to do something here.", None),
-    (re.compile(r"^\s*(bye|goodbye|see ya|see you|later|good night)[\s!.]*$", re.I),
-     "Bye! Come back anytime you need help.", None),
-    (re.compile(r"^\s*(thanks|thank you|thx|cheers|appreciated)[\s!.]*$", re.I),
-     "You're welcome.", None),
-    (re.compile(r"(what is this|what's this|what is researchpilot|who are you|what do you do|what can you do)", re.I),
-     "ResearchPilot helps you collect papers, extract key points, search literature, and write with AI chat. Ask me about any tab to learn more.",
+    (re.compile(r"^\s*(hi|hello|hey|yo|hiya|howdy|good (morning|afternoon|evening))[\s!.,?]*$", re.I),
+     "👋 Hi! I'm the ResearchPilot Help Bot. Ask me anything about the app — how to upload papers, set up AI, use the graph, configure settings, or anything else. Type a question and I'll find the answer.", None),
+    (re.compile(r"^\s*(bye|goodbye|see ya|see you|later|good night|cya)[\s!.]*$", re.I),
+     "Goodbye! Come back anytime you need help with ResearchPilot.", None),
+    (re.compile(r"^\s*(thanks|thank you|thx|cheers|appreciated|ty|thank)[\s!.]*$", re.I),
+     "Happy to help! Ask me anything else about ResearchPilot.", None),
+    (re.compile(r"^\s*(ok|okay|got it|got that|understood|alright|great|perfect|nice|cool|awesome)[\s!.]*$", re.I),
+     "Great! Let me know if you have any other questions.", None),
+    (re.compile(r"(what is this|what'?s this|what is researchpilot|who are you|what do you do|what can you do|what are you)", re.I),
+     "I'm the ResearchPilot Help Bot — a read-only guide built into the app. I can answer questions about any tab, setting, or workflow. For research questions about your own papers, use the **Chat** tab.",
      {"type": "tab", "target": "dashboard"}),
-    (re.compile(r"(how (does|do i|to) (use|this|it) work|how (do i|to) use|getting started|how to start)", re.I),
-     "Drop PDFs in Upload, group them into a Project, then use Chat or Web Research to work with them. Click any tab to open it.",
+    (re.compile(r"(how (does|do i|to) (use|this|it) work|how (do i|to) use|getting started|how to start|where do i start|first steps)", re.I),
+     "Start here: 1. Go to **Settings → AI Engines** and add an API key. 2. Use **Upload** to drop in your PDFs. 3. Open **Chat** to talk to the AI about your papers. That's the core loop.",
      {"type": "tab", "target": "upload"}),
+    (re.compile(r"^\s*(help|help me|i need help|assist|assistance)[\s!.?]*$", re.I),
+     "Of course! Ask me about any part of ResearchPilot — uploading papers, the knowledge graph, AI engines, web research, settings, or anything else. I'll point you to the right place.", None),
 ]
 
 
@@ -235,28 +239,37 @@ _STOP_WORDS = frozenset({
 def _score(text: str, query: str) -> int:
     """Score a candidate text against a query. Common English stop words
     are filtered out so off-topic queries don't accidentally match FAQ
-    items that happen to share a few common words (e.g. "what is the...")."""
+    items that happen to share a few common words (e.g. "what is the...").
+
+    Short tokens (≤ 3 chars) use word-boundary matching so that a query
+    like "hi" does NOT match words containing "hi" as a substring
+    ("this", "which", "chat", "github", etc.).
+    """
     if not text:
         return 0
     t = text.lower()
     q = query.lower().strip()
     if not q:
         return 0
-    # Keep only meaningful tokens (drop stop words + very short tokens)
+    # Keep only meaningful tokens (drop stop words + single-char tokens)
     raw_tokens = re.split(r"[^a-z0-9]+", q)
     tokens = [tok for tok in raw_tokens if tok and tok not in _STOP_WORDS and len(tok) > 1]
     if not tokens:
         return 0
     score = 0
     for tok in tokens:
-        if tok in t:
-            score += 6
-            if t.startswith(tok):
-                score += 4
+        if len(tok) <= 3:
+            # Word-boundary match for short tokens — prevents "hi" matching "this"
+            if re.search(r'\b' + re.escape(tok) + r'\b', t):
+                score += 6
+        else:
+            if tok in t:
+                score += 6
+                if t.startswith(tok):
+                    score += 4
     # boost exact phrase match
     if q in t:
         score += 10
-    # Penalty if zero meaningful tokens matched
     return score
 
 
@@ -641,72 +654,62 @@ class AskReq(BaseModel):
 
 @router.post("/ask")
 async def ask(req: AskReq) -> Dict[str, Any]:
-    """AI fallback. App-only scope. Refuses off-topic questions.
+    """FAQ-only help bot. No LLM. No random answers. No external calls.
 
     Flow:
-    1. Cheap keyword search across FAQ + APP-MAP + HELP-FAQ. If a strong
-       hit exists, return it (no LLM cost).
-    2. Otherwise call the configured LLM (the same engine pool the main
-       chat uses), with strict app-only instructions and a 2-5 sentence
-       answer style. The LLM is awaited properly so this works inside
-       a running FastAPI event loop.
-    3. If the LLM is not configured or fails, return a polite, helpful
-       fallback that surfaces the closest FAQ matches.
+    1. Safety guard  — block SQL/prompt injection and oversized input. Hard stop.
+    2. Smalltalk     — greetings and thanks get a fixed friendly reply.
+    3. FAQ search    — return top matching Q&A cards for the user to click.
+    4. No match      — polite fixed message. Never guesses. Never calls LLM.
     """
     q = (req.question or "").strip()
     if not q:
         raise HTTPException(400, "Empty question")
-    # 0a) Safety guard — reject oversized or injection-shaped input outright.
-    #     No LLM call, no search, no logging of the payload. Keeps the bot
-    #     from being used as an injection vector (prompt or SQL-style).
+
+    # Step 1: Hard safety guard — no LLM call, no search, nothing.
     if _is_unsafe(q):
         return {
-            "answer": "I can't process that. Ask me something about using ResearchPilot.",
+            "answer": "I can only answer questions about ResearchPilot. Try asking about a tab, setting, or feature.",
             "source": "blocked",
+            "matches": [],
             "action": None,
         }
-    # 0b) Smalltalk fast-path — greetings, thanks, identity, "how do I use this".
-    #     Answered instantly with a short, plain reply. No LLM cost.
+
+    # Step 2: Smalltalk fast-path — greetings, thanks, identity.
     small = _match_smalltalk(q)
     if small:
-        return small
-    # 1) Cheap keyword search first.
-    #    With stop-word filtering, a single meaningful token match = 6-10 points.
-    #    We require ≥10 to consider it a "strong" hit (off-topic queries with
-    #    only shared stop words like "what is the" score 0 and fall through
-    #    to the LLM, which then refuses politely).
-    hits = _search_kb(q, limit=3)
-    strong = [h for h in hits if h.get("score", 0) >= 10]
-    if strong:
-        top = strong[0]
-        action = None
-        if top.get("type") == "tab" and top.get("navigate_to"):
-            action = {"type": "open", "target": top.get("navigate_to")}
-        elif top.get("type") == "github" and top.get("navigate_to"):
-            action = {"type": "open", "target": top.get("navigate_to")}
-        elif top.get("type") == "task" and top.get("navigate_to"):
-            action = {"type": "open", "target": top.get("navigate_to")}
+        return {**small, "matches": []}
+
+    # Step 3: FAQ keyword search — match against HELP-FAQ.md only.
+    hits = _search_kb(q, limit=5)
+    faq_hits = [h for h in hits if h.get("type") in ("faq", "tab", "task", "github")]
+
+    if faq_hits:
+        top = faq_hits[0]
         return {
-            "answer": top.get("snippet") or top.get("title"),
+            "answer": top.get("snippet") or top.get("title") or "",
             "source": "faq",
             "matched": top,
-            "action": action,
+            "matches": faq_hits,
+            "action": None,
         }
-    # 2) LLM (properly awaited)
-    out = await _llm_answer_async(q)
+
+    # Step 4: No match. Fixed reply. No LLM. No guessing.
     return {
-        "answer": out.get("answer"),
-        "source": "llm" if not out.get("fallback") else "fallback",
-        "engine": out.get("engine"),
-        "action": out.get("action"),
-        "matched_fallback": [h.get("title") for h in hits[:3]] if out.get("fallback") else None,
+        "answer": (
+            "I couldn't find that in the FAQ. Try asking about:\n"
+            "**upload** · **chat** · **graph** · **settings** · **extract** · **project** · **AI engine** · **Ollama** · **keywords** · **memory**"
+        ),
+        "source": "no_match",
+        "matches": [],
+        "action": None,
     }
 
 
-# ──────────────────────────────────────────────────────────────────────────────
-# Registration helper — main.py calls this once at import time
-# ──────────────────────────────────────────────────────────────────────────────
-
-def register(app):
-    """Attach this router to the FastAPI app. Called from main.py."""
-    app.include_router(router)
+@router.post("/reload")
+async def reload_faq() -> Dict[str, Any]:
+    """Flush the in-memory FAQ cache so new items in HELP-FAQ.md are picked up
+    without restarting the server. Safe to call any time."""
+    global _FAQ_CACHE, _FAQ_TEXT_CACHE, _APP_MAP_CACHE
+    _FAQ_CACHE = None
+   
