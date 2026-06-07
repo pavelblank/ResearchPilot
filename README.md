@@ -31,9 +31,9 @@ ResearchPilot is a complete research operating system that connects to multiple 
 <div align="center">
   <table>
     <tr>
-      <td><img src="5.3.0-%20Home%20page%20dashbard%20.png" alt="Home Dashboard" width="320"></td>
-      <td><img src="5.4.0-%20Web%20Research%20page.png" alt="Web Research" width="320"></td>
-      <td><img src="5.3.0-%20Knowledge%20Graph%20page.png" alt="Knowledge Graph" width="320"></td>
+      <td><img src="5.5%20Home%20Dashboard.png" alt="Home Dashboard" width="320"></td>
+      <td><img src="5.5%20Web%20Research.png" alt="Web Research" width="320"></td>
+      <td><img src="5.5%20Knowledge%20Graph.png" alt="Knowledge Graph" width="320"></td>
     </tr>
     <tr>
       <td align="center"><b>🏠 Home Dashboard</b><br><sub>System Pulse · Quotes · Stats</sub></td>

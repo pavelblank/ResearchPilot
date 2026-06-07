@@ -87,11 +87,17 @@ graphify-out/
 
 # Temp / logs
 *.log
+*.log.[0-9]*
 *.tmp
 stderr.txt
 stdout.txt
 web-app/stdout.txt
 web-app/stderr.txt
+
+# Backend runtime state & personal data
+99-SYSTEM-BACKEND/profile_state.json
+99-SYSTEM-BACKEND/trash/
+99-SYSTEM-BACKEND/*.log.*
 
 # IDE / debug
 .vscode/
