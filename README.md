@@ -1,16 +1,16 @@
 <div align="center">
 
-# ResearchPilot <sub>V5.4.0</sub>
+# ResearchPilot <sub>V5.5.0</sub>
 
 **AI-native research infrastructure for academics and PhD students.**
 
 Ingest papers · Extract insights via AI · Search 5 academic databases · Cluster knowledge graphs · Run input-driven web research · Write with RAG-powered chat
 
-[![Version](https://img.shields.io/badge/version-V5.4.0-6c63ff?style=for-the-badge)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-V5.5.0-6c63ff?style=for-the-badge)](CHANGELOG.md)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-green?style=for-the-badge)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/pavelblank/ResearchPilot?style=for-the-badge&logo=github)](https://github.com/pavelblank/ResearchPilot/stargazers)
+[![Stars](https://img.shields.io/github/stars/researchpilot/ResearchPilot?style=for-the-badge&logo=github)](https://github.com/researchpilot/ResearchPilot/stargazers)
 [![Self-hosted](https://img.shields.io/badge/self--hosted-local--first-orange?style=for-the-badge)](#-quick-start)
 [![AI-Native](https://img.shields.io/badge/built--with-OpenCode%20AI-ff4d6d?style=for-the-badge)](#-built-with-ai)
 
@@ -47,7 +47,8 @@ ResearchPilot is a complete research operating system that connects to multiple 
 
 ## ✨ Why ResearchPilot?
 
-- 🧠 **Multi-AI failover router** — 11+ engines, zero downtime. If one engine fails, the next takes over automatically.
+- 🎨 **Full UI/UX overhaul** (V5.5.0) — every Settings section redesigned with icon-badge headers, hover transitions, and clearer copy. Skills, Learned Profile, Keywords, Predatory Journals, Plugins, Obsidian, Memory/Trash/Chats, and Author all polished to publication quality.
+- 🧠 **Multi-AI failover router** — 12+ engines, zero downtime. If one engine fails, the next takes over automatically. Verified: engines tried by priority, soft-failure detection forces failover, local Ollama is the final offline fallback.
 - 📚 **Universal file ingestion** — PDF · DOCX · PPTX · HTML · TXT · MD · CSV · JSON, all auto-converted to Markdown.
 - 🎓 **12-Point Elite Extraction** — every paper analysed via APA, DOI, Quartile, Method, Framework, Limitations, and more.
 - 🌍 **5-source academic search** — OpenAlex · Crossref · Semantic Scholar · PubMed · Google Scholar (with predatory-journal filtering).
@@ -64,8 +65,10 @@ ResearchPilot is a complete research operating system that connects to multiple 
 - ⌨️ **Keyboard shortcuts** — `1-9` switch tabs, `/` focus chat, `Esc` close modal.
 - 🪶 **Obsidian-compatible** — the entire folder is a valid Obsidian vault; open it and you get an instant knowledge graph.
 - 🧠 **Smart keyword system** — manual deletes are remembered forever; re-adding a deleted keyword restores it until you delete it again. Auto-scan skips your discard list.
-- 🧪 **Smoke-tested** — 30 automated tests cover encryption, RAG cache, audit log, rate limiter, health, exception handler, keyword rules, Graphify filter, SSRF guard, tool-allowlist interceptor, path-traversal, Pydantic schema, security wiring, filename standardisation (Protocol 7), and **graph cluster mode (V5.4.0)**.
-- 🤖 **100% AI-built** — every line generated through [OpenCode](https://opencode.ai), a free local AI coding agent.
+- 🛡️ **Security hardened** (V5.5.0) — SSRF guard extended to PDF-download endpoint; three XSS gaps closed (Memory table, AI Engine list, note titles) via `esc()`; PDF content-type validation tightened; research-fetch errors now routed to the rotating audit logger.
+- 🔧 **Obsidian deep-link fix** (V5.5.0) — "Open Vault" and "Open Graph" no longer spawn a blank tab showing a browser error before launching Obsidian. Direct navigation eliminates the spurious warning entirely.
+- 🧪 **Smoke-tested** — 30 automated tests cover encryption, RAG cache, audit log, rate limiter, health, exception handler, keyword rules, Graphify filter, SSRF guard, tool-allowlist interceptor, path-traversal, Pydantic schema, security wiring, filename standardisation (Protocol 7), and graph cluster mode.
+- 🤖 **100% AI-built** — designed and developed entirely with AI coding agents ([OpenCode](https://opencode.ai) + [Claude](https://claude.ai)); no manual coding.
 
 ---
 
@@ -90,7 +93,7 @@ ResearchPilot is a complete research operating system that connects to multiple 
 | Step | What to do |
 |---|---|
 | **1. Get Python 3.10+** | Download from [python.org](https://www.python.org/downloads/). ⚠️ **Windows:** tick "Add Python to PATH" in the installer. |
-| **2. Get ResearchPilot** | Download ZIP from the green `<> Code` button above, OR run `git clone https://github.com/pavelblank/ResearchPilot.git` |
+| **2. Get ResearchPilot** | Download ZIP from the green `<> Code` button above, OR run `git clone https://github.com/researchpilot/ResearchPilot.git` |
 | **3. Install dependencies** | Open a terminal in the `web-app` folder and run `pip install -r requirements.txt` |
 
 ### Run (every time)
@@ -251,13 +254,14 @@ Accessible from the UI: **⚙️ Settings →**
 | **General** | Context size · auto-extract · auto-start · timezone |
 | **AI Engines** | Add, configure, enable/disable, reorder AI backends |
 | **Skills** | Custom markdown instructions injected with every chat |
-| **Knowledge Base** | Read-only view of the master synthesis |
-| **Keywords** | Auto-scan and track research keywords |
-| **Predatory Journals** | Manage filtered journal list |
+| **Learned Profile** | Auto-built style profile injected into every AI response once mature |
+| **Keywords** | Auto-scan and track research keywords across your library |
+| **Predatory Journals** | Manage filtered journal list (auto-fetch from online sources) |
 | **Author** | Display information (gitignored) |
 | **Plugins** | View and manage installed Python plugins |
-| **Obsidian** | Connect to Obsidian vault |
-| **Changelog** | Record version history |
+| **Obsidian** | Connect to Obsidian vault; open vault or graph view directly |
+| **Memory / Trash / Chats** | Browse all .md files; sub-sections clearly labelled with breadcrumbs |
+| **Version Details** | Full version history with date, version number, and description |
 
 ---
 
@@ -297,7 +301,7 @@ python test_smoke.py
 
 ---
 
-## 📍 Where to Update (V5.4.0)
+## 📍 Where to Update (V5.5.0)
 
 When extending ResearchPilot, the file you need depends on what you're changing:
 
@@ -311,7 +315,7 @@ When extending ResearchPilot, the file you need depends on what you're changing:
 | **Filename canonical form** (Protocol 7) | `web-app/_filename_utils.py` | Plus `SYSTEM-PROTOCOLS.md` § Protocol 7. |
 | **Auth, settings encryption, audit log, rate limit** | `web-app/main.py` | See `SECURITY.md` for the threat model. |
 | **Knowledge-graph schema** (nodes, edges, categories) | `web-app/main.py` `get_graph_data` and `CAT_COLORS` | Hub category was added in V5.4.0 — copy that pattern for new node kinds. |
-| **System version bump** | `00-SYSTEM-CORE/versions.json` + `CHANGELOG.md` + `README.md` (badge + features) + `CLAUDE.md` (status line) | All four must move in lockstep. |
+| **System version bump** | `00-SYSTEM-CORE/versions.json` + `CHANGELOG.md` + `README.md` (badge + features) | All three must move in lockstep. |
 | **Project template** (blueprint for new users) | `01-PROJECTS/00-TEMPLATE/` | Gitignored `01-PROJECTS/*` keeps personal projects out of Git. |
 | **AI engine / LLM provider** | `web-app/main.py` (engine list + dispatch logic) | Each engine has its own dispatcher; follow the existing pattern. |
 | **12-point extraction prompt** | `00-SYSTEM-CORE/skills/12-point-extraction.md` | The canonical source of the extraction template. |

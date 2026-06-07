@@ -114,7 +114,7 @@ You have two options. **Pick one.**
 
 ### Option A: Download as ZIP (easiest, recommended for non-coders)
 
-1. Go to **<https://github.com/pavelblank/ResearchPilot>**
+1. Go to **<https://github.com/researchpilot/ResearchPilot>**
 2. Click the big green **`<> Code`** button
 3. Click **"Download ZIP"**
 4. Once downloaded, **right-click the ZIP → Extract All...**
@@ -129,7 +129,7 @@ You have two options. **Pick one.**
 Open a terminal and run:
 
 ```bash
-git clone https://github.com/pavelblank/ResearchPilot.git
+git clone https://github.com/researchpilot/ResearchPilot.git
 cd ResearchPilot
 ```
 
@@ -436,7 +436,7 @@ Set the `PORT` environment variable before starting:
 
 ## Still stuck?
 
-- 💬 Open an issue: <https://github.com/pavelblank/ResearchPilot/issues>
+- 💬 Open an issue: <https://github.com/researchpilot/ResearchPilot/issues>
 - 📖 Read the architecture: [SYSTEM-DOCUMENTATION.md](SYSTEM-DOCUMENTATION.md)
 - 🔒 Security questions: [SECURITY.md](SECURITY.md)
 

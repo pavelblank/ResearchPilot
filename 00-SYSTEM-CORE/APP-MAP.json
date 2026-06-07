@@ -1,0 +1,108 @@
+{
+  "app": {
+    "name": "ResearchPilot",
+    "version": "2.0",
+    "tagline": "AI-powered research management for academic publishing",
+    "github_url": ""
+  },
+  "tabs": [
+    {
+      "id": "dashboard",
+      "icon": "🏠",
+      "label": "Dashboard",
+      "purpose": "Quick overview: project count, paper count, recent activity, shortcuts",
+      "key_features": ["Project summary", "Recent papers", "Quick actions", "System health"]
+    },
+    {
+      "id": "chat",
+      "icon": "💬",
+      "label": "Chat",
+      "purpose": "AI assistant for paper analysis, writing, 12-point extraction, comparison",
+      "key_features": ["Multi-session chat", "Skills system", "Project context", "PDF reader", "Save chat as .md"],
+      "shortcut": "Press / to focus chat input"
+    },
+    {
+      "id": "research",
+      "icon": "🔍",
+      "label": "Web Research",
+      "purpose": "Search academic databases (OpenAlex, Crossref, Semantic Scholar, PubMed)",
+      "key_features": ["Multi-source search", "Year filter", "PDF download", "Auto 12-point analysis", "Move to project"]
+    },
+    {
+      "id": "projects",
+      "icon": "📁",
+      "label": "Projects",
+      "purpose": "Manage research projects: create, edit, archive",
+      "key_features": ["Create project", "Set focus & goals", "Archive", "Status tracking"]
+    },
+    {
+      "id": "upload",
+      "icon": "📤",
+      "label": "Upload",
+      "purpose": "Drop PDF/DOCX/PPTX files; auto-converted to .md in chosen project",
+      "key_features": ["Drag & drop", "Auto conversion", "Destination project picker", "Bulk upload"]
+    },
+    {
+      "id": "library",
+      "icon": "📚",
+      "label": "Library",
+      "purpose": "Browse all files in a project; filter, search, read, open",
+      "key_features": ["Project filter", "Search", "Read in modal", "File details"]
+    },
+    {
+      "id": "graph",
+      "icon": "🕸️",
+      "label": "Graph",
+      "purpose": "Visual knowledge graph: papers, extractions, keywords, projects",
+      "key_features": ["Multi-layer filters", "Category toggles", "Click nodes to read", "Refresh scan"]
+    },
+    {
+      "id": "system",
+      "icon": "🧠",
+      "label": "Memory",
+      "purpose": "All .md files in one place: chats, extractions, notes, drafts across every project. Search, read, and open from a single table.",
+      "key_features": ["All .md files", "Search", "Read in modal", "Delete individual files"]
+    },
+    {
+      "id": "memory",
+      "icon": "🧠",
+      "label": "Memory",
+      "purpose": "Alias kept for backward compat — same view as the top-level Memory tab.",
+      "key_features": ["All .md", "Search", "Read in modal"]
+    },
+    {
+      "id": "settings",
+      "icon": "⚙️",
+      "label": "Settings",
+      "purpose": "Configure AI engines, API keys, skills, knowledge base, keywords, profile, plugins, Obsidian integration. Also hosts the Trash, Chats, and Memory sub-views.",
+      "key_features": ["AI Engines", "Skills", "Knowledge Base", "Keywords", "Predatory Journals", "Author", "Plugins", "Obsidian", "Memory", "Trash", "Chats", "Changelog"]
+    }
+  ],
+  "settings_sections": [
+    {"id": "general", "label": "General Settings", "purpose": "Timezone, theme, basic preferences"},
+    {"id": "ai", "label": "AI Engines", "purpose": "Configure Claude, GPT, OpenRouter, custom APIs. Most important section for first-time setup.", "api_setup_here": true},
+    {"id": "skills", "label": "Skills", "purpose": "Reusable instructions the AI follows (writing style, extraction templates)"},
+    {"id": "kb", "label": "Knowledge Base", "purpose": "The synthesized cross-project knowledge base"},
+    {"id": "keywords", "label": "Keywords", "purpose": "Searchable keyword index across all papers"},
+    {"id": "predatory", "label": "Predatory Journals", "purpose": "Blocklist of journals to flag/avoid"},
+    {"id": "author", "label": "Author", "purpose": "Your name, affiliation, ORCID — used in paper metadata"},
+    {"id": "plugins", "label": "Plugins", "purpose": "Install AI engine plugins"},
+    {"id": "obsidian", "label": "Obsidian", "purpose": "Open vault, view graph, integration status"},
+    {"id": "memory", "label": "Memory", "purpose": "View, search, and read every .md file across the system (chats, extractions, notes, drafts)"},
+    {"id": "trash", "label": "Trash", "purpose": "Restore or permanently delete soft-deleted files and projects"},
+    {"id": "chats", "label": "Chats", "purpose": "Manage saved chat sessions: open, archive, or delete"},
+    {"id": "versions", "label": "Changelog", "purpose": "What changed in each version"}
+  ],
+  "common_tasks": [
+    {"task": "Set up Claude API key", "steps": ["Open Settings", "Click AI Engines", "Find 'Claude API'", "Paste your key from console.anthropic.com", "Click Save"]},
+    {"task": "Set up OpenAI/GPT", "steps": ["Open Settings", "Click AI Engines", "Enable 'OpenAI Compatible'", "Paste your OpenAI key (or OpenRouter key)", "Save"]},
+    {"task": "Create a new project", "steps": ["Open Projects tab", "Click + New Project", "Enter ID (e.g. P3-EEG-ANALYSIS) and name", "Set focus & goals", "Save"]},
+    {"task": "Upload a paper", "steps": ["Open Upload tab", "Pick destination project (or INCOMING)", "Drop PDF/DOCX/PPTX", "Wait for auto-conversion to .md"]},
+    {"task": "Search the web for papers", "steps": ["Open Web Research tab", "Type your query", "Pick sources + year range", "Click Search", "Read / Open / Download"]},
+    {"task": "Ask AI about your library", "steps": ["Open Chat tab", "Pick a project (top toolbar)", "Type your question", "AI will use project files as context"]},
+    {"task": "Get 12-point extraction of a paper", "steps": ["Upload paper first", "Open Chat tab", "Select the paper as File context", "Type '/extract' or 'extract 12-point analysis'"]},
+    {"task": "View knowledge graph", "steps": ["Open Graph tab", "Toggle categories (code, research, extraction...)", "Click any node to read the file"]},
+    {"task": "Move a file between projects", "steps": ["Open Web Research tab → Imported Papers", "Pick destination from dropdown", "Click Move"]},
+    {"task": "Open in Obsidian", "steps": ["Open Settings → Obsidian section", "Click Open Vault — opens your entire .md library"]}
+  ]
+}

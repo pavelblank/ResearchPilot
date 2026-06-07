@@ -1,5 +1,61 @@
 # Changelog
 
+## v5.5.0 — Full UI/UX overhaul + security hardening (2026-06-07)
+
+A polish-and-security release that redesigns every Settings section, fixes a persistent Obsidian launch bug, extends security hardening to the PDF-download endpoint, and closes three frontend XSS gaps.
+
+### 🎨 UI/UX overhaul
+
+Every Settings section now follows a consistent visual language: icon-badge header, subtitle line, card hover transitions, and clearer descriptive copy.
+
+**Sections redesigned:**
+- **Skills** — icon-badge header; skill cards gain hover lift + icon circle; improved empty state; "Add New Skill" form wrapped in a card with helper text.
+- **Learned Profile** (formerly "Knowledge Base") — renamed throughout UI to match its actual content (auto-built writing-style profile); two-column stat/settings grid with hover cards; `Re-learn now` button tooltip added.
+- **Keywords** — orange icon badge; "Add Keyword Manually" grouped in a card; hover lift on keyword cards; animated hover on discarded-keyword chips.
+- **Predatory Journals** — red icon badge; add-form in a card; hover slide-in on journal rows; delete buttons reveal on hover.
+- **Plugins** — purple icon badge; plugin cards get hover lift (deeper work deferred per user request).
+- **Obsidian** — purple icon badge; action cards lift on hover; vault statistics badges highlight on hover.
+- **Memory** — brain icon badge; explanatory text clarifies that Trash and Chats are sub-sections.
+- **Trash** — breadcrumb "↳ Memory / Trash" added above header so it's obvious this is a Memory sub-section.
+- **Chats** — breadcrumb "↳ Memory / Chats" added; green icon badge.
+- **Author** — gradient banner behind avatar; avatar overlaps banner with drop shadow; PhD/Masters credentials displayed as a two-column grid of hover cards; card-level hover glow.
+- **Dashboard sidebar** — Quick Notes, Calendar, and Clock headers use icon badge chips; note rows use CSS hover instead of inline `onmouseover`; clock has text-shadow glow.
+- **Graph page** — node hover states, legend hover, stats bar polish; graph container border + box-shadow.
+- **Upload page** — drop-zone gradient + hover state; file-type chips; destination project helper text.
+- **Projects tab** — side-by-side Focus/Goal inputs; folder-icon avatar on project cards; colour-coded file/extension badges.
+- **Web Research tab** — 4-card feature grid on welcome screen; source checkbox hover effects; icon-badge search panel header.
+
+**Settings nav** — grouped into "Workspace / Memory & Data / About" with section labels; each item has an icon circle; Trash and Chats shown as indented sub-items with "part of Memory" hint.
+
+### 🔧 Bug fix: Obsidian blank-tab error
+
+"Open Vault" and "Open Graph" buttons previously used `window.open(url, '_blank')` for `obsidian://` links, which spawned a blank tab that briefly showed "This site can't be reached" before the OS handed off to Obsidian. Replaced with `window.location.href = url` — the OS protocol handler fires directly with no extra tab.
+
+### 🔑 Settings naming fix
+
+Settings nav "Knowledge Base" renamed to "Learned Profile" everywhere (nav item, help FAQ, action labels) to match the actual section title "User Profile — Learned Style". The old label was a holdover from an earlier design.
+
+### 🛡️ Security hardening
+
+- **SSRF guard extended** — `/api/research/download-pdf` now calls `_validate_engine_url()` before fetching any PDF URL. The guard was already applied to the `/api/research/import` endpoint; this closes the gap on the download path.
+- **XSS: Memory table** — `renderMem()` now wraps `m.source`, `m.project`, `m.filename`, `m.modified`, and `m.mode` with `esc()`. The Settings-panel version already did this; the main-tab version did not.
+- **XSS: AI Engine list** — `renderEngines()` now wraps `e.name` and `e.note` with `esc()`.
+- **XSS: note titles** — `noteView()` modal title now uses `esc()` for note title and date.
+- **PDF content-type validation** — removed `or not ct` loophole; only `application/pdf` and `application/octet-stream` are accepted as valid PDF responses.
+- **Logger hygiene** — seven `print(f"[Research] …")` calls in web-search functions replaced with `logger.warning()` / `logger.info()`, so research errors survive log rotation instead of disappearing after server restart.
+- **`esc()` hardened** — now wraps input with `String(t ?? '')` before replacing, preventing a `TypeError` crash if any API response field is `null` or `undefined`.
+
+### 📁 Files changed
+
+**Modified:**
+- `web-app/static/index.html` — all UI changes above
+- `web-app/main.py` — SSRF guard (download-pdf), logger hygiene (7 print→logger conversions)
+- `00-SYSTEM-CORE/versions.json` — v5.5.0 entry added
+- `README.md` — version bump, new features, updated Settings table
+- `CHANGELOG.md` — this entry
+
+---
+
 ## v5.4.0 — Web-research upgrade + Graph cluster mode
 
 A research-workflow release that ships a brand-new **web research engine** alongside the existing graph and chat layers. Everything is local-first and purely input-driven — no project config is required to find papers.

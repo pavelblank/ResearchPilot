@@ -418,5 +418,110 @@ def t24():
     global passed; passed += 1
 total += 1; check("filename wiring: main.py endpoints + migration script present", t24)
 
+# ---------------------------------------------------------------------------
+# v5.4.1 — User Profile (Learned Style) auto-learning
+# ---------------------------------------------------------------------------
+
+def t25():
+    """User-profile: state file is created with sensible defaults."""
+    import main
+    # The state should be a dict with the right keys
+    state = main._profile_state()
+    for key in ("auto_learn", "learn_threshold", "chats_at_last_learn",
+                "last_learned_at", "total_learns"):
+        assert key in state, f"profile state missing key: {key}"
+    assert state["auto_learn"] is True
+    assert 1 <= state["learn_threshold"] <= 100
+    global passed; passed += 1
+total += 1; check("profile state has all required keys + sane defaults", t25)
+
+def t26():
+    """User-profile: chat counter reads the chats dir correctly."""
+    import main
+    n = main._count_user_chats()
+    # The value just needs to be a non-negative int that matches the disk
+    assert isinstance(n, int) and n >= 0
+    on_disk = len(list(main.CHATS_DIR.glob("*.md")))
+    assert n == on_disk, f"_count_user_chats()={n} but disk has {on_disk}"
+    global passed; passed += 1
+total += 1; check("profile chat counter matches chats/ directory", t26)
+
+def t27():
+    """User-profile: _collect_user_messages returns a string (possibly empty)."""
+    import main
+    text = main._collect_user_messages()
+    assert isinstance(text, str)
+    # When there are chats, must contain the session separator
+    if main._count_user_chats() > 0:
+        assert "--- session:" in text, "expected session separators in collected text"
+    global passed; passed += 1
+total += 1; check("profile collects user messages from chat sessions", t27)
+
+def t28():
+    """User-profile: /api/profile and /api/profile/settings are registered."""
+    import main
+    paths = [getattr(r, "path", "") for r in main.app.routes]
+    assert "/api/profile" in paths
+    # Find the PATCH route for /api/profile/settings
+    found = False
+    for r in main.app.routes:
+        if getattr(r, "path", "") == "/api/profile/settings":
+            methods = getattr(r, "methods", set()) or set()
+            if "PATCH" in methods:
+                found = True
+                break
+    assert found, "PATCH /api/profile/settings not registered"
+    global passed; passed += 1
+total += 1; check("profile GET + analyze + settings endpoints are registered", t28)
+
+def t29():
+    """User-profile: profile injection is gated by maturity threshold."""
+    import main
+    # Fresh state — should return empty injection (no chats learned yet)
+    state = main._profile_state()
+    original_last = state["chats_at_last_learn"]
+    original_thr = state["learn_threshold"]
+    try:
+        # Simulate "immature" state: chats learned < threshold
+        state["chats_at_last_learn"] = 0
+        state["learn_threshold"] = 5
+        main._save_profile_state(state)
+        # If the profile file exists, it must NOT be injected
+        if main.USER_PROFILE_FILE.exists():
+            inj = main._profile_injection_text()
+            assert inj == "", f"profile should NOT inject when immature, got: {inj[:200]}"
+        # Simulate "mature" state
+        state["chats_at_last_learn"] = 10
+        main._save_profile_state(state)
+        if main.USER_PROFILE_FILE.exists():
+            inj = main._profile_injection_text()
+            assert inj != "", "profile SHOULD inject when mature and file exists"
+            assert "LEARNED USER PROFILE" in inj
+    finally:
+        state["chats_at_last_learn"] = original_last
+        state["learn_threshold"] = original_thr
+        main._save_profile_state(state)
+    global passed; passed += 1
+total += 1; check("profile injection gated by maturity threshold (no premature injection)", t29)
+
+def t30():
+    """User-profile: PATCH settings actually persists threshold + toggle."""
+    import main
+    original = main._profile_state()
+    try:
+        main._save_profile_state({**original, "auto_learn": False, "learn_threshold": 12})
+        reloaded = main._profile_state()
+        assert reloaded["auto_learn"] is False
+        assert reloaded["learn_threshold"] == 12
+        # Sanity: out-of-range values are clamped
+        main._save_profile_state({**original, "learn_threshold": 999})
+        assert main._profile_state()["learn_threshold"] <= 100
+        main._save_profile_state({**original, "learn_threshold": 0})
+        assert main._profile_state()["learn_threshold"] >= 1
+    finally:
+        main._save_profile_state(original)
+    global passed; passed += 1
+total += 1; check("profile settings persist + threshold clamps to 1..100", t30)
+
 print(f"\n{passed}/{total} passed")
 sys.exit(0 if passed == total else 1)

@@ -120,7 +120,7 @@ python web-app/migrate_encrypt_settings.py
 
 Please **do not** open a public GitHub issue for security vulnerabilities.
 
-Instead, email **security@pavelblank.dev** (or open a private advisory via GitHub's "Security" tab → "Report a vulnerability") with:
+Instead, email **security@researchpilot.local** (or open a private advisory via GitHub's "Security" tab → "Report a vulnerability") with:
 
 - Description of the vulnerability
 - Steps to reproduce

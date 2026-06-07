@@ -4,7 +4,7 @@ Multi-AI backbone (never stops), universal file ingestion, settings from web UI,
 project management, skills system. All chats saved as .md for Obsidian.
 """
 
-import os, json, re, shutil, datetime, traceback, asyncio, hashlib, secrets, base64, logging, logging.handlers
+import os, sys, json, re, shutil, datetime, traceback, asyncio, hashlib, secrets, base64, logging, logging.handlers, subprocess
 from pathlib import Path
 from cryptography.fernet import Fernet
 from typing import List, Optional, Any
@@ -77,6 +77,102 @@ PROJECTS   = BASE / "01-PROJECTS"
 CORE       = BASE / "00-SYSTEM-CORE"
 BACKEND    = BASE / "99-SYSTEM-BACKEND"
 INCOMING   = BASE / "INCOMING"
+
+# ─── Soft-delete (Trash) ──────────────────────────────────────────────────────
+# When users "delete" a file or project, the system MOVES it to the trash folder
+# instead of permanently removing it. The user can open the trash folder in
+# their OS file explorer and manually clean up. The system never auto-deletes
+# from the trash. Layout:
+#   99-SYSTEM-BACKEND/trash/
+#     projects/PROJECT_ID_YYYYMMDD_HHMMSS/   (when a whole project is moved)
+#     library/PROJECT_ID_YYYYMMDD_HHMMSS/    (when a file is moved from a project)
+#     incoming/FILENAME_YYYYMMDD_HHMMSS      (when an INCOMING file is moved)
+TRASH_DIR       = BACKEND / "trash"
+TRASH_PROJECTS  = TRASH_DIR / "projects"
+TRASH_LIBRARY   = TRASH_DIR / "library"
+TRASH_INCOMING  = TRASH_DIR / "incoming"
+for _td in (TRASH_PROJECTS, TRASH_LIBRARY, TRASH_INCOMING):
+    _td.mkdir(parents=True, exist_ok=True)
+
+
+def _trash_timestamp() -> str:
+    """A filesystem-safe timestamp suffix for trash subfolders."""
+    return datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+def _move_to_trash(src: Path, category: str, label: str) -> Path:
+    """Move a file or directory into the trash. Returns the new path.
+
+    `category` is one of 'projects' | 'library' | 'incoming'.
+    `label` is a short human-readable prefix (usually the project id or filename).
+    Filesystems on Windows can't have two files with the same name in the same
+    folder, so each moved item gets a timestamped subfolder.
+    """
+    if category == "projects":
+        base = TRASH_PROJECTS
+    elif category == "library":
+        base = TRASH_LIBRARY
+    elif category == "incoming":
+        base = TRASH_INCOMING
+    else:
+        raise ValueError(f"Unknown trash category: {category!r}")
+    base.mkdir(parents=True, exist_ok=True)
+    # Sanitize the label so it's safe for a folder name
+    safe_label = re.sub(r'[^\w\-.]', '_', label)[:80] or "item"
+    dest_folder = base / f"{safe_label}_{_trash_timestamp()}"
+    # If somehow the folder exists (very rare — same second), add a counter
+    n = 1
+    while dest_folder.exists():
+        dest_folder = base / f"{safe_label}_{_trash_timestamp()}_{n}"
+        n += 1
+    dest_folder.mkdir(parents=True, exist_ok=False)
+    final = dest_folder / src.name
+    # Use shutil.move for cross-device safety; will fall back to copy+remove
+    shutil.move(str(src), str(final))
+    return final
+
+
+def _list_trash() -> List[dict]:
+    """List every item currently in the trash, newest first.
+
+    Each item: {kind, label, moved_at, size_bytes, path, restore_hint}
+    """
+    items: List[dict] = []
+    for category, base in [("project", TRASH_PROJECTS), ("file", TRASH_LIBRARY), ("incoming", TRASH_INCOMING)]:
+        if not base.exists():
+            continue
+        for entry in sorted(base.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
+            if not entry.is_dir():
+                continue
+            # Sum sizes of all files in the entry
+            total = 0
+            file_count = 0
+            for sub in entry.rglob("*"):
+                if sub.is_file():
+                    total += sub.stat().st_size
+                    file_count += 1
+            mtime = datetime.datetime.fromtimestamp(entry.stat().st_mtime)
+            items.append({
+                "kind": category,
+                "label": entry.name,
+                "path": str(entry.relative_to(BASE)),
+                "absolute_path": str(entry),
+                "moved_at": mtime.strftime("%Y-%m-%d %H:%M:%S"),
+                "file_count": file_count,
+                "size_bytes": total,
+                "size_kb": round(total / 1024, 1),
+            })
+    return items
+
+
+def _trash_count() -> int:
+    """Total number of trashed items (for sidebar badge)."""
+    n = 0
+    for base in (TRASH_PROJECTS, TRASH_LIBRARY, TRASH_INCOMING):
+        if base.exists():
+            n += sum(1 for p in base.iterdir() if p.is_dir())
+    return n
+
 CHATS_DIR  = BACKEND / "chats"
 SKILLS_DIR = CORE / "skills"
 PLUGINS_DIR = BACKEND / "plugins"
@@ -663,6 +759,10 @@ def build_rag_prompt(query: str, project: str = None, skills: list = None) -> st
             sf = SKILLS_DIR / sk
             if sf.exists():
                 prompt += f"\n\n## Skill: {sk}\n{sf.read_text(encoding='utf-8')}"
+    # Inject the learned user profile (if mature)
+    profile_block = _profile_injection_text()
+    if profile_block:
+        prompt += profile_block
     # Inject relevant context from all files
     context = retrieve_relevant_context(query, project)
     if context:
@@ -904,16 +1004,20 @@ async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
             pass
 
         tool_uses = []
-        for iteration in range(3):
+        MAX_ITERATIONS = 8
+        for iteration in range(MAX_ITERATIONS):
             payload = {
                 "model": model,
                 "messages": messages,
                 "stream": False,
-                "options": {"num_ctx": min(model_ctx, 64000)}
+                "options": {"num_ctx": min(model_ctx, 64000)},
+                # Always advertise tools so the model can keep calling them across
+                # iterations (list → read → read → synthesize). Removing tools after
+                # iteration 0 caused models to either error out or return empty
+                # content after a single tool call, leaving the user with a 🔧 badge
+                # and no actual answer.
+                "tools": ResearchPilot_TOOLS,
             }
-
-            if iteration == 0:
-                payload["tools"] = ResearchPilot_TOOLS
 
             r = await c.post(f"{engine['url']}/api/chat", json=payload, timeout=120.0)
             if r.status_code != 200:
@@ -952,10 +1056,22 @@ async def _try_ollama(engine: dict, messages: list) -> tuple[str, list]:
                     messages.append({"role": "tool", "content": content_str, "name": fn})
                 continue
 
-            content = msg.get("content", "")
-            return content, tool_uses
+            content = (msg.get("content") or "").strip()
+            if content:
+                return content, tool_uses
+            # Empty content with no tool calls → model gave up. Try one more
+            # iteration with an explicit nudge; if that also fails, raise so
+            # ai_respond() fails over to the next engine on the list.
+            messages.append({
+                "role": "user",
+                "content": "Please synthesize a complete answer now using what you have already read. Do not call any more tools.",
+            })
 
-        return "I read several files but couldn't formulate a complete response. Please try asking more specifically.", tool_uses
+        # All iterations exhausted without a real answer → fail over to next engine
+        raise Exception(
+            f"Ollama '{model}' produced no answer after {MAX_ITERATIONS} steps "
+            f"({len(tool_uses)} tool calls). Failing over to next engine."
+        )
 
 async def _try_openai_compat(engine: dict, messages: list) -> tuple[str, list]:
     # Fail fast if no API key
@@ -977,15 +1093,21 @@ async def _try_openai_compat(engine: dict, messages: list) -> tuple[str, list]:
             pass  # not all APIs support /models; proceed anyway
 
     tool_uses = []
+    MAX_ITERATIONS = 8
     async with httpx.AsyncClient(timeout=300.0) as c:
-        for iteration in range(3):
+        for iteration in range(MAX_ITERATIONS):
             payload = {
                 "model": engine["model"],
                 "messages": messages,
                 "max_tokens": 8192,
+                # Always advertise tools. If we drop the `tools` key after the
+                # first iteration, OpenAI-compatible providers (OpenRouter,
+                # Mistral, Together, Groq, LM Studio, …) either reject the
+                # request ("messages contain tool_calls but no tools defined")
+                # or respond with empty content — which is exactly the "tools
+                # used but no answer" bug.
+                "tools": ResearchPilot_TOOLS,
             }
-            if iteration == 0:
-                payload["tools"] = ResearchPilot_TOOLS
 
             r = await c.post(
                 f"{engine['url']}/chat/completions",
@@ -1039,10 +1161,21 @@ async def _try_openai_compat(engine: dict, messages: list) -> tuple[str, list]:
                     })
                 continue
 
-            content = msg.get("content") or ""
-            return content, tool_uses
+            content = (msg.get("content") or "").strip()
+            if content:
+                return content, tool_uses
+            # Empty content & no tool calls → nudge once, then fail over.
+            messages.append({
+                "role": "user",
+                "content": "Please synthesize a complete answer now using what you have already read. Do not call any more tools.",
+            })
 
-    return "I read several files but couldn't formulate a complete response.", tool_uses
+    # All iterations exhausted without a real answer → fail over to next engine
+    raise Exception(
+        f"{engine.get('name','API')} '{engine.get('model','?')}' produced no answer "
+        f"after {MAX_ITERATIONS} steps ({len(tool_uses)} tool calls). "
+        f"Failing over to next engine."
+    )
 
 async def _try_gemini(engine: dict, messages: list) -> tuple[str, list]:
     key = engine.get("api_key", "") or os.getenv("GEMINI_API_KEY", "")
@@ -1052,8 +1185,15 @@ async def _try_gemini(engine: dict, messages: list) -> tuple[str, list]:
     for m in messages:
         if m["role"] == "system":
             continue
+        # Tool messages aren't supported by this lightweight Gemini path —
+        # fold them into a user turn so the model still sees the context.
+        if m["role"] == "tool":
+            contents.append({"role": "user", "parts": [{"text": f"[tool result: {m.get('name','')}] {m.get('content','')}"}]})
+            continue
+        if m["role"] == "assistant" and not (m.get("content") or "").strip():
+            continue
         role = "user" if m["role"] == "user" else "model"
-        contents.append({"role": role, "parts": [{"text": m["content"]}]})
+        contents.append({"role": role, "parts": [{"text": m.get("content") or ""}]})
     sys_msgs = [m for m in messages if m["role"] == "system"]
     if sys_msgs:
         contents.insert(0, {"role": "user", "parts": [{"text": sys_msgs[0]["content"]}]})
@@ -1061,19 +1201,65 @@ async def _try_gemini(engine: dict, messages: list) -> tuple[str, list]:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{engine['model']}:generateContent?key={key}"
     async with httpx.AsyncClient(timeout=60.0) as c:
         r = await c.post(url, json={"contents": contents, "generationConfig": {"maxOutputTokens": 8192}}, timeout=120.0)
-        return r.json()["candidates"][0]["content"]["parts"][0]["text"], []
+        if r.status_code != 200:
+            err = ""
+            try: err = r.json().get("error", {}).get("message", r.text[:200])
+            except: err = r.text[:200]
+            raise Exception(f"Gemini returned {r.status_code}: {err}")
+        try:
+            data = r.json()
+            candidates = data.get("candidates") or []
+            if not candidates:
+                # Gemini blocked the prompt (safety, recitation, etc.) — fail
+                # over so another engine can try.
+                reason = data.get("promptFeedback", {}).get("blockReason", "no candidates")
+                raise Exception(f"Gemini returned no candidates ({reason})")
+            parts = candidates[0].get("content", {}).get("parts", [])
+            text = "".join(p.get("text", "") for p in parts).strip()
+            if not text:
+                finish = candidates[0].get("finishReason", "empty")
+                raise Exception(f"Gemini returned empty content (finishReason={finish})")
+            return text, []
+        except (KeyError, IndexError, ValueError) as e:
+            raise Exception(f"Gemini response malformed: {e}")
 
 async def _try_anthropic(engine: dict, messages: list) -> tuple[str, list]:
     key = engine.get("api_key", "") or os.getenv("ANTHROPIC_API_KEY", "")
     if not key:
         raise Exception("No Anthropic API key")
     system_text = next((m["content"] for m in messages if m["role"] == "system"), ResearchPilot_SYSTEM)
-    chat_msgs = [m for m in messages if m["role"] != "system"]
+    # Anthropic only accepts user/assistant turns; map tool messages into user
+    # turns so context survives, and skip empty assistant turns.
+    chat_msgs = []
+    for m in messages:
+        if m["role"] == "system":
+            continue
+        if m["role"] == "tool":
+            chat_msgs.append({"role": "user", "content": f"[tool result: {m.get('name','')}] {m.get('content','')}"})
+            continue
+        if m["role"] == "assistant" and not (m.get("content") or "").strip():
+            continue
+        if m["role"] in ("user", "assistant"):
+            chat_msgs.append({"role": m["role"], "content": m.get("content") or ""})
     headers = {"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"}
     payload = {"model": engine["model"], "max_tokens": 8192, "system": system_text, "messages": chat_msgs}
     async with httpx.AsyncClient(timeout=120.0) as c:
         r = await c.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers, timeout=120.0)
-        return r.json()["content"][0]["text"], []
+        if r.status_code != 200:
+            err = ""
+            try: err = r.json().get("error", {}).get("message", r.text[:200])
+            except: err = r.text[:200]
+            raise Exception(f"Anthropic returned {r.status_code}: {err}")
+        try:
+            data = r.json()
+            blocks = data.get("content") or []
+            text = "".join(b.get("text", "") for b in blocks if b.get("type") == "text").strip()
+            if not text:
+                stop = data.get("stop_reason", "empty")
+                raise Exception(f"Anthropic returned empty content (stop_reason={stop})")
+            return text, []
+        except (KeyError, IndexError, ValueError) as e:
+            raise Exception(f"Anthropic response malformed: {e}")
 
 async def _try_claude_plugin(engine: dict, messages: list) -> tuple[str, list]:
     """Claude plugin: tries claude CLI first, then Anthropic API as fallback."""
@@ -1129,7 +1315,17 @@ ENGINE_HANDLERS = {
 }
 
 async def ai_respond(messages: list, project: str = None, skills: list = None) -> tuple[str, str, list]:
-    """Try all enabled engines in priority order. Never returns empty. Returns (text, engine_name, tool_uses)."""
+    """Try all enabled engines in priority order. Never returns empty. Returns (text, engine_name, tool_uses).
+
+    Failover policy:
+      - Skip an engine immediately if its URL fails the SSRF guard or it has no API key.
+      - Catch any handler exception (HTTP error, rate limit, malformed response, "no answer
+        after N steps", etc.) and continue to the next engine on the priority list.
+      - Treat suspiciously short / canned answers as a soft failure that also triggers
+        failover, so "tools used but no real answer" is no longer presented to the user.
+      - Only when *every* enabled engine fails do we return a diagnostic message that
+        lists the reason each engine was skipped or failed.
+    """
     cfg = load_settings()
     engines = sorted(
         [e for e in cfg["ai_engines"] if e.get("enabled", False)],
@@ -1146,10 +1342,23 @@ async def ai_respond(messages: list, project: str = None, skills: list = None) -
     full_msgs = [{"role": "system", "content": sys_prompt}] + \
                 [m for m in messages if m.get("role") != "system"]
 
+    # Patterns that look like an answer but really mean "the engine gave up".
+    # Treating these as a soft failure forces failover to the next API instead
+    # of showing the user a useless "🔧 tools used" badge with no real reply.
+    SOFT_FAILURE_MARKERS = (
+        "couldn't formulate",
+        "couldn't formulate a complete response",
+        "could not formulate",
+        "failing over to next engine",
+    )
+
     errors = []
     for engine in engines:
+        ename = engine.get("name", engine.get("type", "?"))
         handler = ENGINE_HANDLERS.get(engine["type"])
         if not handler:
+            errors.append(f"{ename}: unknown engine type '{engine.get('type')}'")
+            logger.warning("ai_respond: skipping %s — unknown type %s", ename, engine.get("type"))
             continue
         # SSRF guard: the engine's URL lives in user-mutable settings.json.
         # A prompt-injected LLM, a malicious frontend, or a compromised
@@ -1160,22 +1369,34 @@ async def ai_respond(messages: list, project: str = None, skills: list = None) -
             try:
                 _validate_engine_url(engine_url)
             except ValueError as e:
-                logger.warning("Skipping engine %s: SSRF guard rejected URL (%s)", engine.get("name", "?"), e)
-                errors.append(f"{engine['name']}: SSRF guard rejected URL ({e})")
+                logger.warning("Skipping engine %s: SSRF guard rejected URL (%s)", ename, e)
+                errors.append(f"{ename}: SSRF guard rejected URL ({e})")
                 continue
+        logger.info("ai_respond: trying engine %s (type=%s, model=%s)", ename, engine.get("type"), engine.get("model", "?"))
         try:
             result, tool_uses = await handler(engine, full_msgs)
-            if result and result.strip():
-                return result, engine["name"], tool_uses
+            text = (result or "").strip()
+            low = text.lower()
+            if text and not any(m in low for m in SOFT_FAILURE_MARKERS):
+                logger.info("ai_respond: %s answered OK (%d chars, %d tool calls)", ename, len(text), len(tool_uses))
+                return text, ename, tool_uses
+            # Soft failure — engine returned but the answer is empty / canned.
+            reason = "empty answer" if not text else "canned no-answer response"
+            logger.warning("ai_respond: %s soft-failed (%s) — failing over", ename, reason)
+            errors.append(f"{ename}: {reason}")
+            continue
         except Exception as e:
-            errors.append(f"{engine['name']}: {str(e)[:80]}")
+            short = str(e)[:160]
+            logger.warning("ai_respond: %s failed (%s) — failing over to next engine", ename, short)
+            errors.append(f"{ename}: {short}")
             continue
 
     if errors:
         return (
-            f"⚠️ ResearchPilot could not reach any AI engine. Tried:\n" +
+            f"⚠️ ResearchPilot tried every enabled AI engine but none could answer. Details:\n" +
             "\n".join(f"  • {e}" for e in errors) +
-            "\n\n**To fix:** Go to ⚙️ Settings → AI Engines and enable/configure at least one engine.",
+            "\n\n**To fix:** Go to ⚙️ Settings → AI Engines and check API keys / models, "
+            "or enable another engine (Ollama, Gemini, Claude, OpenRouter…).",
             "none",
             []
         )
@@ -1769,12 +1990,22 @@ async def create_project(request: Request):
 
 @app.delete("/api/projects/{project_id}")
 async def delete_project(project_id: str):
+    """Soft-delete: move the whole project folder into the trash.
+    The system NEVER auto-removes items from the trash — the user opens
+    the trash folder in their OS file explorer and manually cleans it up.
+    """
     p = PROJECTS / project_id
     if not p.exists():
-        raise HTTPException(404)
-    audit("project.delete", project=project_id)
-    shutil.rmtree(str(p))
-    return {"ok": True}
+        raise HTTPException(404, "Project not found")
+    if not p.is_dir():
+        raise HTTPException(400, "Not a directory")
+    audit("project.trash", project=project_id)
+    moved_to = _move_to_trash(p, "projects", project_id)
+    return {
+        "ok": True,
+        "moved_to": str(moved_to.relative_to(BASE)),
+        "trash_count": _trash_count(),
+    }
 
 @app.put("/api/projects/{project_id}")
 async def rename_project(project_id: str, request: Request):
@@ -1843,7 +2074,11 @@ async def library(project: str = None):
             continue
         for subdir in ["01-LIBRARY", "02-EXTRACTIONS", "99-META"]:
             scan(proj / subdir, proj.name)
-    scan(INCOMING, "INCOMING")
+    # Only show INCOMING when viewing "All Projects" or filtering for it
+    # specifically — previously this ran unconditionally, so INCOMING's
+    # files (e.g. demo.pdf) leaked into every single project's view.
+    if not project or project == "INCOMING":
+        scan(INCOMING, "INCOMING")
     return result
 
 MAX_UPLOAD_SIZE = 50 * 1024 * 1024  # 50MB
@@ -1868,10 +2103,120 @@ def sanitize_filename(name: str) -> str:
     return name.strip()
 
 # ── Upload (any file type) ──
+
+def _dest_folder_for_project(project: str) -> Path:
+    if project == "INCOMING":
+        return INCOMING
+    dest = PROJECTS / project / "01-LIBRARY"
+    dest.mkdir(parents=True, exist_ok=True)
+    return dest
+
+
+def _detect_duplicates(content: bytes, dest_folder: Path, raw_name: str) -> List[dict]:
+    """Look for potential duplicates of `content` in `dest_folder`.
+
+    Returns a list of dicts, one per match, in order of confidence:
+      - type 'identical_hash'  — same SHA256 as an existing file (STRONGEST)
+      - type 'same_filename'  — same sanitised filename (would be auto-suffixed _2 etc.)
+      - type 'same_paper'     — same (Author, Year) PDF metadata (and possibly different filename)
+    Each entry has: {type, existing_file, project (if cross-project scan), confidence, note}
+    """
+    matches: List[dict] = []
+    if not dest_folder.exists():
+        return matches
+
+    # 1) Hash check
+    sha = hashlib.sha256(content).hexdigest()
+    for f in dest_folder.iterdir():
+        if not f.is_file() or f.name.startswith("."):
+            continue
+        try:
+            f_sha = hashlib.sha256(f.read_bytes()).hexdigest()
+        except Exception:
+            continue
+        if f_sha == sha:
+            matches.append({
+                "type": "identical_hash",
+                "existing_file": f.name,
+                "sha256": sha,
+                "confidence": "high",
+                "note": "Exact same file (byte-for-byte) already exists.",
+            })
+            break  # one strong match is enough
+
+    # 2) Filename check (after sanitising the incoming name the same way)
+    sanitized = sanitize_filename(raw_name or "uploaded_file")
+    for f in dest_folder.iterdir():
+        if f.is_file() and f.name.lower() == sanitized.lower():
+            # Skip if already matched by hash above
+            if not any(m.get("existing_file") == f.name for m in matches):
+                matches.append({
+                    "type": "same_filename",
+                    "existing_file": f.name,
+                    "confidence": "medium",
+                    "note": "A file with the same name already exists.",
+                })
+            break
+
+    # 3) PDF metadata check (Author, Year) — for PDFs only
+    if sanitized.lower().endswith(".pdf"):
+        try:
+            from io import BytesIO
+            with fitz.open(stream=content, filetype="pdf") as doc:
+                head_text = "\n".join(page.get_text("text") for page in doc[:2])[:3000]
+            a, y = _fn_utils.parse_pdf_text_for_metadata(head_text)
+            if a and y:
+                for f in dest_folder.iterdir():
+                    if not f.is_file() or not f.name.lower().endswith(".pdf"):
+                        continue
+                    # If filename is already Author_Year, just compare the stem
+                    if f.stem.lower().startswith(f"{a.lower()}_{y}"):
+                        if not any(m.get("existing_file") == f.name for m in matches):
+                            matches.append({
+                                "type": "same_paper",
+                                "existing_file": f.name,
+                                "author": a,
+                                "year": y,
+                                "confidence": "medium",
+                                "note": f"Same author/year as '{f.name}' — likely a second version of the same paper.",
+                            })
+                        break
+        except Exception:
+            pass
+
+    return matches
+
+
+@app.post("/api/upload/precheck")
+async def upload_precheck(
+    file: UploadFile = File(...),
+    project: str = Form(default="INCOMING")
+):
+    """Check whether `file` looks like a duplicate of something in `project`.
+    Does NOT write the file to disk. The frontend calls this BEFORE the real
+    upload so it can warn the user. Always returns 200 — the `duplicates`
+    list is empty if nothing matches.
+    """
+    content = await file.read()
+    if len(content) > MAX_UPLOAD_SIZE:
+        raise HTTPException(413, "File too large (max 50MB)")
+    raw_name = sanitize_filename(file.filename or "uploaded_file")
+    dest_folder = _dest_folder_for_project(project)
+    duplicates = _detect_duplicates(content, dest_folder, raw_name)
+    return {
+        "ok": True,
+        "filename": raw_name,
+        "size_kb": round(len(content) / 1024),
+        "project": project,
+        "duplicates": duplicates,
+    }
+
+
 @app.post("/api/upload")
 async def upload_file(
     file: UploadFile = File(...),
-    project: str = Form(default="INCOMING")
+    project: str = Form(default="INCOMING"),
+    replace: str = Form(default="")  # if non-empty, name of file to replace (and trash)
 ):
     content = await file.read()
     if len(content) > MAX_UPLOAD_SIZE:
@@ -1881,11 +2226,28 @@ async def upload_file(
         raise HTTPException(415, f"File type not allowed: {mime}")
     raw_name = sanitize_filename(file.filename or "uploaded_file")
 
-    if project == "INCOMING":
-        dest_folder = INCOMING
-    else:
-        dest_folder = PROJECTS / project / "01-LIBRARY"
-        dest_folder.mkdir(parents=True, exist_ok=True)
+    dest_folder = _dest_folder_for_project(project)
+
+    # If user chose "Replace", trash the existing file first
+    replaced: Optional[str] = None
+    if replace:
+        target = dest_folder / replace
+        if target.exists() and target.is_file():
+            md_target = target.with_suffix(".md")
+            label = f"{project}_{target.stem}"
+            safe_label = re.sub(r'[^\w\-.]', '_', label)[:80] or "file"
+            trash_sub = TRASH_LIBRARY / f"{safe_label}_{_trash_timestamp()}"
+            n = 1
+            while trash_sub.exists():
+                trash_sub = TRASH_LIBRARY / f"{safe_label}_{_trash_timestamp()}_{n}"
+                n += 1
+            trash_sub.mkdir(parents=True, exist_ok=False)
+            shutil.move(str(target), str(trash_sub / target.name))
+            if md_target.exists():
+                shutil.move(str(md_target), str(trash_sub / md_target.name))
+            replaced = replace
+            audit("file.replace", project=project, filename=replace,
+                  moved_to=str(trash_sub.relative_to(BASE)))
 
     # Write first with the user-supplied name, then derive a canonical
     # Author_Year name and rename in-place if we can extract metadata.
@@ -1922,13 +2284,150 @@ async def upload_file(
     except Exception as e:
         pass
 
-    cfg = load_settings()
     return {
         "ok": True,
-        "saved_to": str(dest),
-        "md_created": str(md_path) if md_path else None,
-        "size_kb": round(len(content) / 1024)
+        "saved_to": str(dest.relative_to(BASE)),
+        "md_created": str(md_path.relative_to(BASE)) if md_path else None,
+        "size_kb": round(len(content) / 1024),
+        "replaced": replaced,
+        "final_filename": fname,
     }
+
+# ─── Trash API (soft-delete: list, open in OS file explorer, restore) ────────
+
+@app.get("/api/trash")
+async def list_trash():
+    """List every soft-deleted item, newest first."""
+    return {
+        "ok": True,
+        "count": _trash_count(),
+        "items": _list_trash(),
+        "trash_dir": str(TRASH_DIR.relative_to(BASE)),
+    }
+
+
+@app.get("/api/trash/open")
+async def open_trash_folder():
+    """Open the trash folder in the OS file explorer (Windows / macOS / Linux).
+    The system NEVER auto-deletes from this folder — the user does it manually.
+    """
+    try:
+        if sys.platform.startswith("win"):
+            os.startfile(str(TRASH_DIR))  # type: ignore[attr-defined]
+        elif sys.platform == "darwin":
+            subprocess.Popen(["open", str(TRASH_DIR)])
+        else:
+            subprocess.Popen(["xdg-open", str(TRASH_DIR)])
+        return {"ok": True, "opened": str(TRASH_DIR), "trash_count": _trash_count()}
+    except Exception as e:
+        raise HTTPException(500, f"Could not open trash folder: {e}")
+
+
+@app.post("/api/trash/restore")
+async def restore_from_trash(request: Request):
+    """Move a trashed item back to its original location.
+
+    Body: {"path": "trash/projects/P1_20260606_123456"}  (relative to BASE)
+    Only handles the top-level entry — restores the whole project, or the
+    file (and its .md) into the project's library. Uses the timestamped
+    suffix to detect what kind of item it is.
+    """
+    data = await request.json()
+    rel_path = (data or {}).get("path", "").strip()
+    if not rel_path:
+        raise HTTPException(400, "Missing 'path'")
+    src = (BASE / rel_path).resolve()
+    if not str(src).startswith(str(TRASH_DIR.resolve())):
+        raise HTTPException(403, "Path is not inside the trash folder")
+    if not src.exists() or not src.is_dir():
+        raise HTTPException(404, "Trash item not found")
+
+    # Detect category by parent directory name
+    parent = src.parent.name
+    name = src.name
+    # Strip the trailing _YYYYMMDD_HHMMSS[_n] to recover the original label
+    clean = re.sub(r"_\d{8}_\d{6}(_\d+)?$", "", name)
+
+    if parent == "projects":
+        # Restore: move into 01-PROJECTS/
+        dest = PROJECTS / clean
+        if dest.exists():
+            raise HTTPException(409, f"Project '{clean}' already exists")
+        shutil.move(str(src), str(dest))
+        audit("project.restore", project=clean, from_trash=name)
+        return {"ok": True, "restored_to": str(dest.relative_to(BASE)), "kind": "project", "trash_count": _trash_count()}
+    elif parent == "library":
+        # Restore: parse the project prefix. "INCOMING_..." goes to INCOMING,
+        # otherwise "PROJECTID_stem" goes to PROJECTS/PROJECTID/01-LIBRARY.
+        if clean.startswith("INCOMING_"):
+            dest_folder = INCOMING
+            project_id = "INCOMING"
+        else:
+            # First underscore separates the project id from the stem
+            parts = clean.split("_", 1)
+            if len(parts) < 2:
+                raise HTTPException(400, f"Cannot determine target project from trash label: {clean!r}")
+            project_id, _stem = parts
+            dest_folder = PROJECTS / project_id / "01-LIBRARY"
+            dest_folder.mkdir(parents=True, exist_ok=True)
+        restored = []
+        for f in src.iterdir():
+            target = dest_folder / f.name
+            if target.exists():
+                # Avoid clobbering — disambiguate
+                target = dest_folder / _fn_utils.disambiguate_filename(dest_folder, f.name)
+            shutil.move(str(f), str(target))
+            restored.append(target.name)
+            audit("file.restore", project=project_id, filename=target.name, from_trash=name)
+        # Clean up the now-empty trash subfolder
+        try:
+            src.rmdir()
+        except OSError:
+            pass
+        return {"ok": True, "restored_to": str(dest_folder.relative_to(BASE)), "kind": "file", "files": restored, "trash_count": _trash_count()}
+    elif parent == "incoming":
+        # Restore: move back into INCOMING/
+        dest = INCOMING / clean
+        if dest.exists():
+            dest = INCOMING / _fn_utils.disambiguate_filename(INCOMING, clean)
+        shutil.move(str(src), str(dest))
+        audit("file.restore", project="INCOMING", filename=dest.name, from_trash=name)
+        try:
+            src.rmdir()
+        except OSError:
+            pass
+        return {"ok": True, "restored_to": str(dest.relative_to(BASE)), "kind": "incoming", "trash_count": _trash_count()}
+    else:
+        raise HTTPException(400, f"Unknown trash category: {parent}")
+
+
+@app.post("/api/trash/remove")
+async def remove_from_trash(request: Request):
+    """Permanently delete a trashed item.
+
+    The user explicitly asked for this from the System -> Trash pane.
+    Unlike the soft-delete (move-to-trash), this is irreversible.
+    Body: {"path": "trash/library/..."}  (relative to BASE)
+    """
+    data = await request.json()
+    rel_path = (data or {}).get("path", "").strip()
+    if not rel_path:
+        raise HTTPException(400, "Missing 'path'")
+    src = (BASE / rel_path).resolve()
+    if not str(src).startswith(str(TRASH_DIR.resolve())):
+        raise HTTPException(403, "Path is not inside the trash folder")
+    if not src.exists():
+        raise HTTPException(404, "Trash item not found")
+    try:
+        if src.is_dir():
+            shutil.rmtree(src)
+        else:
+            src.unlink()
+    except Exception as e:
+        raise HTTPException(500, f"Could not delete: {e}")
+    audit("trash.remove", path=rel_path)
+    return {"ok": True, "removed": rel_path, "trash_count": _trash_count()}
+
 
 # ── Upload folder (as new project) ──
 @app.post("/api/upload-folder")
@@ -2009,17 +2508,43 @@ async def move_library_file(request: Request):
 # ── Delete Library File (with .md companion) ──
 @app.delete("/api/library/{project}/{filename}")
 async def delete_library_file(project: str, filename: str):
+    """Soft-delete: move the file (and its .md if present) into the trash.
+    The system NEVER auto-removes items from the trash — the user opens
+    the trash folder in their OS file explorer and manually cleans it up.
+    """
     fp = safe_project_path(project, "01-LIBRARY", filename)
     if not fp.exists():
         raise HTTPException(404, "File not found")
 
     md_fp = fp.with_suffix(".md")
+    # Move the .md first (if it exists) so the pair stays together in trash
+    label = f"{project}_{fp.stem}"
+    moved_paths = []
     if md_fp.exists():
-        md_fp.unlink()
-    fp.unlink()
-    audit("file.delete", project=project, filename=filename)
+        # Create a temp staging folder inside the library so we can move both
+        # files together (so they end up in the same trash subfolder)
+        # Actually: we'll move each to a shared trash subfolder created on demand.
+        pass
 
-    return {"ok": True, "deleted": filename, "project": project}
+    # Always create one trash subfolder per deleted file
+    safe_label = re.sub(r'[^\w\-.]', '_', label)[:80] or "file"
+    dest_folder = TRASH_LIBRARY / f"{safe_label}_{_trash_timestamp()}"
+    n = 1
+    while dest_folder.exists():
+        dest_folder = TRASH_LIBRARY / f"{safe_label}_{_trash_timestamp()}_{n}"
+        n += 1
+    dest_folder.mkdir(parents=True, exist_ok=False)
+    shutil.move(str(fp), str(dest_folder / fp.name))
+    if md_fp.exists():
+        shutil.move(str(md_fp), str(dest_folder / md_fp.name))
+    moved_paths.append(str(dest_folder.relative_to(BASE)))
+    audit("file.trash", project=project, filename=filename, moved_to=moved_paths[0])
+
+    return {
+        "ok": True,
+        "moved_to": moved_paths[0],
+        "trash_count": _trash_count(),
+    }
 
 # ── Extractions ──
 @app.get("/api/extractions")
@@ -2229,6 +2754,12 @@ async def chat(req: ChatReq):
     response, engine, tool_uses = await ai_respond(messages, project=req.project, skills=req.skills)
     append_to_chat(req.session_id, "assistant", response, engine)
 
+    # Background: maybe re-learn the user profile (fire-and-forget)
+    try:
+        await _auto_check_profile()
+    except Exception:
+        pass
+
     # Summarize tool usage for the response
     tools_summary = []
     for tu in tool_uses:
@@ -2392,6 +2923,287 @@ async def get_kb():
     kb = CORE / "MASTER-KNOWLEDGE-BASE.md"
     return {"content": kb.read_text(encoding="utf-8") if kb.exists() else "# Master Knowledge Base\n\n*Empty*"}
 
+# ── User Profile (Learned Style) ────────────────────────────────────────────────
+# The system silently watches how the user writes in chat and builds a profile
+# of their style, vocabulary, topic interests, behaviour, and feedback signals.
+# After N chats have been learned, the profile is injected into every AI
+# response so the AI's tone and detail level match the user's preferences.
+USER_PROFILE_FILE  = CORE / "USER-PROFILE.md"
+USER_PROFILE_STATE = BACKEND / "profile_state.json"
+DEFAULT_LEARN_THRESHOLD = 5   # auto-relearn every N new chats
+
+def _profile_state():
+    """Read or initialise the profile-state sidecar (threshold, last-learned, counters)."""
+    if USER_PROFILE_STATE.exists():
+        try:
+            return json.loads(USER_PROFILE_STATE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {
+        "auto_learn": True,
+        "learn_threshold": DEFAULT_LEARN_THRESHOLD,
+        "chats_at_last_learn": 0,
+        "last_learned_at": None,
+        "total_learns": 0,
+        "last_status": "never_run",
+        "last_message": "",
+    }
+
+def _save_profile_state(state: dict):
+    USER_PROFILE_STATE.parent.mkdir(parents=True, exist_ok=True)
+    # Defence-in-depth: clamp the threshold so a buggy caller can't
+    # accidentally set it to 0 (would trigger re-learn on every chat) or
+    # 99999 (would never trigger).
+    try:
+        n = int(state.get("learn_threshold", DEFAULT_LEARN_THRESHOLD))
+        state["learn_threshold"] = max(1, min(100, n))
+    except (TypeError, ValueError):
+        state["learn_threshold"] = DEFAULT_LEARN_THRESHOLD
+    USER_PROFILE_STATE.write_text(json.dumps(state, indent=2), encoding="utf-8")
+
+def _count_user_chats() -> int:
+    """Number of chat-session .md files on disk."""
+    if not CHATS_DIR.exists():
+        return 0
+    return len([p for p in CHATS_DIR.glob("*.md") if p.is_file()])
+
+def _collect_user_messages(limit_sessions: int = 20, max_chars: int = 30000) -> str:
+    """Pull the user's chat messages out of the most recent N sessions.
+
+    Returns a single concatenated string, newest session first, with a
+    `--- session: <id> ---` header per session so the AI can see context.
+    """
+    if not CHATS_DIR.exists():
+        return ""
+    sessions = sorted(CHATS_DIR.glob("*.md"), key=lambda p: p.stat().st_mtime, reverse=True)
+    sessions = sessions[:limit_sessions]
+    out_chunks = []
+    total = 0
+    for s in sessions:
+        try:
+            text = s.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            continue
+        # Extract just the user lines (under "### 👤 You")
+        user_lines = []
+        in_user = False
+        for line in text.splitlines():
+            if line.startswith("### 👤 You"):
+                in_user = True
+                continue
+            if line.startswith("### 🤖"):
+                in_user = False
+                continue
+            if in_user and line.strip() and not line.startswith("*") and not line.startswith("---"):
+                user_lines.append(line)
+        if not user_lines:
+            continue
+        block = f"--- session: {s.stem} ---\n" + "\n".join(user_lines) + "\n\n"
+        if total + len(block) > max_chars:
+            break
+        out_chunks.append(block)
+        total += len(block)
+    return "".join(out_chunks)
+
+_ANALYSIS_SYSTEM_PROMPT = """You are an expert linguistic and behavioural analyst.
+Your job is to study a user's chat history and produce a detailed, structured
+profile of how they write and what they care about.
+
+The user is a researcher using an AI research assistant. They are NOT chatting
+with you — you are reading their messages silently to build a profile.
+
+The profile will be used by an AI assistant to match the user's writing style,
+detail level, and topic preferences in future responses.
+
+Output the profile as clean Markdown with these exact sections (use H2 headings):
+
+## Writing Style
+- Tone (formal / casual / mixed, etc.)
+- Average sentence length (short / medium / long)
+- Vocabulary level (everyday / academic / mixed)
+- Common phrases or filler words they use
+- Formatting preferences (do they use bullet points, numbered lists, bold, code, headings?)
+- Punctuation habits (em-dashes, semicolons, contractions, etc.)
+- Directness vs politeness
+
+## Topic Interests
+- Main subject areas they keep coming back to
+- Recurring keywords / concepts
+- Type of questions they ask (factual, exploratory, critical, practical, etc.)
+- Project / research focus signals
+
+## Behaviour Patterns
+- Typical message length (one-liner / short / medium / long)
+- How often they rephrase or correct themselves
+- How often they reference papers / projects / specific files
+- Time-of-day or session patterns (if any signal in the data)
+- Engagement style (terse commands vs conversational)
+
+## Feedback Signals
+- Any phrases that look like corrections ("no, do it like…", "wrong", "better", "actually…", "instead…")
+- Patterns of how they refine AI outputs
+- What they seem to praise or reject
+
+## Preferences
+- Format they prefer for answers (bullet list / prose / code / table / mix)
+- How technical they want the response (intro-level / expert)
+- Any other recurring preferences you can detect
+
+## Anti-patterns to Avoid
+- Things the user clearly does NOT want (over-explanation, hedging, generic intros, etc.)
+- Pet peeves visible in their corrections
+
+Rules:
+- Be specific and grounded in the actual messages. Quote short examples where useful.
+- If a section has no signal yet, write "Not enough signal yet — keep chatting."
+- Do NOT invent traits you cannot support from the data.
+- Do NOT include any session IDs, file paths, or PII in the output.
+- Total output should be focused and skimmable — about 400-800 words.
+- Return ONLY the Markdown profile, no preamble, no closing remarks.
+"""
+
+async def _run_profile_analysis() -> dict:
+    """Run the AI analysis and write USER-PROFILE.md. Returns a status dict."""
+    user_text = _collect_user_messages()
+    if not user_text.strip():
+        return {"ok": False, "error": "No chat history found yet. Chat a few times first, then re-learn."}
+    # Build analysis prompt
+    analysis_msgs = [
+        {"role": "system", "content": _ANALYSIS_SYSTEM_PROMPT},
+        {"role": "user", "content": f"Here are the user's recent messages (newest first):\n\n{user_text}\n\nProduce the user profile now."},
+    ]
+    try:
+        result, engine, _ = await ai_respond(analysis_msgs, project=None, skills=None)
+    except Exception as e:
+        return {"ok": False, "error": f"AI analysis failed: {e}"}
+    if not result or not result.strip():
+        return {"ok": False, "error": "AI returned an empty profile. Try again."}
+    # Write the profile
+    ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    header = (
+        f"# ResearchPilot — Learned User Profile\n\n"
+        f"*Auto-generated. Last learned: {ts}*  \n"
+        f"*Engine: {engine}*  \n"
+        f"*Re-learn anytime from ⚙️ Settings → Knowledge Base → Re-learn now*\n\n"
+        f"---\n\n"
+    )
+    USER_PROFILE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    USER_PROFILE_FILE.write_text(header + result.strip() + "\n", encoding="utf-8")
+    # Update state
+    state = _profile_state()
+    state["chats_at_last_learn"] = _count_user_chats()
+    state["last_learned_at"] = ts
+    state["total_learns"] = state.get("total_learns", 0) + 1
+    state["last_status"] = "ok"
+    state["last_message"] = f"Learned from {state['chats_at_last_learn']} chat sessions."
+    _save_profile_state(state)
+    audit("profile.learn", engine=engine, sessions=state["chats_at_last_learn"])
+    return {"ok": True, "engine": engine, "sessions": state["chats_at_last_learn"], "learned_at": ts}
+
+def _profile_injection_text() -> str:
+    """If the profile is 'mature' (N+ chats learned), return a short injection
+    block the system prompt can include. Otherwise return ''."""
+    if not USER_PROFILE_FILE.exists():
+        return ""
+    state = _profile_state()
+    threshold = state.get("learn_threshold", DEFAULT_LEARN_THRESHOLD)
+    if state.get("chats_at_last_learn", 0) < threshold:
+        return ""
+    try:
+        text = USER_PROFILE_FILE.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return ""
+    # Strip the metadata header (everything before the first --- separator)
+    body = text.split("\n---\n", 1)[-1] if "\n---\n" in text else text
+    return (
+        "\n\n## LEARNED USER PROFILE\n"
+        "The following profile was learned automatically from this user's past chats. "
+        "Match this style, detail level, and topic framing in your response:\n\n"
+        + body.strip() + "\n"
+    )
+
+async def _auto_check_profile():
+    """Called after each chat. If the user has accumulated N new chats since
+    the last learn run, kick off a background analysis (fire-and-forget)."""
+    state = _profile_state()
+    if not state.get("auto_learn", True):
+        return
+    threshold = max(1, int(state.get("learn_threshold", DEFAULT_LEARN_THRESHOLD)))
+    current_chats = _count_user_chats()
+    last = int(state.get("chats_at_last_learn", 0))
+    if current_chats - last >= threshold:
+        # Fire-and-forget — don't block the chat response
+        try:
+            await _run_profile_analysis()
+        except Exception as e:
+            logger.warning("Background profile analysis failed: %s", e)
+
+@app.get("/api/profile")
+async def get_profile():
+    """Return the current learned user profile + learning metadata."""
+    state = _profile_state()
+    content = ""
+    if USER_PROFILE_FILE.exists():
+        try:
+            content = USER_PROFILE_FILE.read_text(encoding="utf-8", errors="ignore")
+        except Exception:
+            content = ""
+    return {
+        "content": content,
+        "exists": bool(content),
+        "auto_learn": state.get("auto_learn", True),
+        "learn_threshold": state.get("learn_threshold", DEFAULT_LEARN_THRESHOLD),
+        "chats_at_last_learn": state.get("chats_at_last_learn", 0),
+        "total_chats": _count_user_chats(),
+        "last_learned_at": state.get("last_learned_at"),
+        "total_learns": state.get("total_learns", 0),
+        "last_status": state.get("last_status", "never_run"),
+        "last_message": state.get("last_message", ""),
+        "is_mature": state.get("chats_at_last_learn", 0) >= state.get("learn_threshold", DEFAULT_LEARN_THRESHOLD),
+    }
+
+@app.post("/api/profile/analyze")
+async def profile_analyze():
+    """Manually trigger a profile re-learn. Used by the 'Re-learn now' button."""
+    return await _run_profile_analysis()
+
+@app.post("/api/profile/auto-check")
+async def profile_auto_check():
+    """Called by the frontend after each chat to maybe trigger a background learn."""
+    state_before = _profile_state()
+    chats_now = _count_user_chats()
+    threshold = max(1, int(state_before.get("learn_threshold", DEFAULT_LEARN_THRESHOLD)))
+    last = int(state_before.get("chats_at_last_learn", 0))
+    should_run = (
+        state_before.get("auto_learn", True)
+        and (chats_now - last) >= threshold
+    )
+    if should_run:
+        result = await _run_profile_analysis()
+        return {"triggered": True, "result": result}
+    return {
+        "triggered": False,
+        "chats_now": chats_now,
+        "chats_at_last_learn": last,
+        "until_next": max(0, threshold - (chats_now - last)),
+    }
+
+@app.patch("/api/profile/settings")
+async def profile_settings(req: Request):
+    """Update auto-learn toggle and N threshold."""
+    data = await req.json()
+    state = _profile_state()
+    if "auto_learn" in data:
+        state["auto_learn"] = bool(data["auto_learn"])
+    if "learn_threshold" in data:
+        try:
+            n = int(data["learn_threshold"])
+            state["learn_threshold"] = max(1, min(100, n))
+        except (TypeError, ValueError):
+            pass
+    _save_profile_state(state)
+    return {"ok": True, "auto_learn": state["auto_learn"], "learn_threshold": state["learn_threshold"]}
+
 # ── Memory: All .md files (library + extractions) ──
 @app.get("/api/memory")
 async def list_memory():
@@ -2509,9 +3321,17 @@ def _scan_md_files() -> tuple:
                         proj_files.setdefault("_".join(rel.split("\\")[:2]), []).append(nid)
     for root_dir in PROJECTS.iterdir():
         if not root_dir.is_dir() or root_dir.name.startswith("00-"): continue
-        for sub in ["01-LIBRARY", "02-EXTRACTIONS", "99-META"]:
-            d = root_dir / sub
-            if d.exists():
+        # Find every 01-LIBRARY / 02-EXTRACTIONS / 99-META folder ANYWHERE
+        # inside the project — not just directly underneath it. This catches
+        # accidental nested-duplicate folders (e.g. PROJECT/PROJECT/01-LIBRARY,
+        # which can happen from a bad upload/move) so those papers stop being
+        # invisible to the graph, library and chat. Read-only scan — no files
+        # are moved or touched.
+        target_subdirs = ("01-LIBRARY", "02-EXTRACTIONS", "99-META")
+        _skip_parts = {".obsidian", "graphify-out", ".claude", "__pycache__", ".git", "node_modules", ".vscode"}
+        found_dirs = [d for d in root_dir.rglob("*")
+                      if d.is_dir() and d.name in target_subdirs and not any(p in _skip_parts for p in d.parts)]
+        for d in found_dirs:
                 for f in d.rglob("*.md"):
                     rel = str(f.relative_to(BASE)); cat = _cat(f); nid = f"file:{rel}"
                     if nid not in seen:
@@ -2546,27 +3366,70 @@ def _scan_md_files() -> tuple:
     for (a, b), kws in pair_kws.items():
         cnt = len(kws)
         edges.append({"source": a, "target": b, "relation": "keyword", "weight": min(cnt / 10, 1.0), "label": "", "shared_keywords": ", ".join(sorted(kws)[:15]), "shared_kw_count": cnt, "source_file": ", ".join(sorted(kws)[:5]), "source_location": ""})
+    # Tag edges: connect papers/notes that share a free-text tag (one edge per
+    # pair listing all shared tags — same pattern as keyword edges above).
+    # Tags are stored keyed by "<project-id>/<filename>"; graph nodes are keyed
+    # by full vault-relative path, so build a lookup to bridge the two.
+    tag_data = _load_tags()
+    if tag_data:
+        nid_by_tagkey: Dict[str, str] = {}
+        for n in nodes:
+            rel = n.get("rel_path") or ""
+            rparts = rel.split("/")
+            if len(rparts) >= 2:
+                nid_by_tagkey[f"{rparts[1]}/{Path(rel).name}"] = n["id"]
+        tag_to_files: Dict[str, list] = {}
+        for tagkey, tags in tag_data.items():
+            nid = nid_by_tagkey.get(tagkey)
+            if not nid:
+                continue
+            for t in (tags or []):
+                tag_to_files.setdefault(t, []).append(nid)
+        pair_tags: Dict[tuple, list] = {}
+        for word, nids in tag_to_files.items():
+            for i in range(len(nids)):
+                for j in range(i + 1, len(nids)):
+                    pair = tuple(sorted([nids[i], nids[j]]))
+                    pair_tags.setdefault(pair, []).append(word)
+        for (a, b), tags in pair_tags.items():
+            cnt = len(tags)
+            edges.append({"source": a, "target": b, "relation": "tag", "weight": min(cnt / 6, 1.0), "label": "", "shared_tags": ", ".join(sorted(tags)[:15]), "shared_tag_count": cnt, "source_file": ", ".join(sorted(tags)[:5]), "source_location": ""})
     return nodes, edges, file_meta
 
 def _build_filter_edges(file_meta: dict, filter_by: str) -> list:
-    """Build edges between research/extraction files based on filter dimension."""
+    """Build edges between research/extraction files based on filter dimension.
+    Handles metadata dimensions (author, year, journal, ...) AND the path-derived
+    'project' dimension."""
     edges, seen_pairs = [], set()
-    items = [(nid, m) for nid, m in file_meta.items() if m.get(filter_by)]
-    if not items: return edges
+
+    # Derive a {nid: value} map. For "project", compute from the file path; for
+    # other dims, read from the file's metadata block.
+    values: Dict[str, str] = {}
+    for nid, m in file_meta.items():
+        if filter_by == "project":
+            rel = nid.replace("file:", "").replace("\\", "/").split("/")
+            if len(rel) >= 3 and rel[0] == "01-PROJECTS" and not rel[1].startswith("00-"):
+                values[nid] = rel[1]
+        else:
+            v = m.get(filter_by, "")
+            if v:
+                if filter_by == "year": v = v[:4]
+                values[nid] = v.strip()
+
+    items = list(values.items())
+    if not items:
+        return edges
+
     for i in range(len(items)):
-        nid_i, mi = items[i]
-        key = mi.get(filter_by, "")
-        if not key: continue
-        if filter_by == "year": key = key[:4]
+        nid_i, key_i = items[i]
         for j in range(i + 1, len(items)):
-            nid_j, mj = items[j]
-            if mi.get(filter_by) == mj.get(filter_by):
+            nid_j, key_j = items[j]
+            if key_i == key_j:
                 pk = f"{nid_i}|{nid_j}"
                 if pk not in seen_pairs:
                     seen_pairs.add(pk)
-                    edges.append({"source": nid_i, "target": nid_j, "relation": filter_by, "weight": 1.0, "source_file": key, "source_location": ""})
-
-    # Also add filter-value nodes for this dimension
+                    edges.append({"source": nid_i, "target": nid_j, "relation": filter_by,
+                                  "weight": 1.0, "source_file": key_i, "source_location": ""})
     return edges
 
 @app.get("/api/graph/filters")
@@ -2600,9 +3463,15 @@ async def get_graph_filters(context: str = ""):
                         break
             else:
                 for nid, m in file_meta.items():
-                    mv = m.get(dim, "").strip().lower()
-                    if mv and val in mv:
-                        layer_matched.add(nid)
+                    if dim == "project":
+                        # Project is derived from the file path, not the metadata block
+                        rel = nid.replace("file:", "").replace("\\", "/").split("/")
+                        if len(rel) >= 3 and rel[0] == "01-PROJECTS" and not rel[1].startswith("00-") and val in rel[1].lower():
+                            layer_matched.add(nid)
+                    else:
+                        mv = m.get(dim, "").strip().lower()
+                        if mv and val in mv:
+                            layer_matched.add(nid)
             if matched_files is None:
                 matched_files = layer_matched
             elif op == "AND":
@@ -2612,6 +3481,9 @@ async def get_graph_filters(context: str = ""):
         if matched_files is not None:
             file_meta = {nid: m for nid, m in file_meta.items() if nid in matched_files}
 
+    # NOTE: "project" intentionally removed as a filter dimension (per user
+    # request — graph couldn't reliably build project-scoped connections).
+    # same_project clustering edges in the graph itself are unaffected.
     dims = {"author": set(), "year": set(), "journal": set(), "quartile": set(), "method": set(), "framework": set()}
     for nid, m in file_meta.items():
         for d in dims:
@@ -2622,7 +3494,7 @@ async def get_graph_filters(context: str = ""):
     # Add keyword dimension from keywords.json
     kw_data = _load_keywords()
     kw_vals = sorted({w for w, v in kw_data.items() if v.get("files")})[:100]
-    dims_list = [{"id": k, "label": k.capitalize(), "values": sorted(v) if v else []} for k, v in dims.items()]
+    dims_list = [{"id": k, "label": (k.capitalize() if k != "project" else "Project"), "values": sorted(v) if v else []} for k, v in dims.items()]
     dims_list.append({"id": "keyword", "label": "Keyword", "values": kw_vals})
     return {"dimensions": dims_list}
 
@@ -2699,7 +3571,7 @@ async def get_graph_data(filter: str = "all"):
                         if fcat not in ("research", "extraction"):
                             continue
                     filter_edges.append({"source": nid, "target": t, "relation": "keyword", "weight": 0.8, "source_file": str(KEYWORDS_FILE), "source_location": ""})
-        elif filter in ("author", "year", "journal", "quartile", "method", "framework"):
+        elif filter in ("author", "year", "journal", "quartile", "method", "framework", "project"):
             filter_edges = _build_filter_edges(file_meta, filter)
             seen_vals = set()
             for e in filter_edges:
@@ -2753,9 +3625,14 @@ async def get_graph_data(filter: str = "all"):
                         break
             else:
                 for nid, m in file_meta.items():
-                    mv = m.get(dim, "").strip().lower()
-                    if mv and val in mv:
-                        layer_matched.add(nid)
+                    if dim == "project":
+                        rel = nid.replace("file:", "").replace("\\", "/").split("/")
+                        if len(rel) >= 3 and rel[0] == "01-PROJECTS" and not rel[1].startswith("00-") and val in rel[1].lower():
+                            layer_matched.add(nid)
+                    else:
+                        mv = m.get(dim, "").strip().lower()
+                        if mv and val in mv:
+                            layer_matched.add(nid)
 
             if matched_files is None:
                 matched_files = layer_matched
@@ -2795,7 +3672,7 @@ async def get_graph_data(filter: str = "all"):
                         "weight": 0.5, "source_file": vnid, "source_location": ""})
 
         # Add cluster nodes/edges for cluster dims (val='__any__')
-        icon_map = {"author": "👤", "year": "📅", "journal": "📰", "quartile": "⭐", "method": "🔬", "framework": "📐", "keyword": "🏷"}
+        icon_map = {"author": "👤", "year": "📅", "journal": "📰", "quartile": "⭐", "method": "🔬", "framework": "📐", "project": "📁", "keyword": "🏷"}
         for dim in cluster_dims:
             # Build cluster edges (edges between files sharing the same dim value),
             # restricted to files that survived the filter layers.
@@ -3068,6 +3945,72 @@ async def restore_discarded(request: Request):
     _save_discarded(d)
     return {"ok": True}
 
+# ── Tags System (free-text thematic tags on papers/notes) ──
+# Fully additive: own JSON store, own endpoints, touches nothing else.
+TAGS_FILE = CORE / "tags.json"
+
+def _load_tags() -> dict:
+    """{ "rel/path/to/file.md": ["tag1", "tag2"], ... }"""
+    if TAGS_FILE.exists():
+        try: return json.loads(TAGS_FILE.read_text(encoding="utf-8"))
+        except Exception: pass
+    return {}
+
+def _save_tags(data: dict):
+    TAGS_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+@app.get("/api/tags")
+async def get_tags():
+    """All tags with counts + which files carry them (for browsing/filtering)."""
+    data = _load_tags()
+    agg: Dict[str, list] = {}
+    for fp, tags in data.items():
+        for t in (tags or []):
+            agg.setdefault(t, []).append(fp)
+    return {"tags": [{"name": k, "count": len(v), "files": v} for k, v in sorted(agg.items())]}
+
+@app.get("/api/tags/file")
+async def get_file_tags(rel_path: str = ""):
+    """Tags on a single file."""
+    if not rel_path:
+        raise HTTPException(400, "rel_path required")
+    return {"rel_path": rel_path, "tags": _load_tags().get(rel_path, [])}
+
+@app.post("/api/tags")
+async def save_tags(request: Request):
+    """Add/remove/clear a tag on a file. body: {action, rel_path, tag}"""
+    try:
+        body = await request.json()
+    except Exception:
+        raise HTTPException(400, "Invalid JSON body")
+    action = (body.get("action") or "add").strip().lower()
+    rel_path = (body.get("rel_path") or "").strip().replace("\\", "/")
+    tag = (body.get("tag") or "").strip().lower()[:48]
+    if not rel_path or len(rel_path) > 300:
+        raise HTTPException(400, "rel_path required")
+    # Guard — rel_path is a logical "project/filename" key, not a literal
+    # filesystem path, but still reject traversal-shaped strings outright.
+    if ".." in rel_path or rel_path.startswith("/") or re.match(r"^[a-zA-Z]:", rel_path):
+        raise HTTPException(400, "Invalid path")
+    data = _load_tags()
+    cur = data.get(rel_path, [])
+    if action == "add":
+        if not tag:
+            raise HTTPException(400, "tag required")
+        if tag not in cur:
+            cur = cur + [tag]
+        data[rel_path] = cur
+    elif action == "remove":
+        cur = [t for t in cur if t != tag]
+        if cur: data[rel_path] = cur
+        else: data.pop(rel_path, None)
+    elif action == "clear":
+        data.pop(rel_path, None)
+    else:
+        raise HTTPException(400, "Unknown action")
+    _save_tags(data)
+    return {"ok": True, "tags": data.get(rel_path, [])}
+
 # ── Predatory Journals ──
 @app.get("/api/predatory")
 async def get_predatory():
@@ -3292,7 +4235,7 @@ async def _search_openalex(q: str, year_from: str, year_to: str, max_results: in
             })
         return results
     except Exception as e:
-        print(f"[Research] OpenAlex error: {e}")
+        logger.warning("research: OpenAlex error: %s", e)
         return []
 
 async def _search_crossref(q: str, year_from: str, year_to: str, max_results: int) -> list:
@@ -3336,7 +4279,7 @@ async def _search_crossref(q: str, year_from: str, year_to: str, max_results: in
             })
         return results
     except Exception as e:
-        print(f"[Research] Crossref error: {e}")
+        logger.warning("research: Crossref error: %s", e)
         return []
 
 async def _search_semantic_scholar(q: str, year_from: str, year_to: str, max_results: int) -> list:
@@ -3356,12 +4299,12 @@ async def _search_semantic_scholar(q: str, year_from: str, year_to: str, max_res
             retries = 0
             while r.status_code == 429 and retries < 3:
                 wait = 1.5 * (retries + 1)
-                print(f"[Research] Semantic Scholar rate limited, retrying in {wait}s...")
+                logger.info("research: Semantic Scholar rate limited, retrying in %ss...", wait)
                 await asyncio.sleep(wait)
                 r = await c.get("https://api.semanticscholar.org/graph/v1/paper/search", params=params, headers=headers)
                 retries += 1
             if r.status_code != 200:
-                print(f"[Research] Semantic Scholar returned {r.status_code}")
+                logger.warning("research: Semantic Scholar returned %s", r.status_code)
                 return []
             data = r.json()
         results = []
@@ -3386,7 +4329,7 @@ async def _search_semantic_scholar(q: str, year_from: str, year_to: str, max_res
             })
         return results
     except Exception as e:
-        print(f"[Research] Semantic Scholar error: {e}")
+        logger.warning("research: Semantic Scholar error: %s", e)
         return []
 
 async def _search_google_scholar(q: str, year_from: str, year_to: str, max_results: int) -> list:
@@ -3452,7 +4395,7 @@ async def _search_google_scholar(q: str, year_from: str, year_to: str, max_resul
             count += 1
         return results
     except Exception as e:
-        print(f"[Research] Google Scholar error: {e}")
+        logger.warning("research: Google Scholar error: %s", e)
         return []
 
 async def _search_pubmed(q: str, year_from: str, year_to: str, max_results: int) -> list:
@@ -3537,7 +4480,7 @@ async def _search_pubmed(q: str, year_from: str, year_to: str, max_results: int)
             })
         return results
     except Exception as e:
-        print(f"[Research] PubMed error: {e}")
+        logger.warning("research: PubMed error: %s", e)
         return []
 
 def _dedup_results(results: list) -> list:
@@ -3964,17 +4907,20 @@ async def research_download_pdf(request: Request):
     pdf_path = None
     if oa_url:
         try:
+            _validate_engine_url(oa_url)  # SSRF guard — same check used for AI engine URLs
             async with httpx.AsyncClient(timeout=45.0, follow_redirects=True) as c:
                 r = await c.get(oa_url, headers={"User-Agent": "ResearchPilot-ResearchAssistant/2.0"})
                 if r.status_code == 200:
                     ct = r.headers.get("content-type", "").lower()
-                    if "application/pdf" in ct or "application/octet-stream" in ct or not ct:
+                    if "application/pdf" in ct or "application/octet-stream" in ct:
                         pdf_name = _fn_utils.disambiguate_filename(UNREAD_WEB, f"{safe_name}.pdf")
                         pdf_path = UNREAD_WEB / pdf_name
                         pdf_path.write_bytes(r.content)
                         pdf_downloaded = True
+        except ValueError as e:
+            logger.warning("download-pdf: SSRF guard rejected URL (%s)", e)
         except Exception as e:
-            print(f"[Research] PDF download failed: {e}")
+            logger.warning("download-pdf: PDF download failed: %s", e)
 
     # Convert PDF to .md via docling
     md_fulltext = ""
@@ -4005,120 +4951,46 @@ async def research_download_pdf(request: Request):
         f"**Authors**: {', '.join(authors[:8])}\n\n"
         f"**Year**: {year}\n\n"
         f"**Journal**: {journal}\n\n"
-        f"**URL**: {url}\n\n"
-        f"**OA URL**: {oa_url}\n\n"
+         f"**URL**: {url}\n\n"
         f"**Source**: {source}\n\n"
         f"**PDF Downloaded**: {pdf_downloaded_str}\n\n"
         f"---\n\n"
         f"## Abstract\n\n{abstract}\n\n"
         f"---\n\n"
     )
-    if analysis:
-        meta_md += f"## 12-Point Research Analysis\n\n{analysis}\n\n---\n\n"
     if md_fulltext:
-        meta_md += f"## Full Text (via Docling)\n\n{md_fulltext}\n"
+        meta_md += f"\n\n---\n\n## Full Text (auto-extracted from PDF)\n\n{md_fulltext}\n"
+    if analysis:
+        meta_md += f"## 12-Point Research Analysis\n\n{analysis}\n"
+    else:
+        meta_md += (
+            "## 12-Point Research Analysis\n\n"
+            "*⚠️ AI analysis could not be generated (no AI engine enabled).*\n\n"
+            "Please fill in manually:\n\n"
+            "### 1. The Problem\n\n\n"
+            "### 2. The Gap\n\n\n"
+            "### 3. The Research Question(s)\n\n\n"
+            "### 4. The Purpose / Objective\n\n\n"
+            "### 5. The Theory or Framework\n\n\n"
+            "### 6. The Methodology\n\n\n"
+            "### 7. The Key Findings\n\n\n"
+            "### 8. The Contribution\n\n\n"
+            "### 9. The Limitations\n\n\n"
+            "### 10. The Implications\n\n\n"
+            "### 11. Key Citations\n\n\n"
+            "### 12. Your Critical Position\n"
+        )
 
     md_name = _fn_utils.disambiguate_filename(UNREAD_WEB, f"{safe_name}.md")
     md_path = UNREAD_WEB / md_name
     md_path.write_text(meta_md, encoding="utf-8")
-
     return {
         "ok": True,
         "title": title,
         "doi": doi,
+        "md_file": md_name,
         "pdf_downloaded": pdf_downloaded,
         "pdf_file": pdf_path.name if pdf_path and pdf_downloaded else None,
-        "md_file": md_name,
         "folder": "INCOMING/UNREAD-WEB",
         "ai_analysis": bool(analysis)
     }
-
-@app.get("/api/research/papers")
-async def research_list_papers():
-    result = []
-    if not UNREAD_WEB.exists():
-        return result
-    for f in sorted(UNREAD_WEB.iterdir()):
-        if f.is_file() and not f.name.startswith("."):
-            is_pdf = f.suffix.lower() == ".pdf"
-            is_md = f.suffix.lower() == ".md"
-            has_meta = None
-            if is_md:
-                try:
-                    content = f.read_text(encoding="utf-8", errors="ignore")
-                    status_m = re.search(r'\*Status:\s*(.+?)\*', content)
-                    has_meta_s = re.search(r'\*Source: Web (Save|Import|PDF Import)', content)
-                    has_meta = bool(has_meta_s)
-                except Exception:
-                    has_meta = False
-            result.append({
-                "filename": f.name,
-                "stem": f.stem,
-                "ext": f.suffix.lower(),
-                "size_kb": round(f.stat().st_size / 1024, 1),
-                "modified": datetime.datetime.fromtimestamp(f.stat().st_mtime).strftime("%Y-%m-%d %H:%M"),
-                "is_pdf": is_pdf,
-                "is_metadata": has_meta if is_md else False
-            })
-    return result
-
-@app.get("/api/research/pdf/{filename:path}")
-async def research_serve_pdf(filename: str):
-    fp = (UNREAD_WEB / filename).resolve()
-    if not str(fp).startswith(str(UNREAD_WEB.resolve())) or not fp.exists():
-        raise HTTPException(404, "PDF not found")
-    return FileResponse(str(fp), media_type="application/pdf", filename=filename)
-
-@app.get("/api/research/file/{filename:path}")
-async def research_serve_file(filename: str):
-    fp = (UNREAD_WEB / filename).resolve()
-    if not str(fp).startswith(str(UNREAD_WEB.resolve())) or not fp.exists():
-        raise HTTPException(404, "File not found")
-    if fp.suffix.lower() == ".md":
-        return {"content": fp.read_text(encoding="utf-8")}
-    return FileResponse(str(fp))
-
-@app.post("/api/research/move-to-project")
-async def research_move_to_project(request: Request):
-    data = await request.json()
-    filename = data.get("filename", "")
-    project = data.get("project", "")
-    if not filename or not project:
-        raise HTTPException(400, "filename and project required")
-    src = UNREAD_WEB / filename
-    if not src.exists():
-        raise HTTPException(404, f"File not found: {filename}")
-    proj_lib = PROJECTS / project / "01-LIBRARY"
-    proj_lib.mkdir(parents=True, exist_ok=True)
-    dst = proj_lib / filename
-    if dst.exists():
-        raise HTTPException(409, f"File already exists in project {project}")
-    shutil.move(str(src), str(dst))
-    stem = Path(filename).stem
-    src_md = UNREAD_WEB / f"{stem}.md"
-    dst_md = proj_lib / f"{stem}.md"
-    if src_md.exists():
-        shutil.move(str(src_md), str(dst_md))
-    src_pdf = UNREAD_WEB / f"{stem}.pdf"
-    dst_pdf = proj_lib / f"{stem}.pdf"
-    if src_pdf.exists():
-        shutil.move(str(src_pdf), str(dst_pdf))
-    return {"ok": True, "filename": filename, "project": project}
-
-@app.delete("/api/research/paper/{filename:path}")
-async def research_delete_paper(filename: str):
-    fp = UNREAD_WEB / filename
-    if fp.exists():
-        fp.unlink()
-    stem = Path(filename).stem
-    for ext in [".md", ".pdf"]:
-        companion = UNREAD_WEB / f"{stem}{ext}"
-        if companion.exists() and companion.name != filename:
-            companion.unlink()
-    return {"ok": True, "deleted": filename}
-
-if __name__ == "__main__":
-    import uvicorn
-    host = os.getenv("HOST", "127.0.0.1")
-    port = int(os.getenv("PORT", "8000"))
-    uvicorn.run("main:app", host=host, port=port, log_level="info")

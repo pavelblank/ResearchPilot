@@ -1,0 +1,9 @@
+{
+  "auto_learn": true,
+  "learn_threshold": 1,
+  "chats_at_last_learn": 1,
+  "last_learned_at": "2026-06-06 10:28:14",
+  "total_learns": 1,
+  "last_status": "ok",
+  "last_message": "Learned from 1 chat sessions."
+}
