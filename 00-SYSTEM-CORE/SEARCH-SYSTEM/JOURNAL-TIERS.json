@@ -1,0 +1,149 @@
+{
+  "_comment": "Journal quality tiers + publisher patterns + warning patterns. Used by JOURNAL-QUALITY-FILTER.ps1 (post-results filter). Source data comes from Beall's List archive (https://beallslist.net) and the local predatory_journals.json file.",
+
+  "tiers": {
+    "tier_1_trusted": {
+      "description": "Indexed in Web of Science, Scopus, PubMed/MEDLINE, IEEE Xplore, ACM DL. Keep always.",
+      "badge": "Scopus / WoS Indexed",
+      "badge_color": "Green",
+      "publisher_patterns": [
+        "Elsevier",
+        "Springer",
+        "Wiley",
+        "Taylor & Francis",
+        "Taylor and Francis",
+        "IEEE",
+        "ACM",
+        "SAGE",
+        "Oxford University Press",
+        "Oxford",
+        "Cambridge University Press",
+        "Cambridge",
+        "Nature Publishing",
+        "Nature",
+        "Science (AAAS)",
+        "AAAS",
+        "Emerald",
+        "Emerald Publishing",
+        "MDPI",
+        "Frontiers",
+        "PLOS",
+        "De Gruyter",
+        "Brill",
+        "Karger",
+        "Thieme",
+        "Wolters Kluwer",
+        "Lippincott",
+        "BMJ",
+        "Lancet",
+        "Cell Press",
+        "Elsevier Science",
+        "Pergamon",
+        "Academic Press",
+        "John Wiley & Sons",
+        "Wiley-Blackwell",
+        "Routledge",
+        "Edward Elgar",
+        "Palgrave Macmillan",
+        "Palgrave",
+        "Macmillan",
+        "Hindawi",
+        "Inderscience",
+        "IOP Publishing",
+        "IOPscience",
+        "AIP Publishing",
+        "American Physical Society",
+        "American Chemical Society",
+        "ACS",
+        "American Institute of Physics"
+      ],
+      "doaj_only_means_tier_2": true
+    },
+    "tier_2_open_access": {
+      "description": "Indexed in DOAJ, PubMed Central, CORE. Keep with badge.",
+      "badge": "DOAJ Open Access",
+      "badge_color": "Teal",
+      "indexes": ["DOAJ", "PubMed Central", "PMC", "CORE"],
+      "preprint_servers": {
+        "arXiv": "Preprint (not peer reviewed)",
+        "SSRN": "Preprint (not peer reviewed)",
+        "bioRxiv": "Preprint (not peer reviewed)",
+        "medRxiv": "Preprint (not peer reviewed)",
+        "ResearchSquare": "Preprint (not peer reviewed)",
+        "Preprints.org": "Preprint (not peer reviewed)"
+      }
+    },
+    "tier_3_unverified": {
+      "description": "Not matched to Tier 1 or 2. Show with warning badge, do not remove.",
+      "badge": "Unverified Journal",
+      "badge_color": "Amber"
+    },
+    "tier_4_predatory": {
+      "description": "Match against Beall's List archive. Hide by default, show with red badge if toggled.",
+      "badge": "Flagged: Possible Predatory",
+      "badge_color": "Red",
+      "source": "https://beallslist.net",
+      "blocklist_file": "../../00-SYSTEM-CORE/predatory_journals.json",
+      "warning_patterns": [
+        "International Journal of Advanced Research",
+        "Global Journal of",
+        "World Journal of",
+        "American Journal of",
+        "European Journal of",
+        "IOSR Journal",
+        "IJSER",
+        "IJESRT",
+        "IJERA",
+        "JETIR",
+        "Multidisciplinary"
+      ],
+      "warning_patterns_note": "These are warning flags, not automatic blocks. Assign Tier 3 if no other tier confirmed."
+    }
+  },
+
+  "quality_scoring": {
+    "_comment": "Applied AFTER tier assignment. Sums to a quality bonus that is added to the relevance score from KEYWORD-FILTER.ps1.",
+
+    "citation_bonus": {
+      "0": 0,
+      "1-10": 2,
+      "11-50": 5,
+      "51-200": 8,
+      "201-500": 12,
+      "500+": 15
+    },
+
+    "tier_bonus": {
+      "tier_1": 20,
+      "tier_2": 10,
+      "tier_3": 0,
+      "tier_4": -50
+    },
+
+    "open_access_bonus": 5,
+
+    "recency_bonus": {
+      "last_2_years": 3,
+      "last_5_years": 5,
+      "6_to_10_years_ago": 2,
+      "11_plus_years_ago": 0
+    }
+  },
+
+  "ui_badges": {
+    "scopus_wos_indexed":    { "color": "Green",  "text": "Scopus / WoS Indexed" },
+    "doaj_open_access":      { "color": "Teal",   "text": "DOAJ Open Access" },
+    "unverified_journal":    { "color": "Amber",  "text": "Unverified Journal" },
+    "flagged_predatory":     { "color": "Red",    "text": "Flagged: Possible Predatory" },
+    "open_access_pdf":       { "color": "Blue",   "text": "Open Access PDF" },
+    "preprint":              { "color": "Grey",   "text": "Preprint" }
+  },
+
+  "implementation_notes": {
+    "1": "Do not hardcode a full journal whitelist locally. Use the OpenAlex is_in_doaj field as the live DOAJ check. Use publisher name matching for Tier 1 (Elsevier, IEEE etc).",
+    "2": "Beall's List cannot be queried via API. Hardcode the most common flagged journal name strings as a local blocklist array. Update manually when needed.",
+    "3": "arXiv papers are legitimate but not peer reviewed. Always flag them as preprints. Never assign Tier 1 or 2.",
+    "4": "Citation count comes from Semantic Scholar citationCount field. Use it directly in scoring.",
+    "5": "Never auto-remove Tier 3 results. Researchers sometimes need grey literature. Always let the user see unverified results with a clear warning."
+  }
+}

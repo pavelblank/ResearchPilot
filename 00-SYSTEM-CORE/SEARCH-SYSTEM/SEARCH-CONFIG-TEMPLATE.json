@@ -1,0 +1,85 @@
+{
+  "_template_purpose": "COPY this file to your project's 99-META/queries/ folder, rename it to <ProjectCode>-SEARCH-CONFIG.json, and fill in the blanks. The KEYWORD-FILTER.ps1 and PRE-FILTER.ps1 scripts in 00-SYSTEM-CORE/SEARCH-SYSTEM/ will read this file.",
+
+  "_instructions": [
+    "1. The ENGINE (KEYWORD-FILTER.ps1, PRE-FILTER.ps1, NOUN-PHRASE-INDEX.md template, SEARCH-STRATEGY.md) lives in 00-SYSTEM-CORE/SEARCH-SYSTEM/ and NEVER changes between projects.",
+    "2. The CONFIG (this file) lives in 01-PROJECTS/<ProjectCode>/99-META/queries/ and is UNIQUE per project.",
+    "3. To add a new project, copy this template, rename it, and fill in core_constructs, noun_phrases, context_anchors, and any other fields relevant to your project.",
+    "4. Run the engine with: .\\KEYWORD-FILTER.ps1 -InputText '...' -Mode analyze -ConfigPath 'C:\\path\\to\\your-config.json'"
+  ],
+
+  "project": {
+    "code": "<FILL>",
+    "name": "<FILL>",
+    "title": "<FILL>",
+    "description": "<FILL>"
+  },
+
+  "core_constructs": {
+    "ngrams": ["<FILL: 1-3 central concepts as multi-word phrases>"],
+    "weight": 10
+  },
+
+  "framework_layers": {
+    "_note": "OPTIONAL. Only fill in if your PhD has named framework layers (L1, L2, L3, etc.). Otherwise delete this entire block.",
+    "L1": {
+      "name": "<FILL>",
+      "ngrams": ["<FILL>"],
+      "weight": 8
+    },
+    "L2": {
+      "name": "<FILL>",
+      "ngrams": ["<FILL>"],
+      "weight": 8
+    }
+  },
+
+  "noun_phrases": {
+    "_note": "FLAT DICTIONARY of 2-3 word noun phrases that signal relevance. Each phrase gets a weight (1-10). The filter sums weights of all matched phrases.",
+    "<phrase 1>": 10,
+    "<phrase 2>": 8,
+    "<phrase 3>": 7
+  },
+
+  "context_anchors": {
+    "must_have_any": ["<FILL: sector/setting terms that must appear>"],
+    "weight": 3,
+    "must_not_have": ["<FILL: terms that signal WRONG context - auto-reject>"]
+  },
+
+  "population_anchors": {
+    "preferred": ["<FILL: who the study should be ABOUT>"],
+    "auto_reject_populations": ["<FILL: wrong populations - auto-reject>"]
+  },
+
+  "method_anchors": {
+    "preferred": ["<FILL: methods that boost relevance>"],
+    "weight": 1
+  },
+
+  "theory_anchors": {
+    "preferred": ["<FILL: theoretical frameworks that boost relevance>"],
+    "weight": 1
+  },
+
+  "journal_filter": {
+    "_note": "OPTIONAL. Use this when running in Scopus/WoS to limit to high-quality journals.",
+    "preferred": ["<FILL: Q1/Q2 journal names>"]
+  },
+
+  "scoring": {
+    "accept_threshold": 20,
+    "review_min": 10,
+    "reject_threshold": 5
+  },
+
+  "lemmatize": {
+    "_note": "Word-form collapse. Add project-specific variants here. Universal suffixes (developed->develop, etc.) are already in the engine defaults.",
+    "<variant>": "<base_form>"
+  },
+
+  "stopwords": {
+    "universal": [],
+    "project_specific": []
+  }
+}

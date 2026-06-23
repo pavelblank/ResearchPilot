@@ -1,0 +1,13 @@
+{
+  "title": "A study hosted on myacademia fake domain",
+  "journalName": "Journal of MyAcademia Studies",
+  "publisher": "MyAcademia Press",
+  "doi": "10.1234/myacademia.2024.001",
+  "citationCount": 0,
+  "year": 2024,
+  "isOpenAccess": true,
+  "isInDoaj": false,
+  "isPreprint": false,
+  "source": "https://myacademia.example.com",
+  "relevanceScore": 10
+}

@@ -1,0 +1,39 @@
+{
+  "versions": [
+    {
+      "date": "2026-06-01",
+      "version": "v5.2.1",
+      "description": "Initial build — Author section, changelog, multi-layer graph filters"
+    },
+    {
+      "date": "2026-06-03",
+      "version": "v5.3.0",
+      "description": "Stability, performance, security, UX, code quality, new features"
+    },
+    {
+      "date": "2026-06-04",
+      "version": "v5.3.1",
+      "description": "GitHub-ready bootstrap — fresh clones work without crashes; cross-platform setup scripts; 00-TEMPLATE blueprint; .gitkeep scaffolding for 99-SYSTEM-BACKEND and INCOMING"
+    },
+    {
+      "date": "2026-06-04",
+      "version": "v5.3.2",
+      "description": "Security hardening: Pydantic v2 ToolExecReq schema + orchestration interceptor (10-tool allowlist, per-tool arg schemas, length caps, path-traversal + NUL-byte blocks, project/system-file allowlists); SSRF guard wired into ai_respond and research_web_import (private-IP and forbidden-scheme rejection); 21/21 smoke tests pass"
+    },
+    {
+      "date": "2026-06-04",
+      "version": "v5.3.3",
+      "description": "Filename standardisation: Protocol 7 (Author_Year[_note][_N].ext) applied to extractions, library PDFs, web imports; new _filename_utils.py module; migrate_filename_format.py migration script (opt-in, dry-run by default); 19 unit tests + 3 new smoke tests (24/24 pass)"
+    },
+    {
+      "date": "2026-06-04",
+      "version": "v5.4.0",
+      "description": "Web-research upgrade + Graph cluster mode. New 00-SYSTEM-CORE/SEARCH-SYSTEM/ folder ships the input-driven search engine: EXTRACT-KEYWORDS 8-step NLP pipeline (purely user-input-driven, no project config), FILTER-PAPERS top-level project-free filter, journal-quality tier scorer (Tier 1-4 with Q1-Q4 quartile lookup, peer-review detection, custom predatory list via -ExtraPredatoryPath), parallel multi-source API search (OpenAlex/Crossref/SemanticScholar with DOI + title-similarity dedupe). Web app graph gains cluster mode: dim=__any__ groups papers by author/year/journal/quartile/method/framework without filtering, central hub node + per-value cluster nodes + file-to-file cluster edges. 30/30 smoke tests pass."
+    },
+    {
+      "date": "2026-06-07",
+      "version": "v5.5.0",
+      "description": "Full UI/UX pass across Settings — Skills, Learned Profile (renamed from Knowledge Base to match its content), Keywords, Predatory Journals, Plugins, Obsidian, Memory/Trash/Chats (clarified as Memory sub-sections with breadcrumbs), and Author redesigned with banner + credential cards. Fixed Obsidian 'Open Vault'/'Open Graph' buttons showing a spurious blank-tab error before launch (switched window.open to direct navigation). Verified AI Engine fallback chain: 12 engines tried in priority order with soft-failure detection, Ollama (local) correctly positioned last as final offline fallback. Security pass: added SSRF guard to PDF download endpoint, closed three XSS gaps (Memory table, AI Engine list, note titles) by applying esc(), tightened PDF content-type validation, switched research-fetch error logging from print() to the rotating logger. Also restyled Graph view (sizing, hover states), Upload, Projects, Web Research, Settings nav and Dashboard widgets earlier in this pass."
+    }
+  ]
+}
